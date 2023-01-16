@@ -13,9 +13,12 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.ComponentModel;
+using System.Diagnostics;
 
 namespace Pixtack3rd
 {
+    [DebuggerDisplay(nameof(Name))]
     public abstract class TThumb : Thumb
     {
         //依存プロパティは主にデザイナー画面で、要素を追加して表示の確認する用
@@ -47,12 +50,20 @@ namespace Pixtack3rd
 
         #endregion 依存プロパティ
         protected readonly string TEMPLATE_NAME = "NEMO";
+        public TTGroup? TTParent { get; set; } = null;//親Group
+
         public TThumb()
         {
-            SetBinding(Canvas.LeftProperty,
-                new Binding() { Path = new PropertyPath(TTLeftProperty), Source = this });
-            SetBinding(Canvas.TopProperty,
-                new Binding() { Path = new PropertyPath(TTTopProperty), Source = this });
+            SetBinding(Canvas.LeftProperty, new Binding()
+            {
+                Path = new PropertyPath(TTLeftProperty),
+                Source = this
+            });
+            SetBinding(Canvas.TopProperty, new Binding()
+            {
+                Path = new PropertyPath(TTTopProperty),
+                Source = this
+            });
 
 
         }
@@ -67,14 +78,21 @@ namespace Pixtack3rd
             }
             else return default;
         }
-        protected void MySetBinging(Data data)
+        protected void MySetXYBinging(Data data)
         {
+            if (data is null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+
             SetBinding(Canvas.LeftProperty, nameof(data.X));
             SetBinding(Canvas.TopProperty, nameof(data.Y));
         }
 
     }
 
+
+    //[DebuggerDisplay("Name = {" + nameof(Name) + "}")]
     [ContentProperty(nameof(Items))]
     public class TTGroup : TThumb
     {
@@ -82,11 +100,10 @@ namespace Pixtack3rd
         private ItemsControl MyTemplateElement;
         public ObservableCollection<TThumb> Items { get; private set; } = new();
 
-        public TTGroup()
+        
+        public TTGroup() : this(new DataGroup())
         {
-            Data = new DataGroup();
-            MyTemplateElement = MyInitializeBinding();
-            MyTemplateElement.SetBinding(ItemsControl.ItemsSourceProperty, new Binding(nameof(Items)) { Source = this });
+
         }
         public TTGroup(DataGroup data)
         {
@@ -99,7 +116,7 @@ namespace Pixtack3rd
             this.DataContext = Data;
             SetBinding(TTLeftProperty, nameof(Data.X));
             SetBinding(TTTopProperty, nameof(Data.Y));
-            MySetBinging(this.Data);
+            MySetXYBinging(this.Data);
             return MakeTemplate();
 
         }
@@ -145,7 +162,120 @@ namespace Pixtack3rd
                     throw new NotImplementedException();
             }
         }
+
+        //TTGroupのRect取得
+        public static (double x, double y, double w, double h) GetRect(TTGroup? group)
+        {
+            if (group == null) { return (0, 0, 0, 0); }
+            return GetRect(group.Items);
+        }
+        public static (double x, double y, double w, double h) GetRect(IEnumerable<TThumb> thumbs)
+        {
+            double x = double.MaxValue, y = double.MaxValue;
+            double w = 0, h = 0;
+            if (thumbs != null)
+            {
+                foreach (var item in thumbs)
+                {
+                    var left = item.TTLeft; if (x > left) x = left;
+                    var top = item.TTTop; if (y > top) y = top;
+                    var width = left + item.ActualWidth;
+                    var height = top + item.ActualHeight;
+                    if (w < width) w = width;
+                    if (h < height) h = height;
+                }
+            }
+            return (x, y, w, h);
+        }
+        //サイズと位置の更新
+        public void TTGroupUpdateLayout()
+        {
+            //Rect取得
+            (double x, double y, double w, double h) = GetRect(this);
+
+            //子要素位置修正
+            foreach (var item in Items)
+            {
+                item.TTLeft -= x;
+                item.TTTop -= y;
+            }
+            //自身がRoot以外なら自身の位置を更新
+            if (this.GetType() != typeof(TTRoot))
+            {
+                TTLeft += x;
+                TTTop += y;
+            }
+
+            //自身のサイズ更新
+            w -= x; h -= y;
+            if (w < 0) w = 0;
+            if (h < 0) h = 0;
+            if (w >= 0) Width = w;
+            if (h >= 0) Height = h;
+
+            //必要、これがないと見た目が変化しない、実行直後にSizeChangedが発生
+            UpdateLayout();
+
+            //親要素Groupがあれば遡って更新
+            if (TTParent is TTGroup parent)
+            {
+                parent.TTGroupUpdateLayout();
+            }
+        }
     }
+
+
+    public class TTRoot : TTGroup,INotifyPropertyChanged
+    {
+        #region 通知プロパティ
+        
+        protected void SetProperty<T>(ref T field, T value, [System.Runtime.CompilerServices.CallerMemberName] string? name = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value)) return;
+            field = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        private TThumb? _clickedThumb;
+        public TThumb? ClickedThumb { get => _clickedThumb; set => SetProperty(ref _clickedThumb, value); }
+
+        private TThumb? _activeGroup;
+        public TThumb? ActiveGroup { get => _activeGroup; set => SetProperty(ref _activeGroup, value); }
+        #endregion 通知プロパティ
+
+        //選択状態の要素を保持
+        public ObservableCollection<TThumb> SelectedItems { get; private set; } = new();
+
+        //クリック前の選択状態、クリックUp時の削除に使う
+        private bool IsSelectedPreviewMouseDown { get; set; }
+
+        public TTRoot()
+        {
+            _activeGroup ??= this;
+        }
+
+        #region ドラッグ移動
+        private void Thumb_DragDelta(object seneer, DragDeltaEventArgs e)
+        {
+            //複数選択時は全てを移動
+            foreach (TThumb item in SelectedItems)
+            {
+                item.TTLeft += e.HorizontalChange;
+                item.TTTop += e.VerticalChange;
+            }
+        }
+        private void Thumb_DragCompleted(object sender,DragCompletedEventArgs e)
+        {
+            if(sender is TThumb thumb) { thumb.TTParent?.TTGroupUpdateLayout(); }
+        }
+        #endregion ドラッグ移動
+
+
+    }
+
+
+
 
     public class TTTextBlock : TThumb
     {
@@ -181,9 +311,10 @@ namespace Pixtack3rd
 
             SetBinding(TTTextProperty, nameof(Data.Text));
             MyTemplateElement.SetBinding(TextBlock.TextProperty, nameof(Data.Text));
-            MySetBinging(this.Data);
+            MySetXYBinging(this.Data);
         }
     }
+
 
     public class TTImage : TThumb
     {
@@ -230,7 +361,7 @@ namespace Pixtack3rd
 
             //SetBinding(TTSourceProperty, nameof(Data.Source));
             MyTemplateElement.SetBinding(Image.SourceProperty, nameof(Data.Source));
-            MySetBinging(this.Data);
+            MySetXYBinging(this.Data);
         }
 
     }

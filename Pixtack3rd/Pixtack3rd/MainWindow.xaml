@@ -15,10 +15,10 @@
     <ScrollViewer>
       <!--<local:TTTextBlock TTText="222"/>-->
       <local:TTGroup x:Name="MyRoot">
-        <local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
-        <!--<local:TTImage TTSource="D:\ブログ用\テスト用画像\collection5.png"/>-->
+        <!--<local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
+        --><!--<local:TTImage TTSource="D:\ブログ用\テスト用画像\collection5.png"/>--><!--
         <local:TTImage x:Name="MyImage" TTLeft="20" TTTop="20"
-                       TTSourcePath="D:\\ブログ用\\テスト用画像\\collection2.png"/>
+                       TTSourcePath="D:\\ブログ用\\テスト用画像\\collection2.png"/>-->
         
 
       </local:TTGroup>

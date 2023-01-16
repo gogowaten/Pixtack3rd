@@ -10,7 +10,7 @@ using System.Windows.Media.Imaging;
 
 namespace Pixtack3rd
 {
-    public enum TType { None = 0, TextBlock, Group, Image, Rectangle }
+    public enum TType { None = 0, Root, Group, TextBlock, Image, Rectangle }
 
 
     [KnownType(typeof(DataImage)), KnownType(typeof(DataGroup)), KnownType(typeof(DataTextBlock))]
@@ -35,7 +35,11 @@ namespace Pixtack3rd
         }
 
     }
-
+    public class DataRoot : Data
+    {
+        public ObservableCollection<Data> Data { get; set; } = new();
+        public DataRoot() { Type = TType.Root; }
+    }
 
     public class DataGroup : Data
     {
