@@ -15,6 +15,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Windows.Input;
 
 namespace Pixtack3rd
 {
@@ -93,14 +94,15 @@ namespace Pixtack3rd
 
 
     //[DebuggerDisplay("Name = {" + nameof(Name) + "}")]
-    [ContentProperty(nameof(Items))]
+    [ContentProperty(nameof(Thumbs))]
     public class TTGroup : TThumb
     {
         public DataGroup Data { get; set; }
         private ItemsControl MyTemplateElement;
-        public ObservableCollection<TThumb> Items { get; private set; } = new();
+        public ObservableCollection<TThumb> Thumbs { get; private set; } = new();
 
         
+
         public TTGroup() : this(new DataGroup())
         {
 
@@ -109,7 +111,7 @@ namespace Pixtack3rd
         {
             Data = data;
             MyTemplateElement = MyInitializeBinding();
-            MyTemplateElement.SetBinding(ItemsControl.ItemsSourceProperty, new Binding(nameof(Items)) { Source = this });
+            MyTemplateElement.SetBinding(ItemsControl.ItemsSourceProperty, new Binding(nameof(Thumbs)) { Source = this });
         }
         private ItemsControl MyInitializeBinding()
         {
@@ -135,12 +137,12 @@ namespace Pixtack3rd
         }
         public void AddItem(TThumb thumb, Data data)
         {
-            Items.Add(thumb);
+            Thumbs.Add(thumb);
             Data.Datas.Add(data);
         }
         public void RemoveItem(TThumb thumb, Data data)
         {
-            Items.Remove(thumb);
+            Thumbs.Remove(thumb);
             Data.Datas.Remove(data);
         }
         public void AddItem(Data data)
@@ -167,7 +169,7 @@ namespace Pixtack3rd
         public static (double x, double y, double w, double h) GetRect(TTGroup? group)
         {
             if (group == null) { return (0, 0, 0, 0); }
-            return GetRect(group.Items);
+            return GetRect(group.Thumbs);
         }
         public static (double x, double y, double w, double h) GetRect(IEnumerable<TThumb> thumbs)
         {
@@ -194,7 +196,7 @@ namespace Pixtack3rd
             (double x, double y, double w, double h) = GetRect(this);
 
             //子要素位置修正
-            foreach (var item in Items)
+            foreach (var item in Thumbs)
             {
                 item.TTLeft -= x;
                 item.TTTop -= y;
@@ -239,13 +241,23 @@ namespace Pixtack3rd
 
         private TThumb? _clickedThumb;
         public TThumb? ClickedThumb { get => _clickedThumb; set => SetProperty(ref _clickedThumb, value); }
+        private TThumb? _activeThumb;
+        public TThumb? ActiveThumb { get => _activeThumb; set => SetProperty(ref _activeThumb, value); }
 
-        private TThumb? _activeGroup;
-        public TThumb? ActiveGroup { get => _activeGroup; set => SetProperty(ref _activeGroup, value); }
+        private TTGroup _activeGroup;
+        public TTGroup ActiveGroup
+        {
+            get => _activeGroup;
+            set
+            {
+                ChildrenDragEventDesoption(_activeGroup, value);
+                SetProperty(ref _activeGroup, value);
+            }
+        }
         #endregion 通知プロパティ
 
         //選択状態の要素を保持
-        public ObservableCollection<TThumb> SelectedItems { get; private set; } = new();
+        public ObservableCollection<TThumb> SelectedThumbs { get; private set; } = new();
 
         //クリック前の選択状態、クリックUp時の削除に使う
         private bool IsSelectedPreviewMouseDown { get; set; }
@@ -256,10 +268,24 @@ namespace Pixtack3rd
         }
 
         #region ドラッグ移動
+        //ActiveGroup用、ドラッグ移動イベント脱着
+        private void ChildrenDragEventDesoption(TTGroup removeTarget, TTGroup addTarget)
+        {
+            foreach (var item in removeTarget.Thumbs)
+            {
+                item.DragDelta -= Thumb_DragDelta;
+                item.DragCompleted -= Thumb_DragCompleted;
+            }
+            foreach (var item in addTarget.Thumbs)
+            {
+                item.DragDelta += Thumb_DragDelta;
+                item.DragCompleted += Thumb_DragCompleted;
+            }
+        }
         private void Thumb_DragDelta(object seneer, DragDeltaEventArgs e)
         {
             //複数選択時は全てを移動
-            foreach (TThumb item in SelectedItems)
+            foreach (TThumb item in SelectedThumbs)
             {
                 item.TTLeft += e.HorizontalChange;
                 item.TTTop += e.VerticalChange;
@@ -270,7 +296,215 @@ namespace Pixtack3rd
             if(sender is TThumb thumb) { thumb.TTParent?.TTGroupUpdateLayout(); }
         }
         #endregion ドラッグ移動
+        
+        #region オーバーライド関連
 
+        //起動直後、自身がActiveGroupならChildrenにドラッグ移動登録
+        protected override void OnInitialized(EventArgs e)
+        {
+            base.OnInitialized(e);
+            if (ActiveGroup == this)
+            {
+                foreach (var item in Thumbs)
+                {
+                    item.DragDelta += Thumb_DragDelta;
+                    item.DragCompleted += Thumb_DragCompleted;
+                }
+            }
+        }
+
+        //クリックしたとき、ClickedThumbの更新とActiveThumbの更新、SelectedThumbsの更新
+        protected override void OnPreviewMouseLeftButtonDown(MouseButtonEventArgs e)
+        {
+            base.OnPreviewMouseLeftButtonDown(e);//要る？
+
+            //OriginalSourceにテンプレートに使っている要素が入っているので、
+            //そのTemplateParentプロパティから目的のThumbが取得できる
+            if (e.OriginalSource is FrameworkElement el && el.TemplatedParent is TThumb clicked)
+            {
+                ClickedThumb = clicked;
+                TThumb? active = GetActiveThumb(clicked);
+                if (active != ActiveThumb)
+                {
+                    ActiveThumb = active;
+                }
+                //SelectedThumbsの更新
+                if (active != null)
+                {
+                    if (Keyboard.Modifiers == ModifierKeys.Control)
+                    {
+                        if (SelectedThumbs.Contains(active) == false)
+                        {
+                            SelectedThumbs.Add(active);
+                            IsSelectedPreviewMouseDown = false;
+                        }
+                        else
+                        {
+                            //フラグ
+                            //ctrl+クリックされたものがもともと選択状態だったら
+                            //マウスアップ時に削除するためのフラグ
+                            IsSelectedPreviewMouseDown = true;
+                        }
+                    }
+                    else
+                    {
+                        if (SelectedThumbs.Contains(active) == false)
+                        {
+                            SelectedThumbs.Clear();
+                            SelectedThumbs.Add(active);
+                            IsSelectedPreviewMouseDown = false;
+                        }
+                    }
+                }
+                else { IsSelectedPreviewMouseDown = false; }
+            }
+        }
+
+        //マウスレフトアップ、フラグがあればSelectedThumbsから削除する
+        protected override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
+        {
+            //
+            if (SelectedThumbs.Count > 1 && IsSelectedPreviewMouseDown && ActiveThumb != null)
+            {
+                SelectedThumbs.Remove(ActiveThumb);//削除
+                IsSelectedPreviewMouseDown = false;//フラグ切り替え
+                ActiveThumb = null;
+                ClickedThumb = null;
+            }
+
+        }
+
+        #endregion オーバーライド関連
+        
+        #region その他関数
+
+        private bool CheckIsActive(TThumb thumb)
+        {
+            if (thumb.TTParent is TTGroup ttg && ttg == ActiveGroup)
+            {
+                return true;
+            }
+            return false;
+
+        }
+        //起点からActiveThumbをサーチ
+        //ActiveはActiveThumbのChildrenの中で起点に連なるもの
+        private TThumb? GetActiveThumb(TThumb? start)
+        {
+            if (start == null) { return null; }
+            if (CheckIsActive(start))
+            {
+                return start;
+            }
+            else if (start.TTParent is TTGroup ttg)
+            {
+                return GetActiveThumb(ttg);
+            }
+            return null;
+        }
+        /// <summary>
+        /// SelectedThumbsを並べ替えたList作成、基準はActiveGroupのChildren
+        /// </summary>
+        /// <param name="selected">SelectedThumbs</param>
+        /// <param name="group">並べ替えの基準にするGroup</param>
+        /// <returns></returns>
+        private List<TThumb> MakeSortedList(IEnumerable<TThumb> selected, TTGroup group)
+        {
+            List<TThumb> tempList = new();
+            foreach (var item in group.Thumbs)
+            {
+                if (selected.Contains(item)) { tempList.Add(item); }
+            }
+            return tempList;
+        }
+        /// <summary>
+        /// 要素すべてがGroupのChildrenに存在するか判定
+        /// </summary>
+        /// <param name="thums">要素群</param>
+        /// <param name="group">ParentGroup</param>
+        /// <returns></returns>
+        private bool IsAllContains(IEnumerable<TThumb> thums, TTGroup group)
+        {
+            if (!thums.Any()) { return false; }//要素が一つもなければfalse
+            foreach (var item in thums)
+            {
+                if (group.Thumbs.Contains(item) == false)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        #endregion その他関数
+
+        #region 追加と削除
+        //基本的にActiveThumbのChildrenに対して行う
+        //削除対象はActiveThumbになる
+        //ドラッグ移動イベントの着脱も行う
+        public void AddThumb(TThumb thumb)
+        {
+            AddThumb(thumb, ActiveGroup);
+        }
+        /// <summary>
+        /// 追加先Groupを指定して追加
+        /// </summary>
+        /// <param name="thumb">追加する子要素</param>
+        /// <param name="destGroup">追加先Group</param>
+        public void AddThumb(TThumb thumb, TTGroup destGroup)
+        {
+            destGroup.Thumbs.Add(thumb);
+            //ドラッグ移動イベント付加
+            thumb.DragDelta += Thumb_DragDelta;
+            thumb.DragCompleted += Thumb_DragCompleted;
+        }
+
+
+        /// <summary>
+        /// 選択Thumbすべてを削除
+        /// </summary>
+        /// <returns></returns>
+        public bool RemoveThumb()
+        {
+            if (SelectedThumbs == null) return false;
+            bool flag = true;
+            foreach (var item in SelectedThumbs.ToArray())
+            {
+                if (RemoveThumb(item, ActiveGroup) == false)
+                {
+                    flag = false;
+                }
+                else
+                {
+                    SelectedThumbs.Remove(item);
+                }
+            }
+            ClickedThumb = null;
+            ActiveThumb = null;
+            return flag;
+        }
+        /// <summary>
+        /// 指定Thumbだけを指定Groupから削除
+        /// </summary>
+        /// <param name="thumb"></param>
+        /// <param name="group"></param>
+        /// <returns></returns>
+        public bool RemoveThumb(TThumb thumb, TTGroup group)
+        {
+            if (group.Thumbs.Remove(thumb))
+            {
+                thumb.DragCompleted -= Thumb_DragCompleted;
+                thumb.DragDelta -= Thumb_DragDelta;
+                group.TTGroupUpdateLayout();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        #endregion 追加と削除
 
     }
 
