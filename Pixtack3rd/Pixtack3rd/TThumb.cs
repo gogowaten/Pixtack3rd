@@ -18,6 +18,7 @@ namespace Pixtack3rd
 {
     public abstract class TThumb : Thumb
     {
+        //依存プロパティは主にデザイナー画面で、要素を追加して表示の確認する用
         #region 依存プロパティ
 
         public double TTLeft
@@ -66,36 +67,39 @@ namespace Pixtack3rd
             }
             else return default;
         }
-
+        protected void MySetBinging(Data data)
+        {
+            SetBinding(Canvas.LeftProperty, nameof(data.X));
+            SetBinding(Canvas.TopProperty, nameof(data.Y));
+        }
 
     }
 
     [ContentProperty(nameof(Items))]
     public class TTGroup : TThumb
     {
-        public DataGroup MyData { get; set; }
-        //        protected readonly string TEMPLATE_NAME = "NEMO";
+        public DataGroup Data { get; set; }
         private ItemsControl MyTemplateElement;
         public ObservableCollection<TThumb> Items { get; private set; } = new();
 
         public TTGroup()
         {
-            MyData = new DataGroup();
+            Data = new DataGroup();
             MyTemplateElement = MyInitializeBinding();
             MyTemplateElement.SetBinding(ItemsControl.ItemsSourceProperty, new Binding(nameof(Items)) { Source = this });
         }
         public TTGroup(DataGroup data)
         {
-            MyData = data;
+            Data = data;
             MyTemplateElement = MyInitializeBinding();
             MyTemplateElement.SetBinding(ItemsControl.ItemsSourceProperty, new Binding(nameof(Items)) { Source = this });
         }
         private ItemsControl MyInitializeBinding()
         {
-            this.DataContext = MyData;
-            SetBinding(TTLeftProperty, nameof(MyData.X));
-            SetBinding(TTTopProperty, nameof(MyData.Y));
-
+            this.DataContext = Data;
+            SetBinding(TTLeftProperty, nameof(Data.X));
+            SetBinding(TTTopProperty, nameof(Data.Y));
+            MySetBinging(this.Data);
             return MakeTemplate();
 
         }
@@ -115,12 +119,12 @@ namespace Pixtack3rd
         public void AddItem(TThumb thumb, Data data)
         {
             Items.Add(thumb);
-            MyData.Datas.Add(data);
+            Data.Datas.Add(data);
         }
         public void RemoveItem(TThumb thumb, Data data)
         {
             Items.Remove(thumb);
-            MyData.Datas.Remove(data);
+            Data.Datas.Remove(data);
         }
         public void AddItem(Data data)
         {
@@ -161,38 +165,39 @@ namespace Pixtack3rd
 
         #endregion 依存プロパティ
 
-        public DataTextBlock MyData { get; set; }
+        public DataTextBlock Data { get; set; }
         private readonly TextBlock MyTemplateElement;
 
         public TTTextBlock() : this(new DataTextBlock()) { }
         public TTTextBlock(DataTextBlock data)
         {
-            MyData = data;
-            this.DataContext = MyData;
+            Data = data;
+            this.DataContext = Data;
             if (MakeTemplate<TextBlock>() is TextBlock element)
             {
                 MyTemplateElement = element;
             }
             else { throw new ArgumentException("テンプレート作成できんかった"); }
 
-            SetBinding(TTTextProperty, nameof(MyData.Text));
-            MyTemplateElement.SetBinding(TextBlock.TextProperty, nameof(MyData.Text));
+            SetBinding(TTTextProperty, nameof(Data.Text));
+            MyTemplateElement.SetBinding(TextBlock.TextProperty, nameof(Data.Text));
+            MySetBinging(this.Data);
         }
     }
 
     public class TTImage : TThumb
     {
 
-        public BitmapSource TTSource
-        {
-            get { return (BitmapSource)GetValue(TTSourceProperty); }
-            set { SetValue(TTSourceProperty, value); }
-        }
-        public static readonly DependencyProperty TTSourceProperty =
-            DependencyProperty.Register(nameof(TTSource), typeof(BitmapSource), typeof(TTImage),
-                new FrameworkPropertyMetadata(null,
-                    FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure));
+        //public BitmapSource TTSource
+        //{
+        //    get { return (BitmapSource)GetValue(TTSourceProperty); }
+        //    set { SetValue(TTSourceProperty, value); }
+        //}
+        //public static readonly DependencyProperty TTSourceProperty =
+        //    DependencyProperty.Register(nameof(TTSource), typeof(BitmapSource), typeof(TTImage),
+        //        new FrameworkPropertyMetadata(null,
+        //            FrameworkPropertyMetadataOptions.AffectsRender |
+        //            FrameworkPropertyMetadataOptions.AffectsMeasure));
 
         public string TTSourcePath
         {
@@ -207,25 +212,25 @@ namespace Pixtack3rd
         {
             if (d is TTImage obj)
             {
-                obj.MyData.Source = new BitmapImage(new Uri((string)e.NewValue));
+                obj.Data.Source = new BitmapImage(new Uri((string)e.NewValue));
             }
         }
 
-        public DataImage MyData { get; set; }
+        public DataImage Data { get; set; }
         private readonly Image MyTemplateElement;
 
 
         public TTImage() : this(new DataImage()) { }
         public TTImage(DataImage data)
         {
-            MyData = data;
-            this.DataContext = MyData;
+            Data = data;
+            this.DataContext = Data;
             if (MakeTemplate<Image>() is Image element) { MyTemplateElement = element; }
             else { throw new ArgumentException("テンプレート作成できんかった"); }
 
-            //SetBinding(TTSourceProperty, nameof(MyData.Source));
-            MyTemplateElement.SetBinding(Image.SourceProperty, nameof(MyData.Source));
-
+            //SetBinding(TTSourceProperty, nameof(Data.Source));
+            MyTemplateElement.SetBinding(Image.SourceProperty, nameof(Data.Source));
+            MySetBinging(this.Data);
         }
 
     }

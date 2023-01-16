@@ -24,26 +24,27 @@ namespace Pixtack3rd
         public MainWindow()
         {
             InitializeComponent();
-            //ImageSourceConverter converter = new();
-            //object? neko = converter.ConvertFromString("D:\\ブログ用\\テスト用画像\\collection5.png");
-            //BitmapSource? inu=(BitmapSource?)neko;
-            //MyRoot.AddItem(new DataTextBlock() { Text = "adddata", X = 0, Y = 0, });
+            string imagePath = "D:\\ブログ用\\テスト用画像\\collection5.png";
+            string imagePath1 = "D:\\ブログ用\\テスト用画像\\collection4.png";
 
 
+            DataImage dataImg1 = new() { Source = GetBitmap(imagePath) };
+            DataImage dataImg2 = new() { Source = GetBitmap(imagePath1), X = 100, Y = 100 };
 
-            DataImage tidata = new() { Source = new BitmapImage(
-                new Uri("D:\\ブログ用\\テスト用画像\\collection5.png")) };
-            tidata = new() { Source = GetBitmap("D:\\ブログ用\\テスト用画像\\collection5.png") };
-            MyRoot.AddItem(tidata);
-        //    tidata.Source = new BitmapImage(new Uri("D:\\ブログ用\\テスト用画像\\collection4.png"));
-            tidata.Source = GetBitmap("D:\\ブログ用\\テスト用画像\\collection4.png");
+            TTGroup group = new(new DataGroup() { X = 100, Y = 100 });
+            group.AddItem(dataImg1);
+            group.AddItem(dataImg2);
 
-            MyImage.MyData.Source = GetBitmap("D:\\ブログ用\\テスト用画像\\collection1.png");
+            MyRoot.AddItem(group, group.Data);
+            //    dataImg1.Source = new BitmapImage(new Uri("D:\\ブログ用\\テスト用画像\\collection4.png"));
+            //dataImg1.Source = GetBitmap("D:\\ブログ用\\テスト用画像\\collection4.png");
+
+            //MyImage.Data.Source = GetBitmap("D:\\ブログ用\\テスト用画像\\collection1.png");
         }
         private static BitmapImage GetBitmap(string filePath)
         {
             BitmapImage bmp = new();
-            FileStream stream =new(filePath,FileMode.Open, FileAccess.Read);
+            FileStream stream = new(filePath, FileMode.Open, FileAccess.Read);
             bmp.BeginInit();
             bmp.StreamSource = stream;
             bmp.EndInit();
