@@ -14,14 +14,14 @@
     
     <ScrollViewer>
       <!--<local:TTTextBlock TTText="222"/>-->
-      <local:TTGroup x:Name="MyRoot">
+      <local:TTRoot x:Name="MyRoot">
         <local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
         
         <local:TTImage x:Name="MyImage" TTLeft="20" TTTop="20"
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection2.png"/>
         
 
-      </local:TTGroup>
+      </local:TTRoot>
     </ScrollViewer>
   </Grid>
 </Window>

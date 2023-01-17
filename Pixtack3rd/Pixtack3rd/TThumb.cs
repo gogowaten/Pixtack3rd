@@ -16,10 +16,11 @@ using System.Runtime.CompilerServices;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Input;
+using System.Collections.Specialized;
 
 namespace Pixtack3rd
 {
-    [DebuggerDisplay(nameof(Name))]
+    [DebuggerDisplay(nameof(Type))]
     public abstract class TThumb : Thumb
     {
         //依存プロパティは主にデザイナー画面で、要素を追加して表示の確認する用
@@ -52,7 +53,7 @@ namespace Pixtack3rd
         #endregion 依存プロパティ
         protected readonly string TEMPLATE_NAME = "NEMO";
         public TTGroup? TTParent { get; set; } = null;//親Group
-
+        public TType Type { get; set; }
         public TThumb()
         {
             SetBinding(Canvas.LeftProperty, new Binding()
@@ -85,7 +86,7 @@ namespace Pixtack3rd
             {
                 throw new ArgumentNullException(nameof(data));
             }
-
+            Type = data.Type;
             SetBinding(Canvas.LeftProperty, nameof(data.X));
             SetBinding(Canvas.TopProperty, nameof(data.Y));
         }
@@ -101,7 +102,7 @@ namespace Pixtack3rd
         private ItemsControl MyTemplateElement;
         public ObservableCollection<TThumb> Thumbs { get; private set; } = new();
 
-        
+
 
         public TTGroup() : this(new DataGroup())
         {
@@ -109,10 +110,26 @@ namespace Pixtack3rd
         }
         public TTGroup(DataGroup data)
         {
+            Thumbs.CollectionChanged += Thumbs_CollectionChanged;
             Data = data;
             MyTemplateElement = MyInitializeBinding();
             MyTemplateElement.SetBinding(ItemsControl.ItemsSourceProperty, new Binding(nameof(Thumbs)) { Source = this });
         }
+
+        private void Thumbs_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    if (e.NewItems?[0] is TThumb thumb)
+                    {
+                        thumb.TTParent = this;
+                    }
+                    break;
+                default: break;
+            }
+        }
+
         private ItemsControl MyInitializeBinding()
         {
             this.DataContext = Data;
@@ -189,7 +206,10 @@ namespace Pixtack3rd
             }
             return (x, y, w, h);
         }
-        //サイズと位置の更新
+
+        /// <summary>
+        /// サイズと位置の更新
+        /// </summary>
         public void TTGroupUpdateLayout()
         {
             //Rect取得
@@ -227,10 +247,10 @@ namespace Pixtack3rd
     }
 
 
-    public class TTRoot : TTGroup,INotifyPropertyChanged
+    public class TTRoot : TTGroup, INotifyPropertyChanged
     {
         #region 通知プロパティ
-        
+
         protected void SetProperty<T>(ref T field, T value, [System.Runtime.CompilerServices.CallerMemberName] string? name = null)
         {
             if (EqualityComparer<T>.Default.Equals(field, value)) return;
@@ -291,12 +311,12 @@ namespace Pixtack3rd
                 item.TTTop += e.VerticalChange;
             }
         }
-        private void Thumb_DragCompleted(object sender,DragCompletedEventArgs e)
+        private void Thumb_DragCompleted(object sender, DragCompletedEventArgs e)
         {
-            if(sender is TThumb thumb) { thumb.TTParent?.TTGroupUpdateLayout(); }
+            if (sender is TThumb thumb) { thumb.TTParent?.TTGroupUpdateLayout(); }
         }
         #endregion ドラッグ移動
-        
+
         #region オーバーライド関連
 
         //起動直後、自身がActiveGroupならChildrenにドラッグ移動登録
@@ -375,7 +395,7 @@ namespace Pixtack3rd
         }
 
         #endregion オーバーライド関連
-        
+
         #region その他関数
 
         private bool CheckIsActive(TThumb thumb)
@@ -505,6 +525,290 @@ namespace Pixtack3rd
         }
 
         #endregion 追加と削除
+
+        #region グループ化
+
+        //基本的にSelectedThumbsの要素群でグループ化、それをActiveGroupに追加する
+        public void AddGroup()
+        {
+            //選択要素群をActiveGroupを基準に並べ替え
+            var tempList = MakeSortedList(SelectedThumbs, ActiveGroup);
+
+            TTGroup? group = MakeAndAddGroup(tempList, ActiveGroup);
+            if (group != null)
+            {
+                SelectedThumbs.Clear();
+                SelectedThumbs.Add(group);
+                ActiveThumb = group;
+            }
+        }
+        /// <summary>
+        /// グループ化
+        /// </summary>
+        /// <param name="thumbs">グループ化する要素群</param>
+        /// <param name="destGroup">新グループの追加先</param>
+        private TTGroup? MakeAndAddGroup(IEnumerable<TThumb> thumbs, TTGroup destGroup)
+        {
+            if (CheckAddGroup(thumbs, destGroup) == false) { return null; }
+            var (x, y, w, h) = GetRect(thumbs);
+            TTGroup group = new() { Name = "new_group", TTLeft = x, TTTop = y };
+            //各要素のドラッグイベントを外す、新グループに追加
+            foreach (var item in thumbs)
+            {
+                destGroup.Thumbs.Remove(item);
+                item.DragDelta -= Thumb_DragDelta;
+                item.DragCompleted -= Thumb_DragCompleted;
+
+                group.Thumbs.Add(item);
+                item.TTLeft -= x;
+                item.TTTop -= y;
+            }
+            AddThumb(group, destGroup);
+
+            group.Arrange(new(0, 0, w, h));//再配置？このタイミングで必須、Actualサイズに値が入る
+            group.TTGroupUpdateLayout();//必須、サイズと位置の更新
+
+            return group;
+        }
+        private static bool CheckAddGroup(IEnumerable<TThumb> thumbs, TTGroup destGroup)
+        {
+            if (thumbs.Count() < 2) { return false; }
+            if (thumbs.Count() == destGroup.Thumbs.Count) { return false; }
+            foreach (TThumb thumb in thumbs)
+            {
+                if (destGroup.Thumbs.Contains(thumb) == false) { return false; }
+            }
+            return true;
+        }
+        #endregion グループ化
+        #region グループ解除
+        /// <summary>
+        /// ActiveThumbのグループ解除
+        /// </summary>
+        public void UnGroup()
+        {
+            if (ActiveThumb is TTGroup group)
+            {
+                UnGroup(group, ActiveGroup);
+                SelectedThumbs.Clear();
+                ActiveThumb = GetActiveThumb(ClickedThumb);
+            }
+        }
+        /// <summary>
+        /// 指定グループのグループ解除
+        /// </summary>
+        /// <param name="group">解除するグループを指定</param>
+        /// <param name="destGroup">指定グループの親Group</param>
+        public void UnGroup(TTGroup group, TTGroup destGroup)
+        {
+            //解除対象のグループの要素群に対して
+            //ドラッグイベント解除＋解除対象から削除してから
+            //その親Groupに追加＋ドラッグイベント追加
+            //位置修正
+            foreach (var item in group.Thumbs.ToArray())
+            {
+                group.Thumbs.Remove(item);
+                item.DragDelta -= Thumb_DragDelta;
+                item.DragCompleted -= Thumb_DragCompleted;
+
+                destGroup.Thumbs.Add(item);
+                item.DragDelta += Thumb_DragDelta;
+                item.DragCompleted += Thumb_DragCompleted;
+                item.TTLeft += group.TTLeft;
+                item.TTTop += group.TTTop;
+            }
+            //抜け殻になった元のグループ要素削除
+            destGroup.Thumbs.Remove(group);
+            group.DragCompleted -= Thumb_DragCompleted;//いる？
+            group.DragDelta -= Thumb_DragDelta;
+        }
+        #endregion グループ解除
+
+        #region InOut、ActiveThumbの切り替え
+        //ActiveThumbを内側(ActiveThumbの親)へ切り替える
+        public void ActiveGroupInside()
+        {
+            if (ActiveThumb is TTGroup group)
+            {
+                ActiveGroup = group;
+                ActiveThumb = GetActiveThumb(ClickedThumb);
+                SelectedThumbs.Clear();
+            }
+        }
+
+        //ActiveThumbを外側(親)へ切り替える
+        public void ActiveGroupOutside()
+        {
+            if (ActiveGroup.TTParent is TTGroup parent)
+            {
+                ActiveGroup = parent;
+                ActiveThumb = GetActiveThumb(ClickedThumb);
+                SelectedThumbs.Clear();
+            }
+        }
+        #endregion InOut、ActiveThumbの切り替え
+
+        #region ZIndex
+        //ZIndexが同じ場合はThumbsIndexが前後関係になるのを利用して
+        //Thumbs要素の入れ替えによって前面、背面移動させる
+        #region 背面に移動
+
+
+        /// <summary>
+        /// 選択Thumbを最背面へ移動
+        /// </summary>
+        /// <returns></returns>
+        public bool ZDownBackMost()
+        {
+            return ZDownBackMost(SelectedThumbs, ActiveGroup);
+        }
+        /// <summary>
+        /// 指定Thumbを最背面へ移動
+        /// </summary>
+        /// <param name="thumbs">移動させるThumb群</param>
+        /// <param name="group">Thumb群の親Group</param>
+        /// <returns></returns>
+        public bool ZDownBackMost(IEnumerable<TThumb> thumbs, TTGroup group)
+        {
+            if (IsAllContains(thumbs, group) == false) { return false; }
+            //下側にある要素から処理したいので、並べ替えたListを作成
+            List<TThumb> tempList = MakeSortedList(thumbs, group);
+            //削除してから先頭から挿入
+            for (int i = 0; i < tempList.Count; i++)
+            {
+                if (group.Thumbs.Remove(tempList[i]))
+                {
+                    group.Thumbs.Insert(i, tempList[i]);
+                }
+                else { return false; }
+            }
+            return true;
+        }
+        /// <summary>
+        /// 選択Thumbを背面へ移動
+        /// </summary>
+        /// <returns></returns>
+        public bool ZDown()
+        {
+            return ZDown(SelectedThumbs, ActiveGroup);
+        }
+        /// <summary>
+        /// 指定Thumbを背面へ移動
+        /// </summary>
+        /// <param name="thumbs"></param>
+        /// <param name="group"></param>
+        /// <returns></returns>
+        public bool ZDown(IEnumerable<TThumb> thumbs, TTGroup group)
+        {
+            if (IsAllContains(thumbs, group) == false) { return false; }
+            //順番を揃えたリスト作成
+            List<TThumb> tempList = MakeSortedList(thumbs, group);
+
+            //一番下の要素がもともと一番下だった場合は処理しない
+            if (group.Thumbs[0] == tempList[0]) { return false; }
+
+            //順番に処理、削除してから挿入、挿入箇所は元のインデックス-1
+            foreach (var item in tempList)
+            {
+                int ii = group.Thumbs.IndexOf(item);
+                ii--;
+                if (group.Thumbs.Remove(item))
+                {
+                    group.Thumbs.Insert(ii, item);
+                }
+                else
+                {
+                    return false;
+                    throw new ArgumentException("対象要素が親要素から見つからなかった");
+                }
+            }
+
+            return true;
+        }
+        #endregion 背面に移動
+
+        #region 前面に移動
+
+        /// <summary>
+        /// 指定Thumbを最前面へ移動
+        /// </summary>
+        /// <param name="thumbs">移動させるThumb群</param>
+        /// <param name="group">親Group</param>
+        /// <returns></returns>
+        public bool ZUpFrontMost(IEnumerable<TThumb> thumbs, TTGroup group)
+        {
+            //要素すべてがGroupのChildrenに存在するか判定、存在しない要素があれば処理しない            
+            if (IsAllContains(thumbs, group) == false) { return false; }
+
+            //下側にある要素から処理したいので、並べ替えたListを作成
+            List<TThumb> tempList = MakeSortedList(thumbs, group);
+            //削除してから追加(末尾に追加)
+            foreach (var item in tempList)
+            {
+                if (group.Thumbs.Remove(item))
+                {
+                    group.Thumbs.Add(item);
+                }
+                else { return false; }
+            }
+            return true;
+        }
+        /// <summary>
+        /// 選択Thumbを最前面へ移動
+        /// </summary>
+        /// <returns></returns>
+        public bool ZUpFrontMost()
+        {
+            return ZUpFrontMost(SelectedThumbs, ActiveGroup);
+        }
+
+        /// <summary>
+        /// 指定Thumbを前面へ移動
+        /// </summary>
+        /// <param name="thumbs"></param>
+        /// <param name="group"></param>
+        /// <returns></returns>
+        public bool ZUp(IEnumerable<TThumb> thumbs, TTGroup group)
+        {
+            if (IsAllContains(thumbs, group) == false) { return false; }
+            //順番を揃えてから削除して追加
+            List<TThumb> tempList = MakeSortedList(thumbs, group);
+
+            //一番上の要素がもともと一番上だった場合は処理しない
+            if (group.Thumbs[^1] == tempList[^1])
+            {
+                return false;
+            }
+            for (int i = tempList.Count - 1; i >= 0; i--)
+            {
+                int ii = group.Thumbs.IndexOf(tempList[i]);
+                ii++;
+                if (group.Thumbs.Remove(tempList[i]))
+                {
+                    group.Thumbs.Insert(ii, tempList[i]);
+                }
+                else { return false; }
+            }
+            return true;
+
+        }
+        /// <summary>
+        /// 選択Thumbを前面へ移動
+        /// </summary>
+        /// <returns></returns>
+        public bool ZUp()
+        {
+            return ZUp(SelectedThumbs, ActiveGroup);
+        }
+        #endregion 前面に移動
+
+
+        //backmost 最背面 back to back最背面にする
+        //frontmsot 一番前
+        //front 最前面
+        //put one back  一つ後ろにする
+        #endregion ZIndex
+
 
     }
 
