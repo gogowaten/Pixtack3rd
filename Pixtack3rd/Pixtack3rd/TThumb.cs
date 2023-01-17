@@ -20,7 +20,7 @@ using System.Collections.Specialized;
 
 namespace Pixtack3rd
 {
-    [DebuggerDisplay(nameof(Type))]
+    [DebuggerDisplay("Type = {" + nameof(Type) + "}")]
     public abstract class TThumb : Thumb
     {
         //依存プロパティは主にデザイナー画面で、要素を追加して表示の確認する用
@@ -87,8 +87,10 @@ namespace Pixtack3rd
                 throw new ArgumentNullException(nameof(data));
             }
             Type = data.Type;
-            SetBinding(Canvas.LeftProperty, nameof(data.X));
-            SetBinding(Canvas.TopProperty, nameof(data.Y));
+            //SetBinding(Canvas.LeftProperty, nameof(data.X));
+            //SetBinding(Canvas.TopProperty, nameof(data.Y));
+            SetBinding(Canvas.LeftProperty, new Binding(nameof(data.X)) { Source = data });
+            SetBinding(Canvas.TopProperty, new Binding(nameof(data.Y)) { Source = data });
         }
 
     }
@@ -116,7 +118,7 @@ namespace Pixtack3rd
             MyTemplateElement.SetBinding(ItemsControl.ItemsSourceProperty, new Binding(nameof(Thumbs)) { Source = this });
         }
 
-        private void Thumbs_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void Thumbs_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -833,10 +835,26 @@ namespace Pixtack3rd
 
         #endregion 依存プロパティ
 
-        public DataTextBlock Data { get; set; }
+        public DataTextBlock Data { get; set; } = new();
         private readonly TextBlock MyTemplateElement;
 
-        public TTTextBlock() : this(new DataTextBlock()) { }
+        //public TTTextBlock() : this(new DataTextBlock()) { }
+        public TTTextBlock()
+        {
+            //Data = new DataTextBlock();
+            this.DataContext = Data;
+            if (MakeTemplate<TextBlock>() is TextBlock element)
+            {
+                MyTemplateElement = element;
+            }
+            else { throw new ArgumentException("テンプレート作成できんかった"); }
+
+            SetBinding(TTTextProperty, nameof(Data.Text));
+            MyTemplateElement.SetBinding(TextBlock.TextProperty, nameof(Data.Text));
+            //MySetXYBinging(this.Data);
+            //SetBinding(Canvas.LeftProperty, nameof(Data.X));
+            //SetBinding(Canvas.TopProperty,nameof(Data.Y));
+        }
         public TTTextBlock(DataTextBlock data)
         {
             Data = data;

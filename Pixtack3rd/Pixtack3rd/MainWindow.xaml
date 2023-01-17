@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Pixtack3rd"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="600">
   <Grid Name="MyGrid">
     <Grid.ColumnDefinitions>
       <ColumnDefinition/>
@@ -14,14 +14,20 @@
     
     <ScrollViewer>
       <!--<local:TTTextBlock TTText="222"/>-->
-      <local:TTRoot x:Name="MyRoot">
+      <local:TTRoot x:Name="MyRoot" HorizontalAlignment="Left" VerticalAlignment="Top">
         <local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
         
         <local:TTImage x:Name="MyImage" TTLeft="20" TTTop="20"
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection2.png"/>
         
-
       </local:TTRoot>
     </ScrollViewer>
+    
+    <StackPanel Grid.Column="1" DataContext="{Binding ElementName=MyRoot}">
+      <StackPanel DataContext="{Binding ActiveThumb}">
+      <TextBlock Text="{Binding data}"  
+      </StackPanel>
+      
+    </StackPanel>
   </Grid>
 </Window>
