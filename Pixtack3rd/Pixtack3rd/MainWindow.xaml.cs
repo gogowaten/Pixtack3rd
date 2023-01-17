@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using ControlLibraryCore20200620;
 
 namespace Pixtack3rd
 {
@@ -24,8 +25,12 @@ namespace Pixtack3rd
         public MainWindow()
         {
             InitializeComponent();
-            string imagePath = "D:\\ブログ用\\テスト用画像\\collection5.png";
-            string imagePath1 = "D:\\ブログ用\\テスト用画像\\collection4.png";
+            DragEnter += MainWindow_DragEnter;
+            DragOver += MainWindow_DragOver;
+            Drop += MainWindow_Drop;
+
+            //string imagePath = "D:\\ブログ用\\テスト用画像\\collection5.png";
+            //string imagePath1 = "D:\\ブログ用\\テスト用画像\\collection4.png";
 
             var neko = MyRoot.Name;
             //DataImage dataImg1 = new() { Source = GetBitmap(imagePath) };
@@ -41,6 +46,39 @@ namespace Pixtack3rd
 
             ////MyImage.Data.Source = GetBitmap("D:\\ブログ用\\テスト用画像\\collection1.png");
         }
+
+        private void MainWindow_Drop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                //var fileList3 = ((string[])e.Data.GetData(DataFormats.FileDrop)).OrderBy(x => x);
+                var fileList2 = ((string[])e.Data.GetData(DataFormats.FileDrop)).ToArray();
+                Array.Sort(fileList2);
+
+
+
+
+            }
+        }
+
+        private void MainWindow_DragOver(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop, false))
+            {
+                e.Effects = DragDropEffects.All;
+
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
+            }
+        }
+
+        private void MainWindow_DragEnter(object sender, DragEventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
         private static BitmapImage GetBitmap(string filePath)
         {
             BitmapImage bmp = new();
@@ -49,6 +87,17 @@ namespace Pixtack3rd
             bmp.StreamSource = stream;
             bmp.EndInit();
             return bmp;
+        }
+        protected override void OnPreviewDrop(DragEventArgs e)
+        {
+            base.OnPreviewDrop(e);
+
+        }
+        protected override void OnDrop(DragEventArgs e)
+        {
+
+            base.OnDrop(e);
+
         }
     }
 }
