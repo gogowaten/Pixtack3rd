@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:Pixtack3rd"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="600">
+  
   <Grid Name="MyGrid">
     <Grid.ColumnDefinitions>
       <ColumnDefinition/>
@@ -25,7 +26,7 @@
     
     <StackPanel Grid.Column="1" DataContext="{Binding ElementName=MyRoot}">
       <StackPanel DataContext="{Binding ActiveThumb}">
-      <TextBlock Text="{Binding data}"  
+        <TextBlock Text="{Binding Data}"/>
       </StackPanel>
       
     </StackPanel>

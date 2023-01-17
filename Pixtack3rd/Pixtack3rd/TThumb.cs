@@ -54,6 +54,8 @@ namespace Pixtack3rd
         protected readonly string TEMPLATE_NAME = "NEMO";
         public TTGroup? TTParent { get; set; } = null;//親Group
         public TType Type { get; set; }
+        public Data Data { get; set; }
+
         public TThumb()
         {
             SetBinding(Canvas.LeftProperty, new Binding()
@@ -921,5 +923,7 @@ namespace Pixtack3rd
         }
 
     }
+
+
 
 }
