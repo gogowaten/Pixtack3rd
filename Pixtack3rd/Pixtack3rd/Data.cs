@@ -24,14 +24,31 @@ namespace Pixtack3rd
             field = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
+
+        public ObservableCollection<Data>? Datas { get; set; }
+
+        private int _xShift;
+        public int XShift { get => _xShift; set => SetProperty(ref _xShift, value); }
+
+        private int _yShift;
+        public int YShift { get => _yShift; set => SetProperty(ref _yShift, value); }
+
+        private int _grid;
+        public int Grid { get => _grid; set => SetProperty(ref _grid, value); }
+
+
+
+
         public TType Type { get; protected set; }
         public ExtensionDataObject? ExtensionData { get; set; }
-        private double _x;
+
+
+
+        private double _x=0.0;
         public double X { get => _x; set => SetProperty(ref _x, value); }
 
         private double _y;
         public double Y { get => _y; set => SetProperty(ref _y, value); }
-        public ObservableCollection<Data>? Datas { get; set; }
 
         private string? _text;
         public string? Text { get => _text; set => SetProperty(ref _text, value); }

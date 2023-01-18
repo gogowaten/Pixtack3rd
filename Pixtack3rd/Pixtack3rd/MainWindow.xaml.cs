@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -23,15 +25,31 @@ namespace Pixtack3rd
     /// </summary>
     public partial class MainWindow : Window
     {
-        public SettingData SettingData { get; set; }
+        private AppConfig MyAppConfig;
+        //アプリ情報
+        private const string APP_NAME = "Pixtack3rd";
+        private string AppVersion;
+        //datetime.tostringの書式、これを既定値にする
+        private const string DATE_TIME_STRING_FORMAT = "yyyyMMdd'_'HHmmss'_'fff";
+
         public MainWindow()
         {
             InitializeComponent();
-            SettingData = new();
-            MyGroup1.DataContext = SettingData;
-            SettingData.XShift = 32;
-            SettingData.YShift = 32;
-            SettingData.Grid = 8;
+
+            MyAppConfig = new AppConfig();
+            DataContext = MyAppConfig;
+            //実行ファイルのバージョン取得
+            var cl = Environment.GetCommandLineArgs();
+
+            if (System.Diagnostics.FileVersionInfo.GetVersionInfo(cl[0]).FileVersion is string ver)
+            {
+                AppVersion = ver;
+            }
+            else { AppVersion = "不明バージョン"; }
+            //タイトルをアプリの名前 + バージョン
+            this.Title = APP_NAME + AppVersion;
+            MyInisializeComboBox();
+
 
             DragEnter += MainWindow_DragEnter;
             DragOver += MainWindow_DragOver;
@@ -54,7 +72,503 @@ namespace Pixtack3rd
 
             ////MyImage.Data.Source = GetBitmap("D:\\ブログ用\\テスト用画像\\collection1.png");
         }
+        #region 初期設定
+        private void MyInisializeComboBox()
+        {
+            ComboBoxSaveFileType.ItemsSource = Enum.GetValues(typeof(ImageType));
 
+            //List<double> vs = new() { 0, 1.5, 2.5, 3.5, 5 };
+            //MyComboBoxFileNameDateOrder.ItemsSource = vs;
+            //MyComboBoxFileNameSerialOrder.ItemsSource = vs;
+
+            //MyComboBoxCaputureRect.ItemsSource = new Dictionary<CaptureRectType, string>
+            //{
+            //    { CaptureRectType.Screen, "画面全体" },
+            //    { CaptureRectType.Window, "ウィンドウ" },
+            //    { CaptureRectType.WindowClient, "ウィンドウのクライアント領域" },
+            //    { CaptureRectType.UnderCursor, "カーソル下のコントロール" },
+            //    { CaptureRectType.UnderCursorClient, "カーソル下コントロールのクライアント領域" },
+            //    { CaptureRectType.WindowWithMenu, "ウィンドウ + メニューウィンドウ" },
+            //    { CaptureRectType.WindowWithRelatedWindow, "ウィンドウ + 関連ウィンドウ" },
+            //    { CaptureRectType.WindowWithRelatedWindowPlus, "ウィンドウ + より多くの関連ウィンドウ" },
+            //};
+
+
+            //MyComboBoxHotKey.ItemsSource = Enum.GetValues(typeof(Key));
+
+
+            //MyComboBoxSoundType.ItemsSource = new Dictionary<MySoundPlay, string> {
+            //    { MySoundPlay.None, "無音"},
+            //    { MySoundPlay.PlayDefault, "既定の音" },
+            //    { MySoundPlay.PlayOrder, "指定した音" }
+            //};
+
+            //MyComboBoxSaveBehavior.ItemsSource = new Dictionary<SaveBehaviorType, string> {
+            //    { SaveBehaviorType.Save, "画像ファイルとして保存する" },
+            //    { SaveBehaviorType.Copy, "クリップボードにコピーする (保存はしない)" },
+            //    { SaveBehaviorType.SaveAndCopy, "保存 + コピー" },
+            //    { SaveBehaviorType.SaveAtClipboardChange, "クリップボード監視、更新されたら保存" },
+            //    { SaveBehaviorType.AddPreviewWindowFromClopboard, "クリップボード監視、更新されたらプレビューウィンドウに追加 (保存はしない)" }
+            //};
+        }
+        #endregion 初期設定
+
+        #region その他関数
+
+        /// <summary>
+        /// ファイル名に使える文字列ならtrueを返す
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        private bool CheckFileNameValidated(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return false;
+            char[] invalid = System.IO.Path.GetInvalidFileNameChars();
+            return name.IndexOfAny(invalid) < 0;
+        }
+
+        /// <summary>
+        /// 保存ディレクトリ取得、未指定ならマイドキュメントにする。存在しない場合はstring.Emptyを返す
+        /// </summary>
+        /// <returns></returns>
+        private string GetSaveDirectory(string directory)
+        {
+            if (string.IsNullOrWhiteSpace(directory))
+            {
+                directory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            }
+            if (Directory.Exists(directory) == false)
+            {
+                MessageBox.Show($"指定されている保存場所は存在しないので保存できない", "注意");
+                return string.Empty;
+            }
+            return directory;
+        }
+
+
+        #endregion その他関数
+
+        #region 画像保存
+
+
+        private bool SaveBitmap(BitmapSource bitmap, string fullPath)
+        {
+            bool isSavedDone = false;
+            bool isSuccess = false;
+            //ファイルに保存
+            {
+                bool result = SaveBitmapSub(bitmap, fullPath);
+
+                isSavedDone = result;
+                isSuccess = result;
+            }
+
+            //クリップボードにコピー、BMPとPNG形式の両方をセットする
+            //BMPはアルファ値が255になる、PNGはアルファ値保持するけどそれが活かせるかは貼り付けるアプリに依る
+            if (MyAppConfig.SaveBehaviorType is SaveBehaviorType.Copy or
+                SaveBehaviorType.SaveAndCopy)
+            {
+                try
+                {
+                    //BMP
+                    DataObject data = new();
+                    data.SetData(typeof(BitmapSource), bitmap);
+                    //PNG
+                    PngBitmapEncoder enc = new();
+                    enc.Frames.Add(BitmapFrame.Create(bitmap));
+                    using var ms = new System.IO.MemoryStream();
+                    enc.Save(ms);
+                    data.SetData("PNG", ms);
+
+                    Clipboard.SetDataObject(data, true);//true必須
+                    isSuccess = true;
+
+                    ////コピーだけのときは連番に加算
+                    //if (MyAppConfig.SaveBehaviorType == SaveBehaviorType.Copy &&
+                    //    MyAppConfig.IsFileNameSerial)
+                    //{
+                    //    AddIncrementToSerial();
+                    //}
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"クリップボードにコピーできなかった\n" +
+                        $"理由は不明、まれに起こる\n\n" +
+                        $"エラーメッセージ\n" +
+                        $"{ex.Message}", "エラー発生");
+                }
+            }
+
+
+            //プレビューウィンドウに表示
+            //DisplayPreviewWindow(bitmap, fullPath, isSavedDone);
+
+            return isSuccess;
+        }
+
+
+        ///// <summary>
+        ///// プレビューウィンドウに表示
+        ///// </summary>
+        ///// <param name="bitmap"></param>
+        ///// <param name="fullPath"></param>
+        ///// <param name="isSavedDone">保存済みならtrue</param>
+        //private bool DisplayPreviewWindow(BitmapSource bitmap, string fullPath, bool isSavedDone)
+        //{
+        //    if (MyPreviweWindow != null && bitmap != null)
+        //    {
+        //        MyPreviewItems.Add(new PreviewItem(
+        //            System.IO.Path.GetFileNameWithoutExtension(fullPath), bitmap, fullPath, isSavedDone));
+        //        ListBox lb = MyPreviweWindow.MyListBox;
+        //        lb.SelectedIndex = MyPreviewItems.Count - 1;
+        //        lb.ScrollIntoView(lb.SelectedItem);
+        //        if (isSavedDone == false)
+        //        {
+        //            AddIncrementToSerial();
+        //        }
+        //        return true;
+        //    }
+        //    return false;
+        //}
+
+        /// <summary>
+        /// 複数Rect範囲を組み合わせた形にbitmapを切り抜く
+        /// </summary>
+        /// <param name="source">元の画像</param>
+        /// <param name="rectList">Rectのコレクション</param>
+        /// <returns></returns>
+        private BitmapSource CroppedBitmapFromRects(BitmapSource source, List<Rect> rectList)
+        {
+            List<Int32Rect> re = new();
+            foreach (var item in rectList)
+            {
+                re.Add(new Int32Rect((int)item.X, (int)item.Y, (int)item.Width, (int)item.Height));
+            }
+
+            return CroppedBitmapFromRects(source, re);
+        }
+        private BitmapSource CroppedBitmapFromRects(BitmapSource source, List<Int32Rect> rectList)
+        {
+            var dv = new DrawingVisual();
+
+            using (DrawingContext dc = dv.RenderOpen())
+            {
+                //それぞれのRect範囲で切り抜いた画像を描画していく
+                foreach (var rect in rectList)
+                {
+                    dc.DrawImage(new CroppedBitmap(source, rect), new Rect(rect.X, rect.Y, rect.Width, rect.Height));
+                }
+            }
+
+            //描画位置調整
+            dv.Offset = new Vector(-dv.ContentBounds.X, -dv.ContentBounds.Y);
+
+            //bitmap作成、縦横サイズは切り抜き後の画像全体がピッタリ収まるサイズにする
+            //PixelFormatsはPbgra32で決め打ち、これ以外だとエラーになるかも、
+            //画像を読み込んだbitmapImageのPixelFormats.Bgr32では、なぜかエラーになった
+            var bmp = new RenderTargetBitmap(
+                (int)Math.Ceiling(dv.ContentBounds.Width),
+                (int)Math.Ceiling(dv.ContentBounds.Height),
+                96, 96, PixelFormats.Pbgra32);
+
+            bmp.Render(dv);
+            //bmp.Freeze();
+            return bmp;
+        }
+
+        //RectからInt32Rect作成、小数点以下切り捨て編
+        //Rectの数値は整数のはずだから、これでいいはず
+        private Int32Rect RectToIntRectWith切り捨て(Rect re)
+        {
+            return new Int32Rect((int)re.X, (int)re.Y, (int)re.Width, (int)re.Height);
+        }
+
+        ////画像にマウスカーソルを描画してからCropp
+        //private BitmapSource MakeBitmapForSave(BitmapSource source, List<Rect> reList)
+        //{
+        //    BitmapSource bitmap;
+        //    if (MyAppConfig.IsDrawCursor == true)
+        //    {
+        //        bitmap = DrawCursor(source);
+        //    }
+        //    else { bitmap = source; }
+
+        //    return CroppedBitmapFromRects(bitmap, reList);
+        //}
+        //private BitmapSource MakeBitmapForSave(BitmapSource source, List<Int32Rect> reList)
+        //{
+        //    List<Rect> re = new();
+        //    try
+        //    {
+        //        foreach (var item in reList)
+        //        {
+        //            re.Add(new Rect(item.X, item.Y, item.Width, item.Height));
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show($"{ex}");
+        //    }
+        //    return MakeBitmapForSave(source, re);
+        //}
+
+        //private BitmapSource DrawCursor(BitmapSource source)
+        //{
+        //    BitmapSource bitmap;
+        //    if (IsMaskUse)
+        //    {
+        //        bitmap = DrawCursorOnBitmapWithMask(source);
+        //    }
+        //    else
+        //    {
+        //        bitmap = DrawCursorOnBitmap(source);
+        //    }
+        //    return bitmap;
+        //}
+
+        internal bool SaveBitmapSub(BitmapSource bitmap, string fullPath)
+        {
+            //CroppedBitmapで切り抜いた画像でBitmapFrame作成して保存
+            BitmapEncoder encoder = GetEncoder();
+            //メタデータ作成、アプリ名記入
+            //BitmapMetadata meta = MakeMetadata();
+            if (MakeMetadata() is BitmapMetadata meta)
+            {
+                encoder.Frames.Add(BitmapFrame.Create(bitmap, null, meta, null));
+                //重複回避ファイルパス取得
+                fullPath = MakeFilePathAvoidDuplicate(fullPath);
+                try
+                {
+                    using FileStream fs = new(fullPath, FileMode.Create, FileAccess.Write);
+                    encoder.Save(fs);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"保存できなかった\n{ex}", "保存できなかった");
+                    return false;
+                }
+            }
+            else { return false; }
+
+
+        }
+
+
+        ///// <summary>
+        ///// 保存ファイルのフルパスを取得、無効なパスの場合はstring.Emptyを返す
+        ///// ファイル名の重複を回避、拡張子の前に"_"を付け足す
+        ///// </summary>
+        ///// <returns></returns>
+        //private string GetSaveFileFullPath()
+        //{
+        //    //ファイル名取得、無効なファイル名なら中止
+        //    string fileName = MakeFileName();
+        //    if (CheckFileNameValidated(fileName) == false)
+        //    {
+        //        return string.Empty;
+        //    }
+
+        //    //保存ディレクトリ取得、存在しない場合は中止
+        //    string directory = GetSaveDirectory("E:\\Pixtack3rdTest");
+        //    if (directory == string.Empty)
+        //    {
+        //        return string.Empty;
+        //    }
+
+        //    string dir = System.IO.Path.Combine(directory, fileName);
+        //    string extension = "." + MyAppConfig.ImageType.ToString();
+        //    string fullPaht = dir + extension;
+        //    //重複回避パス取得
+        //    return MakeFilePathAvoidDuplicate(fullPaht);
+        //}
+
+        /// <summary>
+        /// 重複回避ファイルパス作成、重複しなくなるまでファイル名末尾に_を追加して返す
+        /// </summary>
+        /// <returns></returns>
+        private string MakeFilePathAvoidDuplicate(string fullPath)
+        {
+            string extension = System.IO.Path.GetExtension(fullPath);
+            string name = System.IO.Path.GetFileNameWithoutExtension(fullPath);
+            string? directory = System.IO.Path.GetDirectoryName(fullPath);
+            if (directory != null)
+            {
+                while (File.Exists(fullPath))
+                {
+                    name += "_";
+                    fullPath = System.IO.Path.Combine(directory, name) + extension;
+                }
+                return fullPath;
+            }
+            else return string.Empty;
+        }
+
+        //メタデータ作成
+        private BitmapMetadata? MakeMetadata()
+        {
+            BitmapMetadata? data = null;
+            string software = APP_NAME + "_" + AppVersion;
+            switch (ComboBoxSaveFileType.SelectedValue)
+            {
+                case ImageType.png:
+                    data = new BitmapMetadata("png");
+                    data.SetQuery("/tEXt/Software", software);
+                    break;
+                case ImageType.jpg:
+                    data = new BitmapMetadata("jpg");
+                    data.SetQuery("/app1/ifd/{ushort=305}", software);
+                    break;
+                case ImageType.bmp:
+
+                    break;
+                case ImageType.gif:
+                    data = new BitmapMetadata("Gif");
+                    //data.SetQuery("/xmp/xmp:CreatorTool", "Pixtrim2");
+                    //data.SetQuery("/XMP/XMP:CreatorTool", "Pixtrim2");
+                    data.SetQuery("/XMP/XMP:CreatorTool", software);
+                    break;
+                case ImageType.tiff:
+                    data = new BitmapMetadata("tiff")
+                    {
+                        ApplicationName = software
+                    };
+                    break;
+                default:
+                    break;
+            }
+
+            return data;
+        }
+
+        //画像ファイル形式によるEncoder取得
+        private BitmapEncoder GetEncoder()
+        {
+            var type = MyAppConfig.ImageType;
+
+            switch (type)
+            {
+                case ImageType.png:
+                    return new PngBitmapEncoder();
+                case ImageType.jpg:
+                    var jpeg = new JpegBitmapEncoder
+                    {
+                        QualityLevel = MyAppConfig.JpegQuality
+                    };
+                    return jpeg;
+                case ImageType.bmp:
+                    return new BmpBitmapEncoder();
+                case ImageType.gif:
+                    return new GifBitmapEncoder();
+                case ImageType.tiff:
+                    return new TiffBitmapEncoder();
+                default:
+                    throw new Exception();
+            }
+        }
+
+        //今の日時をStringで作成
+        private string MakeStringNowTime()
+        {
+            DateTime dt = DateTime.Now;
+            //string str = dt.ToString("yyyyMMdd");            
+            //string str = dt.ToString("yyyyMMdd" + "_" + "HHmmssfff");
+            string str = dt.ToString(DATE_TIME_STRING_FORMAT);
+            //string str = dt.ToString("yyyyMMdd" + "_" + "HH" + "_" + "mm" + "_" + "ss" + "_" + "fff");
+            return str;
+        }
+
+
+        //private string MakeFileName()
+        //{
+        //    double count = 0.0;
+        //    string fileName = "";
+        //    DateTime dateTime = DateTime.Now;
+        //    bool isOverDate = false, isOverSerial = false;
+        //    if (MyAppConfig.IsFileNameDate == false && MyAppConfig.IsFileNameSerial == false)
+        //    {
+        //        MyCheckBoxFileNameData.IsChecked = true;
+        //    }
+        //    if (MyAppConfig.IsFileNameDate == false) isOverDate = true;
+        //    if (MyAppConfig.IsFileNameSerial == false) isOverSerial = true;
+        //    MyOrder();
+
+        //    if (MyAppConfig.IsFileNameText1) MyAddText(MyComboBoxFileNameText1);
+        //    count += 1.5; MyOrder();
+
+        //    if (MyAppConfig.IsFileNameText2) MyAddText(MyComboBoxFileNameText2);
+        //    count++; MyOrder();
+
+        //    if (MyAppConfig.IsFileNameText3) MyAddText(MyComboBoxFileNameText3);
+        //    count++; MyOrder();
+
+        //    if (MyAppConfig.IsFileNameText4) MyAddText(MyComboBoxFileNameText4);
+        //    count += 1.5; MyOrder();
+
+        //    if (string.IsNullOrWhiteSpace(fileName)) fileName = MakeStringNowTime();
+        //    fileName = fileName.TrimStart();
+        //    fileName = fileName.TrimEnd();
+        //    return fileName;
+
+
+        //    void MyOrder()
+        //    {
+        //        //日時
+        //        if (isOverDate == false && MyAppConfig.FileNameDateOrder == count)
+        //        {
+        //            var format = MyComboBoxFileNameDateFormat.Text;
+        //            if (string.IsNullOrEmpty(format))
+        //            {
+        //                fileName += MakeStringNowTime();
+        //            }
+        //            else
+        //            {
+        //                try
+        //                {
+        //                    fileName += dateTime.ToString(MyComboBoxFileNameDateFormat.Text);
+        //                    isOverDate = true;
+        //                }
+        //                catch (Exception)
+        //                {
+
+        //                }
+
+        //            }
+        //        }
+
+        //        //連番
+        //        if (isOverSerial == false && MyAppConfig.FileNameSerialOrder == count)
+        //        {
+        //            //fileName += MyNumericUpDownFileNameSerial.MyValue.ToString(MySerialFormat());
+        //            fileName += MyAppConfig.FileNameSerial.ToString(MySerialFormat());
+
+        //            isOverSerial = true;
+        //        }
+        //    }
+
+        //    string MyAddText(ComboBox comboBox)
+        //    {
+        //        return fileName += comboBox.Text;
+        //    }
+        //    string MySerialFormat()
+        //    {
+        //        string str = "";
+        //        for (int i = 0; i < MyAppConfig.FileNameSerialDigit; i++)
+        //        {
+        //            str += "0";
+        //        }
+        //        return str;
+        //    }
+
+        //}
+
+        //連番に増加値を加算
+        //private void AddIncrementToSerial()
+        //{
+        //    MyNumericUpDownFileNameSerial.MyValue += MyNumericUpDownFileNameSerialIncreace.MyValue;
+        //}
+
+        #endregion 画像保存
         private void MainWindow_Drop(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -63,19 +577,25 @@ namespace Pixtack3rd
                 var fileList2 = ((string[])e.Data.GetData(DataFormats.FileDrop)).ToArray();
                 Array.Sort(fileList2);
 
+                double x = MyRoot.Data.XShift;
+                double y = MyRoot.Data.YShift;
+                if (MyRoot.ActiveThumb != null)
+                {
+                    x += MyRoot.ActiveThumb.Data.X;
+                    y += MyRoot.ActiveThumb.Data.Y;
+                }
                 foreach (var item in fileList2)
                 {
-                    double x = SettingData.XShift;
-                    double y = SettingData.YShift;
                     TTImage tTImage = new(new Data(TType.Image)
                     {
                         Source = new BitmapImage(new Uri(item)),
-                        X= x,
-                        Y= y
+                        X = x,
+                        Y = y
                     });
-                    MyRoot.AddItem(tTImage, tTImage.Data);
-                    x += SettingData.XShift;
-                    y += SettingData.YShift;
+                    MyRoot.AddThumb(tTImage);
+                    MyRoot.ActiveThumb = tTImage;
+                    x += MyRoot.Data.XShift;
+                    y += MyRoot.Data.YShift;
                 }
 
 
@@ -121,11 +641,120 @@ namespace Pixtack3rd
             base.OnDrop(e);
 
         }
+
+        private void ButtonSaveToImage_Click(object sender, RoutedEventArgs e)
+        {
+            BitmapSource? bmp = MyRoot.GetBitmap(MyRoot);
+            if (bmp != null)
+            {
+                string extension = "." + MyAppConfig.ImageType.ToString();
+                if (SaveBitmap(bmp, "E:\\pixtacktest"+extension) == false)
+                {
+                    MessageBox.Show("保存できなかった");
+                }
+            }
+            else
+            {
+                MessageBox.Show("保存できなかった");
+            }
+        }
     }
 
 
-    public class SettingData : INotifyPropertyChanged
+    /// <summary>
+    /// アプリの設定値用クラス
+    /// </summary>
+    [DataContract]
+    public class AppConfig : INotifyPropertyChanged
     {
+        //public event PropertyChangedEventHandler? PropertyChanged;
+        //private void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
+        //{
+        //    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        //}
+
+        [DataMember] public int JpegQuality { get; set; } = 96;//jpeg画質
+        [DataMember] public double Top { get; set; }//アプリ
+        [DataMember] public double Left { get; set; }//アプリ
+        //保存先リスト
+        [DataMember] public ObservableCollection<string> DirList { get; set; }
+        [DataMember] public string? Dir { get; set; }
+        [DataMember] public int DirIndex { get; set; }
+
+        //チェックボックス
+        [DataMember] public bool? IsDrawCursor { get; set; }//マウスカーソル描画の有無
+        //[DataMember] public bool IsOutputToClipboardOnly { get; set; }//出力はクリップボードだけ
+        //[DataMember] public bool IsClipboardCaputure { get; set; }//クリップボード監視
+
+
+        //ホットキー
+        [DataMember] public bool HotkeyAlt { get; set; }
+        [DataMember] public bool HotkeyCtrl { get; set; }
+        [DataMember] public bool HotkeyShift { get; set; }
+        [DataMember] public bool HotkeyWin { get; set; }
+        [DataMember] public Key HotKey { get; set; }//キャプチャーキー
+
+
+        //ファイルネーム        
+        //[DataMember] public FileNameBaseType FileNameBaseType { get; set; }
+        [DataMember] public bool IsFileNameDate { get; set; }
+        [DataMember] public double FileNameDateOrder { get; set; }
+        [DataMember] public string? FileNameDataFormat { get; set; }
+        [DataMember] public ObservableCollection<string> FileNameDateFormatList { get; set; } = new();
+
+        [DataMember] public bool IsFileNameSerial { get; set; }
+        [DataMember] public decimal FileNameSerial { get; set; }
+        [DataMember] public double FileNameSerialOrder { get; set; }
+        [DataMember] public decimal FileNameSerialDigit { get; set; }
+        [DataMember] public decimal FileNameSerialIncreace { get; set; }
+
+        [DataMember] public bool IsFileNameText1 { get; set; }
+        [DataMember] public string? FileNameText1 { get; set; }
+        [DataMember] public ObservableCollection<string> FileNameText1List { get; set; } = new();
+
+        [DataMember] public bool IsFileNameText2 { get; set; }
+        [DataMember] public string? FileNameText2 { get; set; }
+        [DataMember] public ObservableCollection<string> FileNameText2List { get; set; } = new();
+
+        [DataMember] public bool IsFileNameText3 { get; set; }
+        [DataMember] public string? FileNameText3 { get; set; }
+        [DataMember] public ObservableCollection<string> FileNameText3List { get; set; } = new();
+
+        [DataMember] public bool IsFileNameText4 { get; set; }
+        [DataMember] public string? FileNameText4 { get; set; }
+        [DataMember] public ObservableCollection<string> FileNameText4List { get; set; } = new();
+
+
+        //音
+        [DataMember] public bool IsSoundPlay { get; set; }
+        //[DataMember] public bool IsSoundDefault { get; set; }
+        [DataMember] public ObservableCollection<string> SoundFilePathList { get; set; } = new();
+        [DataMember] public string? SoundFilePath { get; set; }
+        [DataMember] public MySoundPlay MySoundPlay { get; set; }
+
+
+        //保存時の動作
+        [DataMember] public SaveBehaviorType SaveBehaviorType { get; set; }
+
+
+
+        private ImageType _ImageType = ImageType.png;//保存画像形式
+        [DataMember]
+        public ImageType ImageType
+        {
+            get => _ImageType;
+            set
+            {
+                _ImageType = value;
+                //if (_ImageType == value) return;
+                //_ImageType = value;
+                //RaisePropertyChanged();
+            }
+        }
+
+        private CaptureRectType _RectType;//切り出し範囲
+
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         protected void SetProperty<T>(ref T field, T value, [System.Runtime.CompilerServices.CallerMemberName] string? name = null)
         {
@@ -134,18 +763,96 @@ namespace Pixtack3rd
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
 
-        private int _xShift = 0;
-        public int XShift { get => _xShift; set => SetProperty(ref _xShift, value); }
+        [DataMember]
+        public CaptureRectType RectType
+        {
+            get => _RectType;
+            set
+            {
+                _RectType = value;
+                //if (_RectType == value) return;
+                //_RectType = value;
+                //RaisePropertyChanged();
+            }
+        }
 
-        private int _yShift = 0;
-        public int YShift { get => _yShift; set => SetProperty(ref _yShift, value); }
-
-        private int _grid = 0;
-        public int Grid { get => _grid; set => SetProperty(ref _grid, value); }
 
 
+
+        public AppConfig()
+        {
+            DirList = new ObservableCollection<string>();
+            JpegQuality = 94;
+            FileNameSerialIncreace = 1m;
+            FileNameSerialDigit = 4m;
+            HotKey = Key.PrintScreen;
+            IsDrawCursor = false;
+            IsFileNameDate = true;
+        }
+
+
+        //        c# - DataContract、デフォルトのDataMember値
+        //https://stackoverrun.com/ja/q/2220925
+
+        //初期値の設定
+        [OnDeserialized]
+        void OnDeserialized(System.Runtime.Serialization.StreamingContext c)
+        {
+            if (DirList == null) DirList = new();
+            if (FileNameDateFormatList == null) FileNameDateFormatList = new();
+            if (FileNameText1List == null) FileNameText1List = new();
+            if (FileNameText2List == null) FileNameText2List = new();
+            if (FileNameText3List == null) FileNameText3List = new();
+            if (FileNameText4List == null) FileNameText4List = new();
+            if (SoundFilePathList == null) SoundFilePathList = new();
+        }
+    }
+
+
+
+
+
+    #region 列挙型
+
+    public enum ImageType
+    {
+        png,
+        bmp,
+        jpg,
+        gif,
+        tiff,
 
     }
+    public enum CaptureRectType
+    {
+        Screen,
+        Window,
+        WindowClient,
+        UnderCursor,
+        UnderCursorClient,
+        WindowWithMenu,
+        WindowWithRelatedWindow,
+        WindowWithRelatedWindowPlus,
+
+    }
+
+    public enum MySoundPlay
+    {
+        None,
+        PlayDefault,
+        PlayOrder
+    }
+
+    public enum SaveBehaviorType
+    {
+        Save,
+        Copy,
+        SaveAndCopy,
+        SaveAtClipboardChange,
+        AddPreviewWindowFromClopboard
+    }
+    #endregion 列挙型
+
+
 }

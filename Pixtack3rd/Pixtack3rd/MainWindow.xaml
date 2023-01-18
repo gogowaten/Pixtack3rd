@@ -15,81 +15,84 @@
       <ColumnDefinition Width="200"/>
     </Grid.ColumnDefinitions>
 
-    <ScrollViewer>
+    <ScrollViewer x:Name="MyScrollViewer" HorizontalScrollBarVisibility="Auto">
       <!--<local:TTTextBlock TTText="222"/>-->
-      <local:TTRoot x:Name="MyRoot" HorizontalAlignment="Left" VerticalAlignment="Top">
-        <local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
+      <local:TTRoot x:Name="MyRoot" HorizontalAlignment="Left" VerticalAlignment="Top"
+                    TTXShift="32" TTYShift="32" TTGrid="8">
 
+        <local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
         <local:TTImage x:Name="MyImage" TTLeft="20" TTTop="20"
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection2.png"/>
 
       </local:TTRoot>
     </ScrollViewer>
+    <StackPanel Grid.Column="1">
+      <StackPanel>
+        <ComboBox x:Name="ComboBoxSaveFileType" SelectedItem="{Binding ImageType}"/>
+        <Button x:Name="ButtonSaveToImage" Content="画像として保存" Click="ButtonSaveToImage_Click"/>
+      </StackPanel>
+      <StackPanel DataContext="{Binding ElementName=MyRoot}">
+        <GroupBox x:Name="MyGroup1">
+          <WrapPanel>
+            <tomato:NumericUpDown BorderBrush="DodgerBlue"
+                              MyValue="{Binding TTXShift}" MyStringFormat="シフトX 0;シフトX -0;シフトX 0"
+                            Margin="10" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
+                            MyMinValue="-1024" MyMaxValue="1024"/>
+            <tomato:NumericUpDown BorderBrush="DodgerBlue"
+                              MyValue="{Binding TTYShift}" MyStringFormat="シフトY 0;シフトY -0;シフトY 0"
+                            Margin="10" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
+                            MyMinValue="-1024" MyMaxValue="1024"/>
+            <tomato:NumericUpDown BorderBrush="DodgerBlue"
+                              MyValue="{Binding TTGrid}" MyStringFormat="Grid 0"
+                            Margin="10" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
+                            MyMinValue="0" MyMaxValue="1024"/>
 
-    <StackPanel Grid.Column="1" DataContext="{Binding ElementName=MyRoot}">
-      <GroupBox x:Name="MyGroup1">
-        <GroupBox.DataContext>
-          <local:SettingData/>
-        </GroupBox.DataContext>
-        <WrapPanel>
-          <tomato:NumericUpDown BorderBrush="Magenta"
-                              MyValue="{Binding XShift}" MyStringFormat="シフトX 0"
-                            Margin="10" MyButtonMarkColor="MediumAquamarine"
-                            MyMinValue="0" MyMaxValue="1024"/>
-          <tomato:NumericUpDown BorderBrush="Magenta"
-                              MyValue="{Binding YShift}" MyStringFormat="シフトY 0"
-                            Margin="10" MyButtonMarkColor="MediumAquamarine"
-                            MyMinValue="0" MyMaxValue="1024"/>
-          <tomato:NumericUpDown BorderBrush="Magenta"
-                              MyValue="{Binding Grid}" MyStringFormat="Grid 0"
-                            Margin="10" MyButtonMarkColor="MediumAquamarine"
-                            MyMinValue="0" MyMaxValue="1024"/>
-          
-        </WrapPanel>
-      </GroupBox>
-      <GroupBox Header="">
+          </WrapPanel>
+        </GroupBox>
+        <GroupBox Header="">
 
-      </GroupBox>
-      <GroupBox Header="Root">
-        <StackPanel>
-          <TextBlock Text="{Binding Data.X}"/>
-          <TextBlock Text="{Binding Data.Y}"/>
-        </StackPanel>
-      </GroupBox>
-      <GroupBox Header="ActiveGroup" DataContext="{Binding ActiveGroup}">
-        <StackPanel>
-          <TextBlock Text="{Binding Data.X}"/>
-          <TextBlock Text="{Binding Data.Y}"/>
-        </StackPanel>
-      </GroupBox>
-      <GroupBox Header="ActiveThumb" DataContext="{Binding ActiveThumb}">
-        <StackPanel>
-          <TextBlock Text="{Binding Data.Guid}"/>
-          <TextBlock Text="{Binding Data.X}"/>
-          <TextBlock Text="{Binding Data.Y}"/>
-          <TextBlock Text="{Binding TTLeft}"/>
-          <TextBlock Text="{Binding TTTop}"/>
-          <TextBlock Text="{Binding Data.Text}"/>
-          <TextBlock Text="{Binding Data.Type}"/>
-          <Image Source="{Binding Data.Source}" Width="100" Height="100"/>
-        </StackPanel>
-      </GroupBox>
-      <GroupBox Header="ClickedThumb" DataContext="{Binding ClickedThumb}">
-        <StackPanel>
-          <TextBlock Text="{Binding Data.Type}"/>
-          <TextBlock Text="{Binding Data.X}"/>
-          <TextBlock Text="{Binding Data.Y}"/>
-        </StackPanel>
-      </GroupBox>
-      <GroupBox Header="SelectedThumbs" DataContext="{Binding SelectedThumbs}">
-        <ListBox ItemsSource="{Binding}">
-          <ListBox.ItemTemplate>
-            <DataTemplate>
-              <TextBlock Text="{Binding Data.Type}"/>
-            </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
-      </GroupBox>
+        </GroupBox>
+        <GroupBox Header="Root">
+          <StackPanel>
+            <TextBlock Text="{Binding ActualWidth, StringFormat=width \= {0:000}}"/>
+            <TextBlock Text="{Binding ActualHeight, StringFormat=height \= {0:000}}"/>
+          </StackPanel>
+        </GroupBox>
+        <GroupBox Header="ActiveGroup" DataContext="{Binding ActiveGroup}">
+          <StackPanel>
+            <TextBlock Text="{Binding Data.X}"/>
+            <TextBlock Text="{Binding Data.Y}"/>
+          </StackPanel>
+        </GroupBox>
+        <GroupBox Header="ActiveThumb" DataContext="{Binding ActiveThumb}">
+          <StackPanel>
+            <TextBlock Text="{Binding Data.Guid}"/>
+            <TextBlock Text="{Binding Data.X}"/>
+            <TextBlock Text="{Binding Data.Y}"/>
+            <TextBlock Text="{Binding TTLeft}"/>
+            <TextBlock Text="{Binding TTTop}"/>
+            <TextBlock Text="{Binding Data.Text}"/>
+            <TextBlock Text="{Binding Data.Type}"/>
+            <Image Source="{Binding Data.Source}" Width="100" Height="100"/>
+          </StackPanel>
+        </GroupBox>
+        <GroupBox Header="ClickedThumb" DataContext="{Binding ClickedThumb}">
+          <StackPanel>
+            <TextBlock Text="{Binding Data.Type}"/>
+            <TextBlock Text="{Binding Data.X}"/>
+            <TextBlock Text="{Binding Data.Y}"/>
+          </StackPanel>
+        </GroupBox>
+        <GroupBox Header="SelectedThumbs" DataContext="{Binding SelectedThumbs}">
+          <ListBox ItemsSource="{Binding}">
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding Data.Type}"/>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </GroupBox>
+      </StackPanel>
     </StackPanel>
   </Grid>
 </Window>
