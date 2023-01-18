@@ -669,27 +669,6 @@ namespace Pixtack3rd
 
         }
 
-        private void ButtonSaveToImage_Click(object sender, RoutedEventArgs e)
-        {
-            BitmapSource? bmp = MyRoot.GetBitmap(MyRoot);
-            if (bmp != null)
-            {
-                string extension = "." + MyAppConfig.ImageType.ToString();
-                if (SaveBitmap(bmp, "E:\\pixtacktest" + extension) == false)
-                {
-                    MessageBox.Show("保存できなかった");
-                }
-            }
-            else
-            {
-                MessageBox.Show("保存できなかった");
-            }
-        }
-
-        private void ButtonSaveData_Click(object sender, RoutedEventArgs e)
-        {
-            SaveToZip("E:\\pixtack3rdTest.zip", MyRoot.Data);
-        }
 
         /// <summary>
         /// データ保存
@@ -748,7 +727,79 @@ namespace Pixtack3rd
             }
         }
 
+        private Data? LoadFromZip(string filePath)
+        {
+            try
+            {
+                using FileStream zipStream = File.OpenRead(filePath);
+                using ZipArchive archive = new(zipStream, ZipArchiveMode.Read);
+                ZipArchiveEntry? entry = archive.GetEntry(XML_FILE_NAME);
+                if (entry != null)
+                {
+                    //デシリアライズ
+                    using Stream entryStream = entry.Open();
+                    DataContractSerializer serializer = new(typeof(Data));
+                    using var reader = XmlReader.Create(entryStream);
+                    Data? data = (Data?)serializer.ReadObject(reader);
+                    if (data is null) return null;
 
+                    //DataのTypeがImage型ならzipから画像を取り出して設定
+                    if(data.Datas != null)
+                    {
+                        foreach (var item in data.Datas)
+                        {
+                            if (item.Type == TType.Image) { Sub(item, archive); }
+                        }
+                    }
+                    
+                    return data;
+                }
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
+            return null;
+
+            void Sub(Data data, ZipArchive archive)
+            {
+                //Guidに一致する画像ファイルをデコードしてプロパティに設定
+                ZipArchiveEntry? imageEntry = archive.GetEntry(data.Guid + ".png");
+                if (imageEntry != null)
+                {
+                    using Stream imageStream = imageEntry.Open();
+                    PngBitmapDecoder decoder =
+                        new(imageStream,
+                        BitmapCreateOptions.None,
+                        BitmapCacheOption.Default);
+                    data.Source = decoder.Frames[0];//設定
+                }
+            }
+        }
+
+
+        private void ButtonSaveToImage_Click(object sender, RoutedEventArgs e)
+        {
+            BitmapSource? bmp = MyRoot.GetBitmap(MyRoot);
+            if (bmp != null)
+            {
+                string extension = "." + MyAppConfig.ImageType.ToString();
+                if (SaveBitmap(bmp, "E:\\pixtacktest" + extension) == false)
+                {
+                    MessageBox.Show("保存できなかった");
+                }
+            }
+            else
+            {
+                MessageBox.Show("保存できなかった");
+            }
+        }
+
+        private void ButtonSaveData_Click(object sender, RoutedEventArgs e)
+        {
+            SaveToZip("E:\\pixtack3rdTest.zip", MyRoot.Data);
+        }
+        private void ButtonLoadData_Click(object sender, RoutedEventArgs e)
+        {
+            var data = LoadFromZip("E:\\pixtack3rdTest.zip");
+        }
     }
 
 

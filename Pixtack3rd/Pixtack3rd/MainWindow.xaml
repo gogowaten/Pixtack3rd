@@ -33,6 +33,7 @@
         <ComboBox x:Name="ComboBoxSaveFileType" SelectedItem="{Binding ImageType}"/>
         <Button x:Name="ButtonSaveToImage" Content="画像として保存" Click="ButtonSaveToImage_Click"/>
         <Button x:Name="ButtonSaveData" Content="データとして保存" Click="ButtonSaveData_Click"/>
+        <Button x:Name="ButtonLoadData" Content="データ読み込み" Click="ButtonLoadData_Click"/>
       </StackPanel>
       <StackPanel DataContext="{Binding ElementName=MyRoot}">
         <GroupBox x:Name="MyGroup1">
