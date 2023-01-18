@@ -14,7 +14,7 @@
       <ColumnDefinition/>
       <ColumnDefinition Width="200"/>
     </Grid.ColumnDefinitions>
-    
+
     <ScrollViewer>
       <!--<local:TTTextBlock TTText="222"/>-->
       <local:TTRoot x:Name="MyRoot" HorizontalAlignment="Left" VerticalAlignment="Top">
@@ -27,10 +27,28 @@
     </ScrollViewer>
 
     <StackPanel Grid.Column="1" DataContext="{Binding ElementName=MyRoot}">
-      <tomato:NumericUpDown BorderBrush="Magenta" MyValue="100"
-                            Margin="10" MyButtonMarkColor="MediumAquamarine"/>
+      <GroupBox x:Name="MyGroup1">
+        <GroupBox.DataContext>
+          <local:SettingData/>
+        </GroupBox.DataContext>
+        <WrapPanel>
+          <tomato:NumericUpDown BorderBrush="Magenta"
+                              MyValue="{Binding XShift}" MyStringFormat="シフトX 0"
+                            Margin="10" MyButtonMarkColor="MediumAquamarine"
+                            MyMinValue="0" MyMaxValue="1024"/>
+          <tomato:NumericUpDown BorderBrush="Magenta"
+                              MyValue="{Binding YShift}" MyStringFormat="シフトY 0"
+                            Margin="10" MyButtonMarkColor="MediumAquamarine"
+                            MyMinValue="0" MyMaxValue="1024"/>
+          <tomato:NumericUpDown BorderBrush="Magenta"
+                              MyValue="{Binding Grid}" MyStringFormat="Grid 0"
+                            Margin="10" MyButtonMarkColor="MediumAquamarine"
+                            MyMinValue="0" MyMaxValue="1024"/>
+          
+        </WrapPanel>
+      </GroupBox>
       <GroupBox Header="">
-        
+
       </GroupBox>
       <GroupBox Header="Root">
         <StackPanel>
@@ -54,7 +72,7 @@
           <TextBlock Text="{Binding Data.Text}"/>
           <TextBlock Text="{Binding Data.Type}"/>
           <Image Source="{Binding Data.Source}" Width="100" Height="100"/>
-        </StackPanel>        
+        </StackPanel>
       </GroupBox>
       <GroupBox Header="ClickedThumb" DataContext="{Binding ClickedThumb}">
         <StackPanel>

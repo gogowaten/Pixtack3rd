@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -22,9 +23,16 @@ namespace Pixtack3rd
     /// </summary>
     public partial class MainWindow : Window
     {
+        public SettingData SettingData { get; set; }
         public MainWindow()
         {
             InitializeComponent();
+            SettingData = new();
+            MyGroup1.DataContext = SettingData;
+            SettingData.XShift = 32;
+            SettingData.YShift = 32;
+            SettingData.Grid = 8;
+
             DragEnter += MainWindow_DragEnter;
             DragOver += MainWindow_DragOver;
             Drop += MainWindow_Drop;
@@ -55,6 +63,20 @@ namespace Pixtack3rd
                 var fileList2 = ((string[])e.Data.GetData(DataFormats.FileDrop)).ToArray();
                 Array.Sort(fileList2);
 
+                foreach (var item in fileList2)
+                {
+                    double x = SettingData.XShift;
+                    double y = SettingData.YShift;
+                    TTImage tTImage = new(new Data(TType.Image)
+                    {
+                        Source = new BitmapImage(new Uri(item)),
+                        X= x,
+                        Y= y
+                    });
+                    MyRoot.AddItem(tTImage, tTImage.Data);
+                    x += SettingData.XShift;
+                    y += SettingData.YShift;
+                }
 
 
 
@@ -99,5 +121,31 @@ namespace Pixtack3rd
             base.OnDrop(e);
 
         }
+    }
+
+
+    public class SettingData : INotifyPropertyChanged
+    {
+
+        protected void SetProperty<T>(ref T field, T value, [System.Runtime.CompilerServices.CallerMemberName] string? name = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value)) return;
+            field = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        private int _xShift = 0;
+        public int XShift { get => _xShift; set => SetProperty(ref _xShift, value); }
+
+        private int _yShift = 0;
+        public int YShift { get => _yShift; set => SetProperty(ref _yShift, value); }
+
+        private int _grid = 0;
+        public int Grid { get => _grid; set => SetProperty(ref _grid, value); }
+
+
+
     }
 }
