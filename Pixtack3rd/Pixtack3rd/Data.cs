@@ -15,6 +15,7 @@ namespace Pixtack3rd
 
 
     //[KnownType(typeof(DataImage)), KnownType(typeof(DataGroup)), KnownType(typeof(DataTextBlock))]
+    [DataContract]
     public class Data : IExtensibleDataObject, INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;

@@ -111,7 +111,6 @@ namespace Pixtack3rd
         {
             Thumbs.CollectionChanged += Thumbs_CollectionChanged;
             Data = data;
-            Data.Datas = new ObservableCollection<Data>();
             MyTemplateElement = MyInitializeBinding();
             MyTemplateElement.SetBinding(ItemsControl.ItemsSourceProperty, new Binding(nameof(Thumbs)) { Source = this });
         }
@@ -124,6 +123,10 @@ namespace Pixtack3rd
                     if (e.NewItems?[0] is TThumb thumb)
                     {
                         thumb.TTParent = this;
+                        //if (Data.Datas != null && Data.Datas.Contains(thumb.Data))
+                        //{
+                        //    Data.Datas.Add(thumb.Data);
+                        //}
                     }
                     break;
                 default: break;
@@ -940,7 +943,7 @@ namespace Pixtack3rd
 
         public TTTextBlock() : this(new Data(TType.TextBlock)) { }
 
-        public TTTextBlock(Data data)
+        public TTTextBlock(Data data) : base(data)
         {
             Data = data;
             this.DataContext = Data;
@@ -981,7 +984,7 @@ namespace Pixtack3rd
 
 
         public TTImage() : this(new Data(TType.Image)) { }
-        public TTImage(Data data)
+        public TTImage(Data data) : base(data)
         {
             Data = data;
             this.DataContext = Data;

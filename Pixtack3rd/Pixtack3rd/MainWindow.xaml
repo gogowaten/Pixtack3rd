@@ -5,8 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Pixtack3rd"
         xmlns:tomato="clr-namespace:ControlLibraryCore20200620;assembly=ControlLibraryCore20200620"
+        d:DataContext="{d:DesignInstance Type=local:AppConfig}"
         mc:Ignorable="d"
-        Title="MainWindow" Height="650" Width="600"
+        Title="MainWindow" Height="650" Width="600" ResizeMode="CanResizeWithGrip"
+        Top="{Binding Path=Top, Mode=TwoWay}" Left="{Binding Left, Mode=TwoWay}"
         AllowDrop="True">
 
   <Grid Name="MyGrid">
@@ -30,6 +32,7 @@
       <StackPanel>
         <ComboBox x:Name="ComboBoxSaveFileType" SelectedItem="{Binding ImageType}"/>
         <Button x:Name="ButtonSaveToImage" Content="画像として保存" Click="ButtonSaveToImage_Click"/>
+        <Button x:Name="ButtonSaveData" Content="データとして保存" Click="ButtonSaveData_Click"/>
       </StackPanel>
       <StackPanel DataContext="{Binding ElementName=MyRoot}">
         <GroupBox x:Name="MyGroup1">
