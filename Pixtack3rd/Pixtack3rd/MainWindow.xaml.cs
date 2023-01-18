@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -16,6 +17,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xml;
 using ControlLibraryCore20200620;
 
 namespace Pixtack3rd
@@ -31,6 +33,8 @@ namespace Pixtack3rd
         private string AppVersion;
         //datetime.tostringの書式、これを既定値にする
         private const string DATE_TIME_STRING_FORMAT = "yyyyMMdd'_'HHmmss'_'fff";
+        //データ保存時のxmlのファイル名
+        private readonly string XML_FILE_NAME = "Data.xml";
 
         public MainWindow()
         {
@@ -38,6 +42,7 @@ namespace Pixtack3rd
 
             MyAppConfig = new AppConfig();
             DataContext = MyAppConfig;
+
             //実行ファイルのバージョン取得
             var cl = Environment.GetCommandLineArgs();
 
@@ -49,7 +54,7 @@ namespace Pixtack3rd
             //タイトルをアプリの名前 + バージョン
             this.Title = APP_NAME + AppVersion;
             MyInisializeComboBox();
-
+            FixAppWindowLocate(MyAppConfig);
 
             DragEnter += MainWindow_DragEnter;
             DragOver += MainWindow_DragOver;
@@ -111,6 +116,28 @@ namespace Pixtack3rd
             //    { SaveBehaviorType.AddPreviewWindowFromClopboard, "クリップボード監視、更新されたらプレビューウィンドウに追加 (保存はしない)" }
             //};
         }
+
+        /// <summary>
+        /// アプリの設定のウィンドウ位置が画面外だった場合は0に変更して返す
+        /// </summary>
+        /// <param name="config"></param>
+        /// <returns></returns>
+        private AppConfig FixAppWindowLocate(AppConfig config)
+        {
+            if (config.Left < -10 ||
+                config.Left > SystemParameters.VirtualScreenWidth - 100)
+            {
+                config.Left = 0;
+            }
+            if (config.Top < -10 ||
+                config.Top > SystemParameters.VirtualScreenHeight - 100)
+            {
+                config.Top = 0;
+            }
+
+            return config;
+        }
+
         #endregion 初期設定
 
         #region その他関数
@@ -642,13 +669,119 @@ namespace Pixtack3rd
 
         }
 
+
+        /// <summary>
+        /// データ保存
+        /// </summary>
+        /// <param name="filePath">拡張子も含めたフルパス</param>
+        /// <param name="data"></param>
+        private void SaveToZip(string filePath, Data data)
+        {
+            try
+            {
+                using FileStream zipStream = File.Create(filePath);
+                using ZipArchive archive = new(zipStream, ZipArchiveMode.Create);
+                //xml形式にシリアライズして、それをzipに詰め込む
+                ZipArchiveEntry entry = archive.CreateEntry(XML_FILE_NAME);
+                using (Stream entryStream = entry.Open())
+                {
+                    XmlWriterSettings settings = new()
+                    {
+                        Indent = true,
+                        Encoding = Encoding.UTF8,
+                        NewLineOnAttributes = true,
+                        ConformanceLevel = ConformanceLevel.Fragment,
+                    };
+                    //シリアライズする型は基底クラス型のDataで大丈夫
+                    DataContractSerializer serializer = new(typeof(Data));
+                    using var writer = XmlWriter.Create(entryStream, settings);
+                    try { serializer.WriteObject(writer, data); }
+                    catch (Exception ex) { MessageBox.Show(ex.Message); }
+                }
+                //画像があった場合はpng形式にしてzipに詰め込む
+                if (data.Datas != null)
+                {
+                    foreach (var item in data.Datas)
+                    {
+                        Sub(item, archive);
+                    }
+                }
+
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
+
+       
+            void Sub(Data item, ZipArchive archive)
+            {
+                if (item.Source is BitmapSource bmp)
+                {
+                    ZipArchiveEntry entry = archive.CreateEntry(item.Guid + ".png");
+                    using Stream entryStream = entry.Open();
+                    PngBitmapEncoder encoder = new();
+                    encoder.Frames.Add(BitmapFrame.Create(bmp));
+                    using MemoryStream memStream = new();
+                    encoder.Save(memStream);
+                    memStream.Position = 0;
+                    memStream.CopyTo(entryStream);
+                }
+            }
+        }
+
+        private Data? LoadFromZip(string filePath)
+        {
+            try
+            {
+                using FileStream zipStream = File.OpenRead(filePath);
+                using ZipArchive archive = new(zipStream, ZipArchiveMode.Read);
+                ZipArchiveEntry? entry = archive.GetEntry(XML_FILE_NAME);
+                if (entry != null)
+                {
+                    //デシリアライズ
+                    using Stream entryStream = entry.Open();
+                    DataContractSerializer serializer = new(typeof(Data));
+                    using var reader = XmlReader.Create(entryStream);
+                    Data? data = (Data?)serializer.ReadObject(reader);
+                    if (data is null) return null;
+
+                    //DataのTypeがImage型ならzipから画像を取り出して設定
+                    if(data.Datas != null)
+                    {
+                        foreach (var item in data.Datas)
+                        {
+                            if (item.Type == TType.Image) { Sub(item, archive); }
+                        }
+                    }
+                    
+                    return data;
+                }
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
+            return null;
+
+            void Sub(Data data, ZipArchive archive)
+            {
+                //Guidに一致する画像ファイルをデコードしてプロパティに設定
+                ZipArchiveEntry? imageEntry = archive.GetEntry(data.Guid + ".png");
+                if (imageEntry != null)
+                {
+                    using Stream imageStream = imageEntry.Open();
+                    PngBitmapDecoder decoder =
+                        new(imageStream,
+                        BitmapCreateOptions.None,
+                        BitmapCacheOption.Default);
+                    data.Source = decoder.Frames[0];//設定
+                }
+            }
+        }
+
+
         private void ButtonSaveToImage_Click(object sender, RoutedEventArgs e)
         {
             BitmapSource? bmp = MyRoot.GetBitmap(MyRoot);
             if (bmp != null)
             {
                 string extension = "." + MyAppConfig.ImageType.ToString();
-                if (SaveBitmap(bmp, "E:\\pixtacktest"+extension) == false)
+                if (SaveBitmap(bmp, "E:\\pixtacktest" + extension) == false)
                 {
                     MessageBox.Show("保存できなかった");
                 }
@@ -657,6 +790,15 @@ namespace Pixtack3rd
             {
                 MessageBox.Show("保存できなかった");
             }
+        }
+
+        private void ButtonSaveData_Click(object sender, RoutedEventArgs e)
+        {
+            SaveToZip("E:\\pixtack3rdTest.zip", MyRoot.Data);
+        }
+        private void ButtonLoadData_Click(object sender, RoutedEventArgs e)
+        {
+            var data = LoadFromZip("E:\\pixtack3rdTest.zip");
         }
     }
 
@@ -683,8 +825,6 @@ namespace Pixtack3rd
 
         //チェックボックス
         [DataMember] public bool? IsDrawCursor { get; set; }//マウスカーソル描画の有無
-        //[DataMember] public bool IsOutputToClipboardOnly { get; set; }//出力はクリップボードだけ
-        //[DataMember] public bool IsClipboardCaputure { get; set; }//クリップボード監視
 
 
         //ホットキー

@@ -111,7 +111,6 @@ namespace Pixtack3rd
         {
             Thumbs.CollectionChanged += Thumbs_CollectionChanged;
             Data = data;
-            Data.Datas = new ObservableCollection<Data>();
             MyTemplateElement = MyInitializeBinding();
             MyTemplateElement.SetBinding(ItemsControl.ItemsSourceProperty, new Binding(nameof(Thumbs)) { Source = this });
         }
@@ -124,6 +123,10 @@ namespace Pixtack3rd
                     if (e.NewItems?[0] is TThumb thumb)
                     {
                         thumb.TTParent = this;
+                        //if (Data.Datas != null && Data.Datas.Contains(thumb.Data))
+                        //{
+                        //    Data.Datas.Add(thumb.Data);
+                        //}
                     }
                     break;
                 default: break;
@@ -308,49 +311,64 @@ namespace Pixtack3rd
 
             //起動直後に位置とサイズ更新
             //TTGroupUpdateLayout();//XAML上でThumb設置しても、この時点ではThumbsが0個
-            Loaded += (a, b) => { TTGroupUpdateLayout(); };
+            Loaded += (a, b) =>
+            {
+                TTGroupUpdateLayout();
+                FixDataDatas();
+            };
 
             SetBinding(TTXShiftProperty, nameof(Data.XShift));
             SetBinding(TTYShiftProperty, nameof(Data.YShift));
             SetBinding(TTGridProperty, nameof(Data.Grid));
 
         }
+        private void FixDataDatas()
+        {
+            if (Data.Datas == null) return;
+            foreach (var item in Thumbs)
+            {
+                if (Data.Datas.Contains(item.Data) == false)
+                {
+                    Data.Datas.Add(item.Data);
+                }
+            }
+        }
 
-        #endregion コンストラクタ
+            #endregion コンストラクタ
 
-        #region ドラッグ移動
-        //ActiveGroup用、ドラッグ移動イベント脱着
-        private void ChildrenDragEventDesoption(TTGroup removeTarget, TTGroup addTarget)
-        {
-            foreach (var item in removeTarget.Thumbs)
+            #region ドラッグ移動
+            //ActiveGroup用、ドラッグ移動イベント脱着
+            private void ChildrenDragEventDesoption(TTGroup removeTarget, TTGroup addTarget)
             {
-                item.DragDelta -= Thumb_DragDelta;
-                item.DragCompleted -= Thumb_DragCompleted;
+                foreach (var item in removeTarget.Thumbs)
+                {
+                    item.DragDelta -= Thumb_DragDelta;
+                    item.DragCompleted -= Thumb_DragCompleted;
+                }
+                foreach (var item in addTarget.Thumbs)
+                {
+                    item.DragDelta += Thumb_DragDelta;
+                    item.DragCompleted += Thumb_DragCompleted;
+                }
             }
-            foreach (var item in addTarget.Thumbs)
+            private void Thumb_DragDelta(object seneer, DragDeltaEventArgs e)
             {
-                item.DragDelta += Thumb_DragDelta;
-                item.DragCompleted += Thumb_DragCompleted;
+                //複数選択時は全てを移動
+                foreach (TThumb item in SelectedThumbs)
+                {
+                    item.TTLeft += e.HorizontalChange;
+                    item.TTTop += e.VerticalChange;
+                }
             }
-        }
-        private void Thumb_DragDelta(object seneer, DragDeltaEventArgs e)
-        {
-            //複数選択時は全てを移動
-            foreach (TThumb item in SelectedThumbs)
+            private void Thumb_DragCompleted(object sender, DragCompletedEventArgs e)
             {
-                item.TTLeft += e.HorizontalChange;
-                item.TTTop += e.VerticalChange;
+                if (sender is TThumb thumb) { thumb.TTParent?.TTGroupUpdateLayout(); }
             }
-        }
-        private void Thumb_DragCompleted(object sender, DragCompletedEventArgs e)
-        {
-            if (sender is TThumb thumb) { thumb.TTParent?.TTGroupUpdateLayout(); }
-        }
         #endregion ドラッグ移動
 
-        #region オーバーライド関連
+            #region オーバーライド関連
 
-        //起動直後、自身がActiveGroupならChildrenにドラッグ移動登録
+            //起動直後、自身がActiveGroupならChildrenにドラッグ移動登録
         protected override void OnInitialized(EventArgs e)
         {
             base.OnInitialized(e);
@@ -940,7 +958,7 @@ namespace Pixtack3rd
 
         public TTTextBlock() : this(new Data(TType.TextBlock)) { }
 
-        public TTTextBlock(Data data)
+        public TTTextBlock(Data data) : base(data)
         {
             Data = data;
             this.DataContext = Data;
@@ -981,7 +999,7 @@ namespace Pixtack3rd
 
 
         public TTImage() : this(new Data(TType.Image)) { }
-        public TTImage(Data data)
+        public TTImage(Data data) : base(data)
         {
             Data = data;
             this.DataContext = Data;

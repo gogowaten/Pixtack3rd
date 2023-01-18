@@ -14,7 +14,8 @@ namespace Pixtack3rd
     public enum TType { None = 0, Root, Group, TextBlock, Image, Rectangle }
 
 
-    //[KnownType(typeof(DataImage)), KnownType(typeof(DataGroup)), KnownType(typeof(DataTextBlock))]
+
+    [DataContract]
     public class Data : IExtensibleDataObject, INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -25,33 +26,33 @@ namespace Pixtack3rd
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
-        public ObservableCollection<Data>? Datas { get; set; }
+        [DataMember] public ObservableCollection<Data> Datas { get; set; } = new();
 
         private int _xShift;
-        public int XShift { get => _xShift; set => SetProperty(ref _xShift, value); }
+        [DataMember] public int XShift { get => _xShift; set => SetProperty(ref _xShift, value); }
 
         private int _yShift;
-        public int YShift { get => _yShift; set => SetProperty(ref _yShift, value); }
+        [DataMember] public int YShift { get => _yShift; set => SetProperty(ref _yShift, value); }
 
         private int _grid;
-        public int Grid { get => _grid; set => SetProperty(ref _grid, value); }
+        [DataMember] public int Grid { get => _grid; set => SetProperty(ref _grid, value); }
 
 
 
 
-        public TType Type { get; protected set; }
+        [DataMember] public TType Type { get; protected set; }
         public ExtensionDataObject? ExtensionData { get; set; }
 
 
 
-        private double _x=0.0;
-        public double X { get => _x; set => SetProperty(ref _x, value); }
+        private double _x = 0.0;
+        [DataMember] public double X { get => _x; set => SetProperty(ref _x, value); }
 
         private double _y;
-        public double Y { get => _y; set => SetProperty(ref _y, value); }
+        [DataMember] public double Y { get => _y; set => SetProperty(ref _y, value); }
 
-        private string? _text;
-        public string? Text { get => _text; set => SetProperty(ref _text, value); }
+        private string _text = string.Empty;
+        [DataMember] public string Text { get => _text; set => SetProperty(ref _text, value); }
 
 
         //画像、それ自体は直接シリアライズしないので[IgnoreDataMember]
@@ -61,7 +62,7 @@ namespace Pixtack3rd
         [IgnoreDataMember] public BitmapSource? Source { get => _source; set => SetProperty(ref _source, value); }
 
         //シリアライズ時の画像ファイル名に使用、Guidで一意の名前作成している
-        public string Guid { get; set; } = System.Guid.NewGuid().ToString();
+        [DataMember] public string Guid { get; set; } = System.Guid.NewGuid().ToString();
 
 
         #region コンストラクタ
