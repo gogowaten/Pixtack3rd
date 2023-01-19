@@ -581,17 +581,22 @@ namespace Pixtack3rd
                 thumb.DragCompleted += Thumb_DragCompleted;
             }
         }
+        /// <summary>
+        /// ActiveThumbに要素をDataで追加
+        /// </summary>
+        /// <param name="data"></param>
         public void AddDataToActiveGroup(Data data)
         {
             if (BuildThumb(data) is TThumb thumb)
             {
                 AddThumb(thumb, ActiveGroup);//直下にはドラッグ移動イベント付加
+                //位置修正、追加先のActiveThumbに合わせる
                 if (ActiveThumb != null)
                 {
                     data.X += ActiveThumb.Data.X;
                     data.Y += ActiveThumb.Data.Y;
                 }
-                //中の子要素
+                //中の子要素にはドラッグ移動イベント追加しない
                 if (thumb is TTGroup group)
                 {
                     SetData(group);
