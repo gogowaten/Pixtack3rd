@@ -773,6 +773,10 @@ namespace Pixtack3rd
 
             void SubLoop(ZipArchive archive, Data subData)
             {
+                if (data.Source != null)
+                {
+                    Sub(data, archive);
+                }
                 foreach (Data item in subData.Datas)
                 {
                     Sub(item, archive);
@@ -874,16 +878,33 @@ namespace Pixtack3rd
 
         private void ButtonSaveData_Click(object sender, RoutedEventArgs e)
         {
+            //TTRootのDataを保存
             Microsoft.Win32.SaveFileDialog dialog = new();
             dialog.Filter = "(zip)|*.zip";
             if (dialog.ShowDialog() == true)
             {
                 SaveToZip(dialog.FileName, MyRoot.Data);
-            }            
+            }
         }
-        
+
+        //ActiveThumbのDataを保存
+        private void ButtonSaveDataThumb_Click(object sender, RoutedEventArgs e)
+        {
+            //TTRootのDataを保存
+            if (MyRoot.ActiveThumb?.Data is Data data)
+            {
+                Microsoft.Win32.SaveFileDialog dialog = new();
+                dialog.Filter = "(azt)|*.azt";
+                if (dialog.ShowDialog() == true)
+                {
+                    SaveToZip(dialog.FileName, data);
+                }
+            }
+        }
+
         private void ButtonLoadData_Click(object sender, RoutedEventArgs e)
         {
+            //全体Data読み込み
             if (LoadFromZip("E:\\pixtack3rdTest.zip") is Data data)
             {
                 MyRoot.SetRootData(data);
@@ -899,6 +920,19 @@ namespace Pixtack3rd
             }
         }
 
+        private void ButtonLoadDataThumb_Click(object sender, RoutedEventArgs e)
+        {
+            //個別Data読み込み
+            Microsoft.Win32.OpenFileDialog dialog = new();
+            dialog.Filter = "(azt)|*.azt";
+            if (dialog.ShowDialog() == true)
+            {
+                if(LoadFromZip(dialog.FileName) is Data data)
+                {
+                    MyRoot.AddDataToActiveGroup(data);
+                }
+            }
+        }
         private void ButtonToGroup_Click(object sender, RoutedEventArgs e)
         {
             MyRoot.AddGroup();
@@ -908,6 +942,7 @@ namespace Pixtack3rd
         {
 
         }
+
     }
 
 

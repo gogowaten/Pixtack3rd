@@ -37,8 +37,10 @@
       <StackPanel>
         <ComboBox x:Name="ComboBoxSaveFileType" SelectedItem="{Binding ImageType}"/>
         <Button x:Name="ButtonSaveToImage" Content="画像として保存" Click="ButtonSaveToImage_Click"/>
-        <Button x:Name="ButtonSaveData" Content="データとして保存" Click="ButtonSaveData_Click"/>
-        <Button x:Name="ButtonLoadData" Content="データ読み込み" Click="ButtonLoadData_Click"/>
+        <Button x:Name="ButtonSaveData" Content="データ保存(全体)" Click="ButtonSaveData_Click"/>
+        <Button x:Name="ButtonSaveDataThumb" Content="データ保存(個別)" Click="ButtonSaveDataThumb_Click"/>
+        <Button x:Name="ButtonLoadData" Content="データ読み込み(全体)" Click="ButtonLoadData_Click"/>
+        <Button x:Name="ButtonLoadDataThumb" Content="データ読み込み(個別)" Click="ButtonLoadDataThumb_Click"/>
         <Button x:Name="ButtonToGroup" Content="グループ化" Click="ButtonToGroup_Click"/>
         <Button x:Name="ButtonUnGroup" Content="グループ解除" Click="ButtonUnGroup_Click"/>
         
@@ -74,6 +76,8 @@
           <StackPanel>
             <TextBlock Text="{Binding Data.X}"/>
             <TextBlock Text="{Binding Data.Y}"/>
+            <TextBlock Text="{Binding ActualWidth, StringFormat=ActWidth \= 0}"/>
+            <TextBlock Text="{Binding ActualHeight, StringFormat=ActHeight \= 0}"/>
           </StackPanel>
         </GroupBox>
         <GroupBox Header="ActiveThumb" DataContext="{Binding ActiveThumb}">
@@ -81,8 +85,8 @@
             <TextBlock Text="{Binding Data.Guid}"/>
             <TextBlock Text="{Binding Data.X}"/>
             <TextBlock Text="{Binding Data.Y}"/>
-            <TextBlock Text="{Binding TTLeft}"/>
-            <TextBlock Text="{Binding TTTop}"/>
+            <TextBlock Text="{Binding ActualWidth,StringFormat=ActWidht \= 0}"/>
+            <TextBlock Text="{Binding ActualHeight, StringFormat=ActHeight \= 0}"/>
             <TextBlock Text="{Binding Data.Text}"/>
             <TextBlock Text="{Binding Data.Type}"/>
             <Image Source="{Binding Data.Source}" Width="100" Height="100"/>

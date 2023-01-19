@@ -383,6 +383,8 @@ namespace Pixtack3rd
                 }
             }
         }
+
+
         #region ドラッグ移動
         //ActiveGroup用、ドラッグ移動イベント脱着
         private void ChildrenDragEventDesoption(TTGroup removeTarget, TTGroup addTarget)
@@ -579,11 +581,21 @@ namespace Pixtack3rd
                 thumb.DragCompleted += Thumb_DragCompleted;
             }
         }
-        public void AddThumbToActiveGroup(Data data)
+        public void AddDataToActiveGroup(Data data)
         {
             if (BuildThumb(data) is TThumb thumb)
             {
-                AddThumb(thumb, ActiveGroup);
+                AddThumb(thumb, ActiveGroup);//直下にはドラッグ移動イベント付加
+                if (ActiveThumb != null)
+                {
+                    data.X += ActiveThumb.Data.X;
+                    data.Y += ActiveThumb.Data.Y;
+                }
+                //中の子要素
+                if (thumb is TTGroup group)
+                {
+                    SetData(group);
+                }
             }
         }
 
