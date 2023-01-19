@@ -109,10 +109,17 @@ namespace Pixtack3rd
         }
         public TTGroup(Data data) : base(data)
         {
+            //初期設定
             Thumbs.CollectionChanged += Thumbs_CollectionChanged;
             Data = data;
             MyTemplateElement = MyInitializeBinding();
             MyTemplateElement.SetBinding(ItemsControl.ItemsSourceProperty, new Binding(nameof(Thumbs)) { Source = this });
+
+            //子要素
+            foreach (var item in Data.Datas)
+            {
+
+            }
         }
 
         private void Thumbs_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -123,10 +130,6 @@ namespace Pixtack3rd
                     if (e.NewItems?[0] is TThumb thumb)
                     {
                         thumb.TTParent = this;
-                        //if (Data.Datas != null && Data.Datas.Contains(thumb.Data))
-                        //{
-                        //    Data.Datas.Add(thumb.Data);
-                        //}
                     }
                     break;
                 default: break;
@@ -136,9 +139,6 @@ namespace Pixtack3rd
         private ItemsControl MyInitializeBinding()
         {
             this.DataContext = Data;
-            //SetBinding(TTLeftProperty, nameof(Data.X));
-            //SetBinding(TTTopProperty, nameof(Data.Y));
-            //MySetXYBinging(this.Data);
             return MakeTemplate();
 
         }
@@ -322,6 +322,7 @@ namespace Pixtack3rd
             SetBinding(TTGridProperty, nameof(Data.Grid));
 
         }
+
         private void FixDataDatas()
         {
             if (Data.Datas == null) return;
@@ -334,41 +335,89 @@ namespace Pixtack3rd
             }
         }
 
-            #endregion コンストラクタ
+        #endregion コンストラクタ
 
-            #region ドラッグ移動
-            //ActiveGroup用、ドラッグ移動イベント脱着
-            private void ChildrenDragEventDesoption(TTGroup removeTarget, TTGroup addTarget)
+        /// <summary>
+        /// RootDataをセット、初期化
+        /// </summary>
+        /// <param name="data"></param>
+        public void SetRootData(Data data)
+        {
+            //初期化
+            if (data.Type != TType.Root) return;
+            Thumbs.Clear();
+            SelectedThumbs.Clear();
+            this.Data = data;
+            DataContext = this.Data;
+            _activeGroup = this;
+            _clickedThumb = null;
+            _activeThumb = null;
+
+            //子要素追加
+            foreach (var item in data.Datas)
             {
-                foreach (var item in removeTarget.Thumbs)
+                TThumb thumb = BuildThumb(item);
+                Thumbs.Add(thumb);
+                //直下のThumbにはドラッグ移動イベント付加
+                thumb.DragDelta += Thumb_DragDelta;
+                thumb.DragCompleted += Thumb_DragCompleted;
+                //追加子要素がGroupだった場合
+                if (thumb is TTGroup group)
                 {
-                    item.DragDelta -= Thumb_DragDelta;
-                    item.DragCompleted -= Thumb_DragCompleted;
-                }
-                foreach (var item in addTarget.Thumbs)
-                {
-                    item.DragDelta += Thumb_DragDelta;
-                    item.DragCompleted += Thumb_DragCompleted;
+                    SetData(group);
                 }
             }
-            private void Thumb_DragDelta(object seneer, DragDeltaEventArgs e)
+        }
+
+        //GroupのThumbsに子要素追加
+        private void SetData(TTGroup group)
+        {
+            foreach (Data data in group.Data.Datas)
             {
-                //複数選択時は全てを移動
-                foreach (TThumb item in SelectedThumbs)
+                TThumb thumb = BuildThumb(data);
+                group.Thumbs.Add(thumb);
+                //group.Data.Datas.Add(thumb.Data);
+                if (thumb is TTGroup gThumb)
                 {
-                    item.TTLeft += e.HorizontalChange;
-                    item.TTTop += e.VerticalChange;
+                    SetData(gThumb);
                 }
             }
-            private void Thumb_DragCompleted(object sender, DragCompletedEventArgs e)
+        }
+
+
+        #region ドラッグ移動
+        //ActiveGroup用、ドラッグ移動イベント脱着
+        private void ChildrenDragEventDesoption(TTGroup removeTarget, TTGroup addTarget)
+        {
+            foreach (var item in removeTarget.Thumbs)
             {
-                if (sender is TThumb thumb) { thumb.TTParent?.TTGroupUpdateLayout(); }
+                item.DragDelta -= Thumb_DragDelta;
+                item.DragCompleted -= Thumb_DragCompleted;
             }
+            foreach (var item in addTarget.Thumbs)
+            {
+                item.DragDelta += Thumb_DragDelta;
+                item.DragCompleted += Thumb_DragCompleted;
+            }
+        }
+        private void Thumb_DragDelta(object seneer, DragDeltaEventArgs e)
+        {
+            //複数選択時は全てを移動
+            foreach (TThumb item in SelectedThumbs)
+            {
+                item.TTLeft += e.HorizontalChange;
+                item.TTTop += e.VerticalChange;
+            }
+        }
+        private void Thumb_DragCompleted(object sender, DragCompletedEventArgs e)
+        {
+            if (sender is TThumb thumb) { thumb.TTParent?.TTGroupUpdateLayout(); }
+        }
         #endregion ドラッグ移動
 
-            #region オーバーライド関連
+        #region オーバーライド関連
 
-            //起動直後、自身がActiveGroupならChildrenにドラッグ移動登録
+        //起動直後、自身がActiveGroupならChildrenにドラッグ移動登録
         protected override void OnInitialized(EventArgs e)
         {
             base.OnInitialized(e);
@@ -525,35 +574,54 @@ namespace Pixtack3rd
         {
             if (destGroup.Data.Datas != null)
             {
-                destGroup.Data.Datas.Add(thumb.Data);
                 destGroup.Thumbs.Add(thumb);
+                destGroup.Data.Datas.Add(thumb.Data);
                 //ドラッグ移動イベント付加
                 thumb.DragDelta += Thumb_DragDelta;
                 thumb.DragCompleted += Thumb_DragCompleted;
             }
         }
-        public void AddThumb(Data data)
+        /// <summary>
+        /// ActiveThumbに要素をDataで追加
+        /// </summary>
+        /// <param name="data"></param>
+        public void AddDataToActiveGroup(Data data)
+        {
+            if (BuildThumb(data) is TThumb thumb)
+            {
+                AddThumb(thumb, ActiveGroup);//直下にはドラッグ移動イベント付加
+                //位置修正、追加先のActiveThumbに合わせる
+                if (ActiveThumb != null)
+                {
+                    data.X += ActiveThumb.Data.X;
+                    data.Y += ActiveThumb.Data.Y;
+                }
+                //中の子要素にはドラッグ移動イベント追加しない
+                if (thumb is TTGroup group)
+                {
+                    SetData(group);
+                }
+            }
+        }
+
+        public TThumb BuildThumb(Data data)
         {
             switch (data.Type)
             {
                 case TType.None:
-                    break;
+                    throw new NotImplementedException();
                 case TType.Root:
-                    break;
+                    throw new NotImplementedException();
                 case TType.Group:
-                    AddThumb(new TTGroup(data));
-                    break;
+                    return new TTGroup(data);
                 case TType.TextBlock:
-                    AddThumb(new TTTextBlock(data));
-                    break;
+                    return new TTTextBlock(data);
                 case TType.Image:
-                    AddThumb(new TTImage(data));
-                    break;
+                    return new TTImage(data);
                 case TType.Rectangle:
                     throw new NotImplementedException();
-
                 default:
-                    break;
+                    throw new NotImplementedException();
             }
         }
 
@@ -633,10 +701,12 @@ namespace Pixtack3rd
             foreach (var item in thumbs)
             {
                 destGroup.Thumbs.Remove(item);
+                destGroup.Data.Datas.Remove(item.Data);
                 item.DragDelta -= Thumb_DragDelta;
                 item.DragCompleted -= Thumb_DragCompleted;
 
                 group.Thumbs.Add(item);
+                group.Data.Datas.Add(item.Data);
                 item.TTLeft -= x;
                 item.TTTop -= y;
             }
