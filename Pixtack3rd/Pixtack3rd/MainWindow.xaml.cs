@@ -53,16 +53,22 @@ namespace Pixtack3rd
             Drop += MainWindow_Drop;
             Closed += MainWindow_Closed;
 
-            //string imagePath = "D:\\ブログ用\\テスト用画像\\collection5.png";
-            //string imagePath1 = "D:\\ブログ用\\テスト用画像\\collection4.png";
+            string imagePath = "D:\\ブログ用\\テスト用画像\\collection5.png";
+            string imagePath1 = "D:\\ブログ用\\テスト用画像\\collection4.png";
+            string imagePath2 = "D:\\ブログ用\\テスト用画像\\hueRect000.png";
+            string imagePath3 = "D:\\ブログ用\\テスト用画像\\hueRect030.png";
 
-            var neko = MyRoot.Name;
-            //DataImage dataImg1 = new() { Source = GetBitmap(imagePath) };
-            //DataImage dataImg2 = new() { Source = GetBitmap(imagePath1), X = 100, Y = 100 };
 
-            //TTGroup group = new(new DataGroup() { X = 100, Y = 100 });
-            //group.AddItem(dataImg1);
-            //group.AddItem(dataImg2);
+            Data dataImg1 = new(TType.Image) { Source = GetBitmap(imagePath) };
+            Data dataImg2 = new(TType.Image) { Source = GetBitmap(imagePath1), X = 100, Y = 100 };
+
+            //TTGroup group = new(new Data(TType.Group) { X = 100, Y = 100 });
+            //Data dataGroup = new(TType.Group);
+            //dataGroup.Datas.Add(dataImg1);
+            //dataGroup.Datas.Add(dataImg2);
+            ////dataGroup.Datas.Add(new Data(TType.Image) { Source=GetBitmap(imagePath2), X = 120, Y = 120 });
+            //MyRoot.AddDataToActiveGroup(dataGroup);
+
 
             //MyRoot.AddItem(group, group.Data);
             ////    dataImg1.Source = new BitmapImage(new Uri("D:\\ブログ用\\テスト用画像\\collection4.png"));
@@ -272,60 +278,60 @@ namespace Pixtack3rd
         #region 画像保存
 
 
-        private bool SaveBitmap(BitmapSource bitmap, string fullPath)
-        {
-            bool isSavedDone = false;
-            bool isSuccess = false;
-            //ファイルに保存
-            {
-                bool result = SaveBitmapSub(bitmap, fullPath);
+        //private bool SaveBitmap(BitmapSource bitmap, string fullPath)
+        //{
+        //    bool isSavedDone = false;
+        //    bool isSuccess = false;
+        //    //ファイルに保存
+        //    {
+        //        bool result = SaveBitmapSub(bitmap, fullPath);
 
-                isSavedDone = result;
-                isSuccess = result;
-            }
+        //        isSavedDone = result;
+        //        isSuccess = result;
+        //    }
 
-            //クリップボードにコピー、BMPとPNG形式の両方をセットする
-            //BMPはアルファ値が255になる、PNGはアルファ値保持するけどそれが活かせるかは貼り付けるアプリに依る
-            if (MyAppConfig.SaveBehaviorType is SaveBehaviorType.Copy or
-                SaveBehaviorType.SaveAndCopy)
-            {
-                try
-                {
-                    //BMP
-                    DataObject data = new();
-                    data.SetData(typeof(BitmapSource), bitmap);
-                    //PNG
-                    PngBitmapEncoder enc = new();
-                    enc.Frames.Add(BitmapFrame.Create(bitmap));
-                    using var ms = new System.IO.MemoryStream();
-                    enc.Save(ms);
-                    data.SetData("PNG", ms);
+        //    //クリップボードにコピー、BMPとPNG形式の両方をセットする
+        //    //BMPはアルファ値が255になる、PNGはアルファ値保持するけどそれが活かせるかは貼り付けるアプリに依る
+        //    if (MyAppConfig.SaveBehaviorType is SaveBehaviorType.Copy or
+        //        SaveBehaviorType.SaveAndCopy)
+        //    {
+        //        try
+        //        {
+        //            //BMP
+        //            DataObject data = new();
+        //            data.SetData(typeof(BitmapSource), bitmap);
+        //            //PNG
+        //            PngBitmapEncoder enc = new();
+        //            enc.Frames.Add(BitmapFrame.Create(bitmap));
+        //            using var ms = new System.IO.MemoryStream();
+        //            enc.Save(ms);
+        //            data.SetData("PNG", ms);
 
-                    Clipboard.SetDataObject(data, true);//true必須
-                    isSuccess = true;
+        //            Clipboard.SetDataObject(data, true);//true必須
+        //            isSuccess = true;
 
-                    ////コピーだけのときは連番に加算
-                    //if (MyAppConfig.SaveBehaviorType == SaveBehaviorType.Copy &&
-                    //    MyAppConfig.IsFileNameSerial)
-                    //{
-                    //    AddIncrementToSerial();
-                    //}
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"クリップボードにコピーできなかった\n" +
-                        $"理由は不明、まれに起こる\n\n" +
-                        $"エラーメッセージ\n" +
-                        $"{ex.Message}", "エラー発生");
-                }
-            }
+        //            ////コピーだけのときは連番に加算
+        //            //if (MyAppConfig.SaveBehaviorType == SaveBehaviorType.Copy &&
+        //            //    MyAppConfig.IsFileNameSerial)
+        //            //{
+        //            //    AddIncrementToSerial();
+        //            //}
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            MessageBox.Show($"クリップボードにコピーできなかった\n" +
+        //                $"理由は不明、まれに起こる\n\n" +
+        //                $"エラーメッセージ\n" +
+        //                $"{ex.Message}", "エラー発生");
+        //        }
+        //    }
 
 
-            //プレビューウィンドウに表示
-            //DisplayPreviewWindow(bitmap, fullPath, isSavedDone);
+        //    //プレビューウィンドウに表示
+        //    //DisplayPreviewWindow(bitmap, fullPath, isSavedDone);
 
-            return isSuccess;
-        }
+        //    return isSuccess;
+        //}
 
 
         ///// <summary>
@@ -447,17 +453,38 @@ namespace Pixtack3rd
         //    return bitmap;
         //}
 
-        internal bool SaveBitmapSub(BitmapSource bitmap, string fullPath)
+        //internal bool SaveBitmapSub(BitmapSource bitmap, string fullPath)
+        //{
+        //    //CroppedBitmapで切り抜いた画像でBitmapFrame作成して保存
+        //    BitmapEncoder encoder = GetEncoder();
+        //    //メタデータ作成、アプリ名記入
+        //    BitmapMetadata meta = MakeMetadata();
+        //    if (MakeMetadata() is BitmapMetadata meta)
+        //    {
+        //        encoder.Frames.Add(BitmapFrame.Create(bitmap, null, meta, null));
+        //        //重複回避ファイルパス取得
+        //        fullPath = MakeFilePathAvoidDuplicate(fullPath);
+        //        try
+        //        {
+        //            using FileStream fs = new(fullPath, FileMode.Create, FileAccess.Write);
+        //            encoder.Save(fs);
+        //            return true;
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            MessageBox.Show($"保存できなかった\n{ex}", "保存できなかった");
+        //            return false;
+        //        }
+        //    }
+        //    else { return false; }
+        //}
+        internal bool SaveBitmapSub(BitmapSource bitmap, string fullPath, BitmapEncoder encoder)
         {
-            //CroppedBitmapで切り抜いた画像でBitmapFrame作成して保存
-            BitmapEncoder encoder = GetEncoder();
-            //メタデータ作成、アプリ名記入
-            //BitmapMetadata meta = MakeMetadata();
             if (MakeMetadata() is BitmapMetadata meta)
             {
                 encoder.Frames.Add(BitmapFrame.Create(bitmap, null, meta, null));
                 //重複回避ファイルパス取得
-                fullPath = MakeFilePathAvoidDuplicate(fullPath);
+                //fullPath = MakeFilePathAvoidDuplicate(fullPath);
                 try
                 {
                     using FileStream fs = new(fullPath, FileMode.Create, FileAccess.Write);
@@ -471,8 +498,6 @@ namespace Pixtack3rd
                 }
             }
             else { return false; }
-
-
         }
 
 
@@ -563,29 +588,48 @@ namespace Pixtack3rd
         }
 
         //画像ファイル形式によるEncoder取得
-        private BitmapEncoder GetEncoder()
+        private BitmapEncoder GetEncoder(int filterIndex)
         {
-            var type = MyAppConfig.ImageType;
+            //var type = MyAppConfig.ImageType;
 
-            switch (type)
+            switch (filterIndex)
             {
-                case ImageType.png:
+                case 1:
                     return new PngBitmapEncoder();
-                case ImageType.jpg:
+                case 2:
                     var jpeg = new JpegBitmapEncoder
                     {
                         QualityLevel = MyAppConfig.JpegQuality
                     };
                     return jpeg;
-                case ImageType.bmp:
+                case 3:
                     return new BmpBitmapEncoder();
-                case ImageType.gif:
+                case 4:
                     return new GifBitmapEncoder();
-                case ImageType.tiff:
+                case 5:
                     return new TiffBitmapEncoder();
                 default:
                     throw new Exception();
             }
+            //switch (type)
+            //{
+            //    case ImageType.png:
+            //        return new PngBitmapEncoder();
+            //    case ImageType.jpg:
+            //        var jpeg = new JpegBitmapEncoder
+            //        {
+            //            QualityLevel = MyAppConfig.JpegQuality
+            //        };
+            //        return jpeg;
+            //    case ImageType.bmp:
+            //        return new BmpBitmapEncoder();
+            //    case ImageType.gif:
+            //        return new GifBitmapEncoder();
+            //    case ImageType.tiff:
+            //        return new TiffBitmapEncoder();
+            //    default:
+            //        throw new Exception();
+            //}
         }
 
         //今の日時をStringで作成
@@ -859,23 +903,55 @@ namespace Pixtack3rd
                 Environment.CurrentDirectory, APP_CONFIG_FILE_NAME), MyAppConfig);
         }
 
+        //Rootを画像ファイルとして保存
         private void ButtonSaveToImage_Click(object sender, RoutedEventArgs e)
         {
-            BitmapSource? bmp = MyRoot.GetBitmap(MyRoot);
-            if (bmp != null)
-            {
-                string extension = "." + MyAppConfig.ImageType.ToString();
-                if (SaveBitmap(bmp, "E:\\pixtacktest" + extension) == false)
-                {
-                    MessageBox.Show("保存できなかった");
-                }
-            }
-            else
+            if (MyRoot.Thumbs.Count == 0) return;
+            if (SaveBitmapFromThumb(MyRoot) == false)
             {
                 MessageBox.Show("保存できなかった");
             }
-        }
+            //if (MyRoot.GetBitmap(MyRoot) is BitmapSource bitmap)
+            //{
 
+            //    Microsoft.Win32.SaveFileDialog dialog = new()
+            //    {
+            //        Filter = "*.png|*.png|*.jpg|*.jpg;*.jpeg|*.bmp|*.bmp|*.gif|*.gif|*.tiff|*.tiff",
+            //        AddExtension = true,
+            //    };
+            //    if (dialog.ShowDialog() == true)
+            //    {
+            //        BitmapEncoder encoder = GetEncoder(dialog.FilterIndex);
+            //        if (SaveBitmapSub(bitmap, dialog.FileName, encoder) == false)
+            //        {
+            //            MessageBox.Show("保存できなかった");
+            //        }
+            //    }
+            //}
+            //else MessageBox.Show("保存できなかった");
+        }
+        private bool SaveBitmapFromThumb(TThumb thumb)
+        {
+            if (MyRoot.GetBitmap(thumb) is BitmapSource bitmap)
+            {
+
+                Microsoft.Win32.SaveFileDialog dialog = new()
+                {
+                    Filter = "*.png|*.png|*.jpg|*.jpg;*.jpeg|*.bmp|*.bmp|*.gif|*.gif|*.tiff|*.tiff",
+                    AddExtension = true,
+                };
+                if (dialog.ShowDialog() == true)
+                {
+                    BitmapEncoder encoder = GetEncoder(dialog.FilterIndex);
+                    if (SaveBitmapSub(bitmap, dialog.FileName, encoder))
+                    {
+                        return true;
+                    }
+                    else return false;
+                }
+            }
+            return false;
+        }
         private void ButtonSaveData_Click(object sender, RoutedEventArgs e)
         {
             //TTRootのDataを保存
@@ -927,7 +1003,7 @@ namespace Pixtack3rd
             dialog.Filter = "(azt)|*.azt";
             if (dialog.ShowDialog() == true)
             {
-                if(LoadFromZip(dialog.FileName) is Data data)
+                if (LoadFromZip(dialog.FileName) is Data data)
                 {
                     MyRoot.AddDataToActiveGroup(data);
                 }
@@ -935,12 +1011,14 @@ namespace Pixtack3rd
         }
         private void ButtonToGroup_Click(object sender, RoutedEventArgs e)
         {
+            //グループ化
             MyRoot.AddGroup();
         }
 
         private void ButtonUnGroup_Click(object sender, RoutedEventArgs e)
         {
-
+            //グループ解除、ActiveThumbが対象
+            MyRoot.UnGroup();
         }
 
     }
