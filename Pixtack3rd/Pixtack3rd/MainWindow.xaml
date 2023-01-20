@@ -22,14 +22,23 @@
       <local:TTRoot x:Name="MyRoot" HorizontalAlignment="Left" VerticalAlignment="Top"
                     TTXShift="32" TTYShift="32" TTGrid="8">
 
-        <local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
+        <!--<local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
         <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection2.png"/>
         <local:TTImage x:Name="MyImage1" TTLeft="100" TTTop="100"
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection3.png"/>
         <local:TTImage x:Name="MyImage2" TTLeft="120" TTTop="120"
-                       TTSourcePath="D:\\ブログ用\\テスト用画像\\collection4.png"/>
-        
+                       TTSourcePath="D:\\ブログ用\\テスト用画像\\collection4.png"/>-->
+        <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
+                       TTSourcePath="D:\ブログ用\テスト用画像\hueRect000.png"/>
+        <local:TTImage x:Name="MyImage1" TTLeft="30" TTTop="30"
+                       TTSourcePath="D:\ブログ用\テスト用画像\hueRect030.png"/>
+        <local:TTImage x:Name="MyImage2" TTLeft="60" TTTop="60"
+                       TTSourcePath="D:\ブログ用\テスト用画像\hueRect060.png"/>
+<local:TTImage x:Name="MyImage3" TTLeft="90" TTTop="90"
+                       TTSourcePath="D:\ブログ用\テスト用画像\hueRect090.png"/>
+<local:TTImage x:Name="MyImage4" TTLeft="120" TTTop="120"
+                       TTSourcePath="D:\ブログ用\テスト用画像\hueRect135.png"/>
 
       </local:TTRoot>
     </ScrollViewer>
@@ -43,7 +52,7 @@
         <Button x:Name="ButtonLoadDataThumb" Content="データ読み込み(個別)" Click="ButtonLoadDataThumb_Click"/>
         <Button x:Name="ButtonToGroup" Content="グループ化" Click="ButtonToGroup_Click"/>
         <Button x:Name="ButtonUnGroup" Content="グループ解除" Click="ButtonUnGroup_Click"/>
-        
+
       </StackPanel>
       <StackPanel DataContext="{Binding ElementName=MyRoot}">
         <GroupBox x:Name="MyGroup1">
@@ -83,12 +92,12 @@
         <GroupBox Header="ActiveThumb" DataContext="{Binding ActiveThumb}">
           <StackPanel>
             <TextBlock Text="{Binding Data.Guid}"/>
+            <TextBlock Text="{Binding Data.Type}"/>
             <TextBlock Text="{Binding Data.X}"/>
             <TextBlock Text="{Binding Data.Y}"/>
             <TextBlock Text="{Binding ActualWidth,StringFormat=ActWidht \= 0}"/>
             <TextBlock Text="{Binding ActualHeight, StringFormat=ActHeight \= 0}"/>
             <TextBlock Text="{Binding Data.Text}"/>
-            <TextBlock Text="{Binding Data.Type}"/>
             <Image Source="{Binding Data.Source}" Width="100" Height="100"/>
           </StackPanel>
         </GroupBox>

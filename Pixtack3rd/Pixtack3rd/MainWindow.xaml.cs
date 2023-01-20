@@ -53,16 +53,22 @@ namespace Pixtack3rd
             Drop += MainWindow_Drop;
             Closed += MainWindow_Closed;
 
-            //string imagePath = "D:\\ブログ用\\テスト用画像\\collection5.png";
-            //string imagePath1 = "D:\\ブログ用\\テスト用画像\\collection4.png";
+            string imagePath = "D:\\ブログ用\\テスト用画像\\collection5.png";
+            string imagePath1 = "D:\\ブログ用\\テスト用画像\\collection4.png";
+            string imagePath2 = "D:\\ブログ用\\テスト用画像\\hueRect000.png";
+            string imagePath3 = "D:\\ブログ用\\テスト用画像\\hueRect030.png";
 
-            var neko = MyRoot.Name;
-            //DataImage dataImg1 = new() { Source = GetBitmap(imagePath) };
-            //DataImage dataImg2 = new() { Source = GetBitmap(imagePath1), X = 100, Y = 100 };
+           
+            Data dataImg1 = new(TType.Image) { Source = GetBitmap(imagePath) };
+            Data dataImg2 = new(TType.Image) { Source = GetBitmap(imagePath1), X = 100, Y = 100 };
 
-            //TTGroup group = new(new DataGroup() { X = 100, Y = 100 });
-            //group.AddItem(dataImg1);
-            //group.AddItem(dataImg2);
+            //TTGroup group = new(new Data(TType.Group) { X = 100, Y = 100 });
+            //Data dataGroup = new(TType.Group);
+            //dataGroup.Datas.Add(dataImg1);
+            //dataGroup.Datas.Add(dataImg2);
+            ////dataGroup.Datas.Add(new Data(TType.Image) { Source=GetBitmap(imagePath2), X = 120, Y = 120 });
+            //MyRoot.AddDataToActiveGroup(dataGroup);
+            
 
             //MyRoot.AddItem(group, group.Data);
             ////    dataImg1.Source = new BitmapImage(new Uri("D:\\ブログ用\\テスト用画像\\collection4.png"));
@@ -927,7 +933,7 @@ namespace Pixtack3rd
             dialog.Filter = "(azt)|*.azt";
             if (dialog.ShowDialog() == true)
             {
-                if(LoadFromZip(dialog.FileName) is Data data)
+                if (LoadFromZip(dialog.FileName) is Data data)
                 {
                     MyRoot.AddDataToActiveGroup(data);
                 }
@@ -935,12 +941,14 @@ namespace Pixtack3rd
         }
         private void ButtonToGroup_Click(object sender, RoutedEventArgs e)
         {
+            //グループ化
             MyRoot.AddGroup();
         }
 
         private void ButtonUnGroup_Click(object sender, RoutedEventArgs e)
         {
-
+            //グループ解除、ActiveThumbが対象
+            MyRoot.UnGroup();
         }
 
     }

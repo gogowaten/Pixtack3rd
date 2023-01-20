@@ -75,6 +75,14 @@ namespace Pixtack3rd
             DataContext = data;
             SetBinding(TTLeftProperty, nameof(data.X));
             SetBinding(TTTopProperty, nameof(data.Y));
+
+        }
+
+        //サイズ変更時には親要素の位置とサイズ更新
+        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+        {
+            base.OnRenderSizeChanged(sizeInfo);
+            TTParent?.TTGroupUpdateLayout();
         }
 
         protected T? MakeTemplate<T>()
@@ -376,7 +384,7 @@ namespace Pixtack3rd
             {
                 TThumb thumb = BuildThumb(data);
                 group.Thumbs.Add(thumb);
-                //group.Data.Datas.Add(thumb.Data);
+                //newGroup.Data.Datas.Add(thumb.Data);
                 if (thumb is TTGroup gThumb)
                 {
                     SetData(gThumb);
@@ -566,21 +574,32 @@ namespace Pixtack3rd
             AddThumb(thumb, ActiveGroup);
         }
         /// <summary>
-        /// 追加先Groupを指定して追加
+        /// 追加先Groupを指定して追加、挿入Indexは最後尾(最前面)
         /// </summary>
         /// <param name="thumb">追加する子要素</param>
         /// <param name="destGroup">追加先Group</param>
         protected void AddThumb(TThumb thumb, TTGroup destGroup)
         {
+            AddThumb(thumb, destGroup, destGroup.Thumbs.Count - 1);
+        }
+        /// <summary>
+        /// 追加先Groupと挿入Indexを指定して追加
+        /// </summary>
+        /// <param name="thumb">追加する子要素</param>
+        /// <param name="destGroup">追加先Group</param>
+        /// <param name="insert">挿入Index</param>
+        protected void AddThumb(TThumb thumb, TTGroup destGroup, int insert)
+        {
             if (destGroup.Data.Datas != null)
             {
-                destGroup.Thumbs.Add(thumb);
-                destGroup.Data.Datas.Add(thumb.Data);
+                destGroup.Thumbs.Insert(insert, thumb);
+                destGroup.Data.Datas.Insert(insert, thumb.Data);
                 //ドラッグ移動イベント付加
                 thumb.DragDelta += Thumb_DragDelta;
                 thumb.DragCompleted += Thumb_DragCompleted;
             }
         }
+
         /// <summary>
         /// ActiveThumbに要素をDataで追加
         /// </summary>
@@ -676,10 +695,8 @@ namespace Pixtack3rd
         //基本的にSelectedThumbsの要素群でグループ化、それをActiveGroupに追加する
         public void AddGroup()
         {
-            //選択要素群をActiveGroupを基準に並べ替え
-            var tempList = MakeSortedList(SelectedThumbs, ActiveGroup);
 
-            TTGroup? group = MakeAndAddGroup(tempList, ActiveGroup);
+            TTGroup? group = MakeAndAddGroup(SelectedThumbs, ActiveGroup);
             if (group != null)
             {
                 SelectedThumbs.Clear();
@@ -694,28 +711,33 @@ namespace Pixtack3rd
         /// <param name="destGroup">新グループの追加先</param>
         private TTGroup? MakeAndAddGroup(IEnumerable<TThumb> thumbs, TTGroup destGroup)
         {
-            if (CheckAddGroup(thumbs, destGroup) == false) { return null; }
-            var (x, y, w, h) = GetRect(thumbs);
-            TTGroup group = new() { Name = "new_group", TTLeft = x, TTTop = y };
+            //選択要素群をActiveGroupを基準に並べ替え
+            List<TThumb> sortedList = MakeSortedList(thumbs, destGroup);
+            //新グループの挿入Index
+            int insertIndex = destGroup.Thumbs.IndexOf(sortedList[^1]) - (sortedList.Count - 1);
+
+            if (CheckAddGroup(sortedList, destGroup) == false) { return null; }
+            var (x, y, w, h) = GetRect(sortedList);
+            TTGroup newGroup = new() { Name = "new_group", TTLeft = x, TTTop = y };
             //各要素のドラッグイベントを外す、新グループに追加
-            foreach (var item in thumbs)
+            foreach (var item in sortedList)
             {
                 destGroup.Thumbs.Remove(item);
                 destGroup.Data.Datas.Remove(item.Data);
                 item.DragDelta -= Thumb_DragDelta;
                 item.DragCompleted -= Thumb_DragCompleted;
 
-                group.Thumbs.Add(item);
-                group.Data.Datas.Add(item.Data);
+                newGroup.Thumbs.Add(item);
+                newGroup.Data.Datas.Add(item.Data);
                 item.TTLeft -= x;
                 item.TTTop -= y;
             }
-            AddThumb(group, destGroup);
+            AddThumb(newGroup, destGroup, insertIndex);
 
-            group.Arrange(new(0, 0, w, h));//再配置？このタイミングで必須、Actualサイズに値が入る
-            group.TTGroupUpdateLayout();//必須、サイズと位置の更新
+            newGroup.Arrange(new(0, 0, w, h));//再配置？このタイミングで必須、Actualサイズに値が入る
+            newGroup.TTGroupUpdateLayout();//必須、サイズと位置の更新
 
-            return group;
+            return newGroup;
         }
         private static bool CheckAddGroup(IEnumerable<TThumb> thumbs, TTGroup destGroup)
         {
