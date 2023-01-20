@@ -779,12 +779,9 @@ namespace Pixtack3rd
                 group.Thumbs.Remove(item);//親Groupから削除
                 item.DragDelta -= Thumb_DragDelta;
                 item.DragCompleted -= Thumb_DragCompleted;
-
-                AddThumb(item, destGroup, insertIndex);//親親Groupに挿入
+                //親親Groupに挿入
+                AddThumb(item, destGroup, insertIndex);
                 insertIndex++;
-                //destGroup.Thumbs.Add(item);
-                //item.DragDelta += Thumb_DragDelta;
-                //item.DragCompleted += Thumb_DragCompleted;
                 item.TTLeft += group.TTLeft;//位置修正
                 item.TTTop += group.TTTop;
             }
