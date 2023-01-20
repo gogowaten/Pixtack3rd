@@ -695,7 +695,6 @@ namespace Pixtack3rd
         //基本的にSelectedThumbsの要素群でグループ化、それをActiveGroupに追加する
         public void AddGroup()
         {
-
             TTGroup? group = MakeAndAddGroup(SelectedThumbs, ActiveGroup);
             if (group != null)
             {
@@ -713,7 +712,7 @@ namespace Pixtack3rd
         {
             //選択要素群をActiveGroupを基準に並べ替え
             List<TThumb> sortedList = MakeSortedList(thumbs, destGroup);
-            //新グループの挿入Index
+            //新グループの挿入Index、[^1]は末尾から数えて1番目の要素って意味
             int insertIndex = destGroup.Thumbs.IndexOf(sortedList[^1]) - (sortedList.Count - 1);
 
             if (CheckAddGroup(sortedList, destGroup) == false) { return null; }
@@ -735,7 +734,8 @@ namespace Pixtack3rd
             AddThumb(newGroup, destGroup, insertIndex);
 
             newGroup.Arrange(new(0, 0, w, h));//再配置？このタイミングで必須、Actualサイズに値が入る
-            newGroup.TTGroupUpdateLayout();//必須、サイズと位置の更新
+            //↓はこのタイミングではいらないかも？RenderSizeChangeで実行するようにした
+            //newGroup.TTGroupUpdateLayout();//必須、サイズと位置の更新
 
             return newGroup;
         }
@@ -772,18 +772,20 @@ namespace Pixtack3rd
         {
             //解除対象のグループの要素群に対して
             //ドラッグイベント解除＋解除対象から削除してから
-            //その親Groupに追加＋ドラッグイベント追加
-            //位置修正
+            //その親Groupに追加＋ドラッグイベント追加+位置修正
+            int insertIndex = destGroup.Thumbs.IndexOf(group);//挿入Index
             foreach (var item in group.Thumbs.ToArray())
             {
-                group.Thumbs.Remove(item);
+                group.Thumbs.Remove(item);//親Groupから削除
                 item.DragDelta -= Thumb_DragDelta;
                 item.DragCompleted -= Thumb_DragCompleted;
 
-                destGroup.Thumbs.Add(item);
-                item.DragDelta += Thumb_DragDelta;
-                item.DragCompleted += Thumb_DragCompleted;
-                item.TTLeft += group.TTLeft;
+                AddThumb(item, destGroup, insertIndex);//親親Groupに挿入
+                insertIndex++;
+                //destGroup.Thumbs.Add(item);
+                //item.DragDelta += Thumb_DragDelta;
+                //item.DragCompleted += Thumb_DragCompleted;
+                item.TTLeft += group.TTLeft;//位置修正
                 item.TTTop += group.TTTop;
             }
             //抜け殻になった元のグループ要素削除
