@@ -53,7 +53,7 @@ namespace Pixtack3rd
         #endregion 依存プロパティ
         protected readonly string TEMPLATE_NAME = "NEMO";
         public TTGroup? TTParent { get; set; } = null;//親Group
-        public TType Type { get; set; }
+        public TType Type { get;private set; }
         public Data Data { get; set; }// = new(TType.None);
 
         public TThumb() : this(new Data(TType.None)) { }
@@ -106,6 +106,45 @@ namespace Pixtack3rd
     [ContentProperty(nameof(Thumbs))]
     public class TTGroup : TThumb
     {
+        #region 依存プロパティ
+
+        public int TTXShift
+        {
+            get { return (int)GetValue(TTXShiftProperty); }
+            set { SetValue(TTXShiftProperty, value); }
+        }
+        public static readonly DependencyProperty TTXShiftProperty =
+            DependencyProperty.Register(nameof(TTXShift), typeof(int), typeof(TTRoot),
+                new FrameworkPropertyMetadata(32,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public int TTYShift
+        {
+            get { return (int)GetValue(TTYShiftProperty); }
+            set { SetValue(TTYShiftProperty, value); }
+        }
+        public static readonly DependencyProperty TTYShiftProperty =
+            DependencyProperty.Register(nameof(TTYShift), typeof(int), typeof(TTRoot),
+                new FrameworkPropertyMetadata(32,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public int TTGrid
+        {
+            get { return (int)GetValue(TTGridProperty); }
+            set { SetValue(TTGridProperty, value); }
+        }
+        public static readonly DependencyProperty TTGridProperty =
+            DependencyProperty.Register(nameof(TTGrid), typeof(int), typeof(TTRoot),
+                new FrameworkPropertyMetadata(8,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        #endregion 依存プロパティ
         private ItemsControl MyTemplateElement;
         public ObservableCollection<TThumb> Thumbs { get; private set; } = new();
 
@@ -235,45 +274,7 @@ namespace Pixtack3rd
 
     public class TTRoot : TTGroup, INotifyPropertyChanged
     {
-        #region 依存プロパティ
-
-        //public int TTXShift
-        //{
-        //    get { return (int)GetValue(TTXShiftProperty); }
-        //    set { SetValue(TTXShiftProperty, value); }
-        //}
-        //public static readonly DependencyProperty TTXShiftProperty =
-        //    DependencyProperty.Register(nameof(TTXShift), typeof(int), typeof(TTRoot),
-        //        new FrameworkPropertyMetadata(32,
-        //            FrameworkPropertyMetadataOptions.AffectsRender |
-        //            FrameworkPropertyMetadataOptions.AffectsMeasure |
-        //            FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        //public int TTYShift
-        //{
-        //    get { return (int)GetValue(TTYShiftProperty); }
-        //    set { SetValue(TTYShiftProperty, value); }
-        //}
-        //public static readonly DependencyProperty TTYShiftProperty =
-        //    DependencyProperty.Register(nameof(TTYShift), typeof(int), typeof(TTRoot),
-        //        new FrameworkPropertyMetadata(32,
-        //            FrameworkPropertyMetadataOptions.AffectsRender |
-        //            FrameworkPropertyMetadataOptions.AffectsMeasure |
-        //            FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        public int TTGrid
-        {
-            get { return (int)GetValue(TTGridProperty); }
-            set { SetValue(TTGridProperty, value); }
-        }
-        public static readonly DependencyProperty TTGridProperty =
-            DependencyProperty.Register(nameof(TTGrid), typeof(int), typeof(TTRoot),
-                new FrameworkPropertyMetadata(8,
-                    FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure |
-                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        #endregion 依存プロパティ
+       
         #region 通知プロパティ
 
         protected void SetProperty<T>(ref T field, T value, [CallerMemberName] string? name = null)
@@ -539,6 +540,7 @@ namespace Pixtack3rd
 
         #region その他関数
 
+      
         private bool CheckIsActive(TThumb thumb)
         {
             if (thumb.TTParent is TTGroup ttg && ttg == ActiveGroup)
@@ -648,8 +650,8 @@ namespace Pixtack3rd
                 //位置修正、追加先のActiveThumbに合わせる
                 if (ActiveThumb != null)
                 {
-                    data.X += ActiveThumb.Data.X;
-                    data.Y += ActiveThumb.Data.Y;
+                    data.X = ActiveThumb.Data.X + TTXShift;
+                    data.Y = ActiveThumb.Data.Y + TTYShift;
                 }
                 else
                 {
@@ -1134,7 +1136,7 @@ namespace Pixtack3rd
         {
             if (d is TTImage obj)
             {
-                obj.Data.Source = new BitmapImage(new Uri((string)e.NewValue));
+                obj.Data.BitmapSource = new BitmapImage(new Uri((string)e.NewValue));
             }
         }
 
@@ -1149,8 +1151,8 @@ namespace Pixtack3rd
             if (MakeTemplate<Image>() is Image element) { MyTemplateElement = element; }
             else { throw new ArgumentException("テンプレート作成できんかった"); }
 
-            //SetBinding(TTSourceProperty, nameof(Data.Source));
-            MyTemplateElement.SetBinding(Image.SourceProperty, nameof(Data.Source));
+            //SetBinding(TTSourceProperty, nameof(Data.BitmapSource));
+            MyTemplateElement.SetBinding(Image.SourceProperty, nameof(Data.BitmapSource));
             //MySetXYBinging(this.Data);
         }
 

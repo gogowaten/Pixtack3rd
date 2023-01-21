@@ -56,10 +56,10 @@ namespace Pixtack3rd
 
 
         //画像、それ自体は直接シリアライズしないので[IgnoreDataMember]
-        //        [IgnoreDataMember] public BitmapSource? Source { get; set; }
+        //        [IgnoreDataMember] public BitmapSource? BitmapSource { get; set; }
 
-        [IgnoreDataMember] private BitmapSource? _source;
-        [IgnoreDataMember] public BitmapSource? Source { get => _source; set => SetProperty(ref _source, value); }
+        [IgnoreDataMember] private BitmapSource? _bitmapSource;
+        [IgnoreDataMember] public BitmapSource? BitmapSource { get => _bitmapSource; set => SetProperty(ref _bitmapSource, value); }
 
         //シリアライズ時の画像ファイル名に使用、Guidで一意の名前作成している
         [DataMember] public string Guid { get; set; } = System.Guid.NewGuid().ToString();

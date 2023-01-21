@@ -21,6 +21,8 @@ using System.Windows.Shapes;
 using System.Xml;
 using ControlLibraryCore20200620;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Windows.Automation.Provider;
 
 namespace Pixtack3rd
 {
@@ -38,13 +40,17 @@ namespace Pixtack3rd
         private const string DATE_TIME_STRING_FORMAT = "yyyyMMdd'_'HHmmss'_'fff";
         //データ保存時のxmlのファイル名
         private readonly string XML_FILE_NAME = "Data.xml";
+        //データだけの拡張子
+        private const string DATA_EXTENSION_NAME = ".azt";
+        //Rootデータとアプリの設定を含んだ拡張子
+        private const string APP_EXTENSION_NAME = ".az3";
 
         public MainWindow()
         {
             InitializeComponent();
             MyAppConfig = GetAppConfig(APP_CONFIG_FILE_NAME);
             DataContext = MyAppConfig;
-            
+
             AppVersion = GetAppVersion();
             MyInitialize();
 
@@ -56,26 +62,36 @@ namespace Pixtack3rd
 
             string imagePath = "D:\\ブログ用\\テスト用画像\\collection5.png";
             string imagePath1 = "D:\\ブログ用\\テスト用画像\\collection4.png";
-            string imagePath2 = "D:\\ブログ用\\テスト用画像\\hueRect000.png";
-            string imagePath3 = "D:\\ブログ用\\テスト用画像\\hueRect030.png";
+            //string imagePath2 = "D:\\ブログ用\\テスト用画像\\hueRect000.png";
+            //string imagePath3 = "D:\\ブログ用\\テスト用画像\\hueRect030.png";
 
 
-            Data dataImg1 = new(TType.Image) { Source = GetBitmap(imagePath) };
-            Data dataImg2 = new(TType.Image) { Source = GetBitmap(imagePath1), X = 100, Y = 100 };
+            Data dataImg1 = new(TType.Image) { BitmapSource = GetBitmap(imagePath) };
+            Data dataImg2 = new(TType.Image) { BitmapSource = GetBitmap(imagePath1), X = 100, Y = 100 };
 
             //TTGroup group = new(new Data(TType.Group) { X = 100, Y = 100 });
             //Data dataGroup = new(TType.Group);
             //dataGroup.Datas.Add(dataImg1);
             //dataGroup.Datas.Add(dataImg2);
-            ////dataGroup.Datas.Add(new Data(TType.Image) { Source=GetBitmap(imagePath2), X = 120, Y = 120 });
+            ////dataGroup.Datas.Add(new Data(TType.Image) { BitmapSource=GetBitmap(imagePath2), X = 120, Y = 120 });
             //MyRoot.AddThumbDataToActiveGroup(dataGroup);
 
 
             //MyRoot.AddItem(group, group.Data);
-            ////    dataImg1.Source = new BitmapImage(new Uri("D:\\ブログ用\\テスト用画像\\collection4.png"));
-            ////dataImg1.Source = GetBitmap("D:\\ブログ用\\テスト用画像\\collection4.png");
+            ////    dataImg1.BitmapSource = new BitmapImage(new Uri("D:\\ブログ用\\テスト用画像\\collection4.png"));
+            ////dataImg1.BitmapSource = GetBitmap("D:\\ブログ用\\テスト用画像\\collection4.png");
 
-            ////MyImage.Data.Source = GetBitmap("D:\\ブログ用\\テスト用画像\\collection1.png");
+            ////MyImage.Data.BitmapSource = GetBitmap("D:\\ブログ用\\テスト用画像\\collection1.png");
+        }
+
+        private static BitmapImage GetBitmap(string filePath)
+        {
+            BitmapImage bmp = new();
+            FileStream stream = new(filePath, FileMode.Open, FileAccess.Read);
+            bmp.BeginInit();
+            bmp.StreamSource = stream;
+            bmp.EndInit();
+            return bmp;
         }
 
 
@@ -612,25 +628,7 @@ namespace Pixtack3rd
                 default:
                     throw new Exception();
             }
-            //switch (type)
-            //{
-            //    case ImageType.png:
-            //        return new PngBitmapEncoder();
-            //    case ImageType.jpg:
-            //        var jpeg = new JpegBitmapEncoder
-            //        {
-            //            QualityLevel = MyAppConfig.JpegQuality
-            //        };
-            //        return jpeg;
-            //    case ImageType.bmp:
-            //        return new BmpBitmapEncoder();
-            //    case ImageType.gif:
-            //        return new GifBitmapEncoder();
-            //    case ImageType.tiff:
-            //        return new TiffBitmapEncoder();
-            //    default:
-            //        throw new Exception();
-            //}
+
         }
 
         //今の日時をStringで作成
@@ -734,205 +732,6 @@ namespace Pixtack3rd
         //    MyNumericUpDownFileNameSerial.MyValue += MyNumericUpDownFileNameSerialIncreace.MyValue;
         //}
 
-        #endregion 画像保存
-        private void MainWindow_Drop(object sender, DragEventArgs e)
-        {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                //var fileList3 = ((string[])e.Data.GetData(DataFormats.FileDrop)).OrderBy(x => x);
-                var fileList2 = ((string[])e.Data.GetData(DataFormats.FileDrop)).ToArray();
-                Array.Sort(fileList2);
-
-                double x = MyAppConfig.XShift;
-                double y = MyAppConfig.YShift;
-                //double x = MyRoot.Data.XShift;
-                //double y = MyRoot.Data.YShift;
-                if (MyRoot.ActiveThumb != null)
-                {
-                    x += MyRoot.ActiveThumb.Data.X;
-                    y += MyRoot.ActiveThumb.Data.Y;
-                }
-                foreach (var item in fileList2)
-                {
-                    TTImage tTImage = new(new Data(TType.Image)
-                    {
-                        Source = new BitmapImage(new Uri(item)),
-                        X = x,
-                        Y = y
-                    });
-                    MyRoot.AddThumbToActiveGroup(tTImage);
-                    MyRoot.ActiveThumb = tTImage;
-                    x += MyAppConfig.XShift;
-                    y += MyAppConfig.YShift;
-                }
-
-
-
-            }
-        }
-
-
-        private static BitmapImage GetBitmap(string filePath)
-        {
-            BitmapImage bmp = new();
-            FileStream stream = new(filePath, FileMode.Open, FileAccess.Read);
-            bmp.BeginInit();
-            bmp.StreamSource = stream;
-            bmp.EndInit();
-            return bmp;
-        }
-
-
-        /// <summary>
-        /// データ保存
-        /// </summary>
-        /// <param name="filePath">拡張子も含めたフルパス</param>
-        /// <param name="data"></param>
-        private void SaveToZip(string filePath, Data data)
-        {
-            try
-            {
-                using FileStream zipStream = File.Create(filePath);
-                using ZipArchive archive = new(zipStream, ZipArchiveMode.Create);
-                //xml形式にシリアライズして、それをzipに詰め込む
-                ZipArchiveEntry entry = archive.CreateEntry(XML_FILE_NAME);
-                using (Stream entryStream = entry.Open())
-                {
-                    XmlWriterSettings settings = new()
-                    {
-                        Indent = true,
-                        Encoding = Encoding.UTF8,
-                        NewLineOnAttributes = true,
-                        ConformanceLevel = ConformanceLevel.Fragment,
-                    };
-                    //シリアライズする型は基底クラス型のDataで大丈夫
-                    DataContractSerializer serializer = new(typeof(Data));
-                    using var writer = XmlWriter.Create(entryStream, settings);
-                    try { serializer.WriteObject(writer, data); }
-                    catch (Exception ex) { MessageBox.Show(ex.Message); }
-                }
-
-                //子要素
-                SubLoop(archive, data);
-
-            }
-            catch (Exception ex) { MessageBox.Show(ex.Message); }
-
-            void SubLoop(ZipArchive archive, Data subData)
-            {
-                if (data.Source != null)
-                {
-                    Sub(data, archive);
-                }
-                foreach (Data item in subData.Datas)
-                {
-                    Sub(item, archive);
-                    if (item.Type == TType.Group) { SubLoop(archive, item); }
-                }
-            }
-
-            void Sub(Data itemData, ZipArchive archive)
-            {
-                //画像があった場合はpng形式にしてzipに詰め込む
-                if (itemData.Source is BitmapSource bmp)
-                {
-                    ZipArchiveEntry entry = archive.CreateEntry(itemData.Guid + ".png");
-                    using Stream entryStream = entry.Open();
-                    PngBitmapEncoder encoder = new();
-                    encoder.Frames.Add(BitmapFrame.Create(bmp));
-                    using MemoryStream memStream = new();
-                    encoder.Save(memStream);
-                    memStream.Position = 0;
-                    memStream.CopyTo(entryStream);
-                }
-            }
-        }
-
-        private Data? LoadFromZip(string filePath)
-        {
-            try
-            {
-                using FileStream zipStream = File.OpenRead(filePath);
-                using ZipArchive archive = new(zipStream, ZipArchiveMode.Read);
-                ZipArchiveEntry? entry = archive.GetEntry(XML_FILE_NAME);
-                if (entry != null)
-                {
-                    //デシリアライズ
-                    using Stream entryStream = entry.Open();
-                    DataContractSerializer serializer = new(typeof(Data));
-                    using var reader = XmlReader.Create(entryStream);
-                    Data? data = (Data?)serializer.ReadObject(reader);
-                    if (data is null) return null;
-
-                    SubLoop(data, archive);
-
-                    return data;
-                }
-            }
-            catch (Exception ex) { MessageBox.Show(ex.Message); }
-            return null;
-            void SubLoop(Data data, ZipArchive archive)
-            {
-                foreach (var item in data.Datas)
-                {
-                    //DataのTypeがImage型ならzipから画像を取り出して設定
-                    if (item.Type == TType.Image) { SubSetImageSource(item, archive); }
-                    //DataのTypeがGroupなら子要素も取り出す
-                    else if (item.Type == TType.Group) { SubLoop(item, archive); }
-                }
-            }
-            void SubSetImageSource(Data data, ZipArchive archive)
-            {
-                //Guidに一致する画像ファイルをデコードしてプロパティに設定
-                ZipArchiveEntry? imageEntry = archive.GetEntry(data.Guid + ".png");
-                if (imageEntry != null)
-                {
-                    using Stream imageStream = imageEntry.Open();
-                    PngBitmapDecoder decoder =
-                        new(imageStream,
-                        BitmapCreateOptions.None,
-                        BitmapCacheOption.Default);
-                    data.Source = decoder.Frames[0];//設定
-                }
-            }
-        }
-
-
-        //アプリ終了時
-        private void MainWindow_Closed(object? sender, EventArgs e)
-        {
-            //設定保存
-            SaveConfig(System.IO.Path.Combine(
-                Environment.CurrentDirectory, APP_CONFIG_FILE_NAME), MyAppConfig);
-        }
-
-        //Rootを画像ファイルとして保存
-        private void ButtonSaveToImage_Click(object sender, RoutedEventArgs e)
-        {
-            if (MyRoot.Thumbs.Count == 0) return;
-            if (SaveBitmapFromThumb(MyRoot) == false)
-            {
-                MessageBox.Show("保存できなかった");
-            }
-            //if (MyRoot.GetBitmap(MyRoot) is BitmapSource bitmap)
-            //{
-
-            //    Microsoft.Win32.SaveFileDialog dialog = new()
-            //    {
-            //        Filter = "*.png|*.png|*.jpg|*.jpg;*.jpeg|*.bmp|*.bmp|*.gif|*.gif|*.tiff|*.tiff",
-            //        AddExtension = true,
-            //    };
-            //    if (dialog.ShowDialog() == true)
-            //    {
-            //        BitmapEncoder encoder = GetEncoder(dialog.FilterIndex);
-            //        if (SaveBitmapSub(bitmap, dialog.FileName, encoder) == false)
-            //        {
-            //            MessageBox.Show("保存できなかった");
-            //        }
-            //    }
-            //}
-            //else MessageBox.Show("保存できなかった");
-        }
         private bool SaveBitmapFromThumb(TThumb thumb)
         {
             if (MyRoot.GetBitmap(thumb) is BitmapSource bitmap)
@@ -955,47 +754,309 @@ namespace Pixtack3rd
             }
             return false;
         }
-        private void ButtonSaveData_Click(object sender, RoutedEventArgs e)
+
+        #endregion 画像保存
+
+        #region ファイルドロップで開く
+
+        private void MainWindow_Drop(object sender, DragEventArgs e)
         {
-            //TTRootのDataを保存
-            Microsoft.Win32.SaveFileDialog dialog = new();
-            dialog.Filter = "(zip)|*.zip";
-            if (dialog.ShowDialog() == true)
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-                SaveToZip(dialog.FileName, MyRoot.Data);
+                //ファイル名一覧取得
+                var fileList2 = ((string[])e.Data.GetData(DataFormats.FileDrop)).ToArray();
+                Array.Sort(fileList2);//昇順ソート
+                List<string> errorFiles = new();
+
+                foreach (var item in fileList2)
+                {
+                    var ext = System.IO.Path.GetExtension(item);
+                    if (ext == DATA_EXTENSION_NAME)
+                    {
+                        var neko = LoadFromZip(item);
+                        if (neko.data != null)
+                        {
+                            MyRoot.AddThumbDataToActiveGroup(neko.data);
+                        }
+                    }
+                    else if (ext == APP_EXTENSION_NAME)
+                    {
+                        MessageBox.Show("az3");
+                    }
+                    else
+                    {
+                        //画像ファイル判定はエラーで
+                        try
+                        {
+                            FileStream stream = new(item, FileMode.Open, FileAccess.Read);
+                            BitmapImage img = new();
+                            img.BeginInit();
+                            img.StreamSource = stream;
+                            img.EndInit();
+                            var inu = img.StreamSource;
+
+                        }
+                        catch (Exception ex)
+                        {
+                            errorFiles.Add(item);
+                            continue;
+                        }
+
+                    }
+                 
+
+                    //try
+                    //{
+                    //    if (new BitmapImage(new Uri(item)) is BitmapSource bmp)
+                    //    {
+                    //        Data data = new(TType.Image)
+                    //        {
+                    //            BitmapSource = bmp,
+                    //            X = x,
+                    //            Y = y,
+                    //        };
+                    //        MyRoot.AddThumbDataToActiveGroup(data);
+                    //    }
+                    //    else
+                    //    {
+
+                    //    }
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    MessageBox.Show(ex.Message);
+                    //    throw;
+                    //}
+
+                    //foreach (var item in fileList2)
+                    //{
+                    //    TTImage tTImage = new(new Data(TType.Image)
+                    //    {
+                    //        BitmapSource = new BitmapImage(new Uri(item)),
+                    //        X = x,
+                    //        Y = y
+                    //    });
+                    //    MyRoot.AddThumbToActiveGroup(tTImage);
+                    //    MyRoot.ActiveThumb = tTImage;
+                    //    x += MyAppConfig.XShift;
+                    //    y += MyAppConfig.YShift;
+                    //}
+
+                }
+                if (errorFiles.Count > 0)
+                {
+                    string ms = "";
+                    foreach (var name in errorFiles)
+                    {
+                        ms += $"{name}\n";
+                    }
+                    MessageBox.Show(ms,"開くことができなかったファイル一覧",MessageBoxButton.OK,MessageBoxImage.Error);
+                }
             }
         }
+        #endregion ファイルドロップで開く
 
-        //個別保存、ActiveThumbのDataを保存
-        private void ButtonSaveDataThumb_Click(object sender, RoutedEventArgs e)
+
+        #region データ保存、アプリの設定保存
+
+        /// <summary>
+        /// データをzipで保存
+        /// </summary>
+        /// <param name="filePath">拡張子も含めたフルパス</param>
+        /// <param name="data"></param>
+        private void SaveToAz3(string filePath, Data data, bool isAppConfigSave = false)
         {
-            //TTRootのDataを保存
-            if (MyRoot.ActiveThumb?.Data is Data data)
+            try
             {
-                Microsoft.Win32.SaveFileDialog dialog = new();
-                dialog.Filter = "(azt)|*.azt";
-                if (dialog.ShowDialog() == true)
+                using FileStream zipStream = File.Create(filePath);
+                using ZipArchive archive = new(zipStream, ZipArchiveMode.Create);
+                XmlWriterSettings settings = new()
                 {
-                    SaveToZip(dialog.FileName, data);
+                    Indent = true,
+                    Encoding = Encoding.UTF8,
+                    NewLineOnAttributes = true,
+                    ConformanceLevel = ConformanceLevel.Fragment,
+                };
+                //シリアライズする型は基底クラス型のDataで大丈夫
+                DataContractSerializer serializer = new(typeof(Data));
+                //xml形式にシリアライズして、それをzipに詰め込む
+                ZipArchiveEntry entry = archive.CreateEntry(XML_FILE_NAME);
+                using (Stream entryStream = entry.Open())
+                {
+                    using XmlWriter writer = XmlWriter.Create(entryStream, settings);
+                    try { serializer.WriteObject(writer, data); }
+                    catch (Exception ex) { MessageBox.Show(ex.Message); }
+                }
+                //アプリの設定保存
+                if (isAppConfigSave)
+                {
+                    entry = archive.CreateEntry(APP_CONFIG_FILE_NAME);
+                    serializer = new(typeof(AppConfig));
+                    using (Stream entryStream = entry.Open())
+                    {
+                        using XmlWriter writer = XmlWriter.Create(entryStream, settings);
+                        try { serializer.WriteObject(writer, MyAppConfig); }
+                        catch (Exception ex) { MessageBox.Show(ex.Message); }
+                    }
+                }
+
+                //BitmapSourceの保存
+                SubLoop(archive, data);
+
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
+
+            void SubLoop(ZipArchive archive, Data subData)
+            {
+                if (data.BitmapSource != null)
+                {
+                    Sub(data, archive);
+                }
+                //子要素のBitmapSource保存
+                foreach (Data item in subData.Datas)
+                {
+                    Sub(item, archive);
+                    if (item.Type == TType.Group) { SubLoop(archive, item); }
+                }
+            }
+
+            void Sub(Data itemData, ZipArchive archive)
+            {
+                //画像があった場合はpng形式にしてzipに詰め込む
+                if (itemData.BitmapSource is BitmapSource bmp)
+                {
+                    ZipArchiveEntry entry = archive.CreateEntry(itemData.Guid + ".png");
+                    using Stream entryStream = entry.Open();
+                    PngBitmapEncoder encoder = new();
+                    encoder.Frames.Add(BitmapFrame.Create(bmp));
+                    using MemoryStream memStream = new();
+                    encoder.Save(memStream);
+                    memStream.Position = 0;
+                    memStream.CopyTo(entryStream);
                 }
             }
         }
 
-        private void ButtonLoadData_Click(object sender, RoutedEventArgs e)
+
+
+
+
+
+
+        #endregion データ保存、アプリの設定保存
+
+        #region データ読み込み、アプリの設定読み込み
+
+        private (Data? data, AppConfig? appConfig) LoadFromZip(string filePath)
         {
-            //全体Data読み込み
-            if (LoadFromZip("E:\\pixtack3rdTest.zip") is Data data)
+            try
             {
-                MyRoot.SetRootData(data);
+                using FileStream zipStream = File.OpenRead(filePath);
+                using ZipArchive archive = new(zipStream, ZipArchiveMode.Read);
+                ZipArchiveEntry? entry = archive.GetEntry(XML_FILE_NAME);
+                if (entry != null)
+                {
+                    //Dataをデシリアライズ
+                    using Stream entryStream = entry.Open();
+                    DataContractSerializer serializer = new(typeof(Data));
+                    using var reader = XmlReader.Create(entryStream);
+                    Data? data = (Data?)serializer.ReadObject(reader);
+                    if (data is null) return (null, null);
+
+                    SubSetImageSource(data, archive);
+
+                    //画像をデコードしてDataに設定する
+                    SubLoop(data, archive);
+
+
+                    //アプリの設定をデシリアライズ
+                    entry = archive.GetEntry(APP_CONFIG_FILE_NAME);
+                    if (entry != null)
+                    {
+                        using Stream entryAppConfig = entry.Open();
+                        serializer = new(typeof(AppConfig));
+                        using (var appConfigReader = XmlReader.Create(entryAppConfig))
+                        {
+                            AppConfig? appConfig = (AppConfig?)serializer.ReadObject(appConfigReader);
+                            return (data, appConfig);
+                        }
+                    }
+                    else
+                    {
+                        return (data, null);
+                    }
+                }
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
+            return (null, null);
+
+            void SubLoop(Data data, ZipArchive archive)
+            {
+                foreach (var item in data.Datas)
+                {
+                    //DataのTypeがImage型ならzipから画像を取り出して設定
+                    if (item.Type == TType.Image) { SubSetImageSource(item, archive); }
+                    //DataのTypeがGroupなら子要素も取り出す
+                    else if (item.Type == TType.Group) { SubLoop(item, archive); }
+                }
+            }
+            void SubSetImageSource(Data data, ZipArchive archive)
+            {
+                //Guidに一致する画像ファイルをデコードしてプロパティに設定
+                ZipArchiveEntry? imageEntry = archive.GetEntry(data.Guid + ".png");
+                if (imageEntry != null)
+                {
+                    using Stream imageStream = imageEntry.Open();
+                    PngBitmapDecoder decoder =
+                        new(imageStream,
+                        BitmapCreateOptions.None,
+                        BitmapCacheOption.Default);
+                    data.BitmapSource = decoder.Frames[0];//設定
+                }
             }
         }
-        private void Load()
+
+        //az3ファイルの読み込み
+        //TTRootのDataとアプリの設定を取得して設定
+        private void ButtonLoadData_Click(object sender, RoutedEventArgs e)
         {
             Microsoft.Win32.OpenFileDialog dialog = new();
-            dialog.Filter = "(zip)|*.zip";
+            dialog.Filter = "(az3)|*.az3";
             if (dialog.ShowDialog() == true)
             {
+                (Data? data, AppConfig? appConfig) = LoadFromZip(dialog.FileName);
+                if (data != null)
+                {
+                    MyRoot.SetRootData(data);
+                    if (appConfig != null)
+                    {
+                        MyAppConfig = appConfig;
+                        DataContext = MyAppConfig;
+                    }
+                }
+            }
+        }
 
+        //RootDataであるaz3ファイルを読み込んで、TTGroupに変換して追加
+        //変換部部が怪しい、項目が増えた場合はここも増やす必要があるのでバグ発生源になる？
+        private void ButtonLoadDataRootToGroup_Click(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.OpenFileDialog dialog = new();
+            dialog.Filter = "(az3)|*.az3";
+            if (dialog.ShowDialog() == true)
+            {
+                (Data? data, AppConfig? appConfig) = LoadFromZip(dialog.FileName);
+                if (data != null)
+                {
+                    //新たにGroupDataを作成してコピー
+                    Data newGroup = new(TType.Group)
+                    {
+                        Datas = data.Datas,
+                        X = MyRoot.ActiveGroup.TTXShift,
+                        Y = MyRoot.ActiveGroup.TTYShift
+                    };
+                    MyRoot.AddThumbDataToActiveGroup(newGroup);
+                }
             }
         }
 
@@ -1006,11 +1067,57 @@ namespace Pixtack3rd
             dialog.Filter = "(azt)|*.azt";
             if (dialog.ShowDialog() == true)
             {
-                if (LoadFromZip(dialog.FileName) is Data data)
+                (Data? data, AppConfig? appConfig) = LoadFromZip(dialog.FileName);
+                if (data is not null)
                 {
-                    data.X = MyAppConfig.XShift;
-                    data.Y = MyAppConfig.YShift;
+                    data.X = MyRoot.ActiveGroup.TTXShift;
+                    data.Y = MyRoot.ActiveGroup.TTYShift;
                     MyRoot.AddThumbDataToActiveGroup(data);
+                }
+            }
+        }
+
+        #endregion データ読み込み、アプリの設定読み込み
+
+
+        //Rootを画像ファイルとして保存
+        private void ButtonSaveToImage_Click(object sender, RoutedEventArgs e)
+        {
+            if (MyRoot.Thumbs.Count == 0) return;
+            if (SaveBitmapFromThumb(MyRoot) == false)
+            {
+                MessageBox.Show("保存できなかった");
+            }
+        }
+        //TTRootのDataとアプリの設定を保存
+        private void ButtonSaveData_Click(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.SaveFileDialog dialog = new();
+            dialog.Filter = "(az3)|*.az3";
+            if (dialog.ShowDialog() == true)
+            {
+                SaveToAz3(dialog.FileName, MyRoot.Data, true);
+            }
+        }
+        //個別保存、ActiveThumbのDataを保存
+        //アプリ終了時
+        private void MainWindow_Closed(object? sender, EventArgs e)
+        {
+            //設定保存
+            SaveConfig(System.IO.Path.Combine(
+                Environment.CurrentDirectory, APP_CONFIG_FILE_NAME), MyAppConfig);
+        }
+
+        private void ButtonSaveDataThumb_Click(object sender, RoutedEventArgs e)
+        {
+            //ActiveThumbのDataを保存
+            if (MyRoot.ActiveThumb?.Data is Data data)
+            {
+                Microsoft.Win32.SaveFileDialog dialog = new();
+                dialog.Filter = "(azt)|*.azt";
+                if (dialog.ShowDialog() == true)
+                {
+                    SaveToAz3(dialog.FileName, data);
                 }
             }
         }
@@ -1041,10 +1148,10 @@ namespace Pixtack3rd
         //    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         //}
 
-        private int _xShift;
-        [DataMember] public int XShift { get => _xShift; set => SetProperty(ref _xShift, value); }
-        private int _yShift;
-        [DataMember] public int YShift { get => _yShift; set => SetProperty(ref _yShift, value); }
+        //private int _xShift;
+        //[DataMember] public int XShift { get => _xShift; set => SetProperty(ref _xShift, value); }
+        //private int _yShift;
+        //[DataMember] public int YShift { get => _yShift; set => SetProperty(ref _yShift, value); }
         //private int _grid;
         //[DataMember] public int Grid { get => _grid; set => SetProperty(ref _grid, value); }
 

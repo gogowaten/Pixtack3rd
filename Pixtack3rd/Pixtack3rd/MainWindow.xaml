@@ -49,25 +49,26 @@
         <Button x:Name="ButtonSaveDataThumb" Content="データ保存(個別)" Click="ButtonSaveDataThumb_Click"/>
         <Button x:Name="ButtonLoadData" Content="データ読み込み(全体)" Click="ButtonLoadData_Click"/>
         <Button x:Name="ButtonLoadDataThumb" Content="データ読み込み(個別)" Click="ButtonLoadDataThumb_Click"/>
+        <Button x:Name="ButtonLoadDataRootToGroup" Content="データ読み込み、Rootをグループとして追加" Click="ButtonLoadDataRootToGroup_Click"/>
         <Button x:Name="ButtonToGroup" Content="グループ化" Click="ButtonToGroup_Click"/>
         <Button x:Name="ButtonUnGroup" Content="グループ解除" Click="ButtonUnGroup_Click"/>
 
       </StackPanel>
-      <WrapPanel>
-        <tomato:NumericUpDown BorderBrush="DodgerBlue"
+      <StackPanel DataContext="{Binding ElementName=MyRoot}">
+        <WrapPanel DataContext="{Binding ActiveGroup}">
+          <tomato:NumericUpDown BorderBrush="DodgerBlue"
                               MyValue="{Binding XShift}" MyStringFormat="シフトX 000;シフトX -000;シフトX 000"
                             Margin="10" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
                             MyMinValue="-1024" MyMaxValue="1024"/>
-        <tomato:NumericUpDown BorderBrush="DodgerBlue"
+          <tomato:NumericUpDown BorderBrush="DodgerBlue"
                               MyValue="{Binding YShift}" MyStringFormat="シフトY 000;シフトY -000;シフトY 000"
                             Margin="10" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
                             MyMinValue="-1024" MyMaxValue="1024"/>
-      </WrapPanel>
-      <StackPanel DataContext="{Binding ElementName=MyRoot}">
-        <tomato:NumericUpDown BorderBrush="DodgerBlue"
+          <tomato:NumericUpDown BorderBrush="DodgerBlue"
                               MyValue="{Binding TTGrid}" MyStringFormat="Grid 000;Grid -000;Grid 000"
                             Margin="10" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
                             MyMinValue="0" MyMaxValue="1024"/>
+        </WrapPanel>
         <GroupBox Header="Root">
           <StackPanel>
             <TextBlock Text="{Binding ActualWidth, StringFormat=width \= {0:000}}"/>
@@ -91,7 +92,7 @@
             <TextBlock Text="{Binding ActualWidth,StringFormat=ActWidht \= 0}"/>
             <TextBlock Text="{Binding ActualHeight, StringFormat=ActHeight \= 0}"/>
             <TextBlock Text="{Binding Data.Text}"/>
-            <Image Source="{Binding Data.Source}" Width="100" Height="100"/>
+            <Image Source="{Binding Data.BitmapSource}" Width="100" Height="100"/>
           </StackPanel>
         </GroupBox>
         <GroupBox Header="ClickedThumb" DataContext="{Binding ClickedThumb}">
