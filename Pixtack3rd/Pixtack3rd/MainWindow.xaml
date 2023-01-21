@@ -19,7 +19,7 @@
 
     <ScrollViewer x:Name="MyScrollViewer" HorizontalScrollBarVisibility="Auto">
       <!--<local:TTTextBlock TTText="222"/>-->
-      <local:TTRoot x:Name="MyRoot" HorizontalAlignment="Left" VerticalAlignment="Top">
+      <local:TTRoot x:Name="MyRoot" HorizontalAlignment="Left" VerticalAlignment="Top" TTGrid="8">
 
         <!--<local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
         <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
@@ -62,12 +62,12 @@
                               MyValue="{Binding YShift}" MyStringFormat="シフトY 000;シフトY -000;シフトY 000"
                             Margin="10" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
                             MyMinValue="-1024" MyMaxValue="1024"/>
-        <tomato:NumericUpDown BorderBrush="DodgerBlue"
-                              MyValue="{Binding Grid}" MyStringFormat="Grid 000;Grid -000;Grid 000"
-                            Margin="10" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
-                            MyMinValue="0" MyMaxValue="1024"/>
       </WrapPanel>
       <StackPanel DataContext="{Binding ElementName=MyRoot}">
+        <tomato:NumericUpDown BorderBrush="DodgerBlue"
+                              MyValue="{Binding TTGrid}" MyStringFormat="Grid 000;Grid -000;Grid 000"
+                            Margin="10" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
+                            MyMinValue="0" MyMaxValue="1024"/>
         <GroupBox Header="Root">
           <StackPanel>
             <TextBlock Text="{Binding ActualWidth, StringFormat=width \= {0:000}}"/>
