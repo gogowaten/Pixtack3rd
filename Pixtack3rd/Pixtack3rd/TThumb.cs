@@ -325,8 +325,8 @@ namespace Pixtack3rd
                 FixDataDatas();
             };
 
-            SetBinding(TTXShiftProperty, nameof(Data.XShift));
-            SetBinding(TTYShiftProperty, nameof(Data.YShift));
+            //SetBinding(TTXShiftProperty, nameof(Data.XShift));
+            //SetBinding(TTYShiftProperty, nameof(Data.YShift));
             SetBinding(TTGridProperty, nameof(Data.Grid));
 
         }
@@ -566,13 +566,7 @@ namespace Pixtack3rd
         #endregion その他関数
 
         #region 追加と削除
-        //基本的にActiveThumbのChildrenに対して行う
-        //削除対象はActiveThumbになる
-        //ドラッグ移動イベントの着脱も行う
-        public void AddThumb(TThumb thumb)
-        {
-            AddThumb(thumb, ActiveGroup);
-        }
+      
         /// <summary>
         /// 追加先Groupを指定して追加、挿入Indexは最後尾(最前面)
         /// </summary>
@@ -580,7 +574,8 @@ namespace Pixtack3rd
         /// <param name="destGroup">追加先Group</param>
         protected void AddThumb(TThumb thumb, TTGroup destGroup)
         {
-            AddThumb(thumb, destGroup, destGroup.Thumbs.Count - 1);
+            AddThumb(thumb, destGroup, destGroup.Thumbs.Count);
+            //AddThumbToActiveGroup(thumb, destGroup, destGroup.Thumbs.Count - 1);
         }
         /// <summary>
         /// 追加先Groupと挿入Indexを指定して追加
@@ -599,12 +594,18 @@ namespace Pixtack3rd
                 thumb.DragCompleted += Thumb_DragCompleted;
             }
         }
-
+        //基本的にActiveThumbのChildrenに対して行う
+        //削除対象はActiveThumbになる
+        //ドラッグ移動イベントの着脱も行う
+        public void AddThumbToActiveGroup(TThumb thumb)
+        {
+            AddThumb(thumb, ActiveGroup);
+        }
         /// <summary>
         /// ActiveThumbに要素をDataで追加
         /// </summary>
         /// <param name="data"></param>
-        public void AddDataToActiveGroup(Data data)
+        public void AddThumbDataToActiveGroup(Data data)
         {
             if (BuildThumb(data) is TThumb thumb)
             {
@@ -615,14 +616,26 @@ namespace Pixtack3rd
                     data.X += ActiveThumb.Data.X;
                     data.Y += ActiveThumb.Data.Y;
                 }
-                //中の子要素にはドラッグ移動イベント追加しない
+                else
+                {
+                    data.X = 0;
+                    data.Y = 0;
+                }
+                //Groupだった場合は子要素も追加、子要素にドラッグ移動イベント追加しない
                 if (thumb is TTGroup group)
                 {
                     SetData(group);
                 }
+                ActiveThumb = thumb;
             }
         }
 
+        /// <summary>
+        /// Dataから各種Thumbを構築
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
         public TThumb BuildThumb(Data data)
         {
             switch (data.Type)

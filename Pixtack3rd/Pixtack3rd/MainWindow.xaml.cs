@@ -44,6 +44,7 @@ namespace Pixtack3rd
             InitializeComponent();
             MyAppConfig = GetAppConfig(APP_CONFIG_FILE_NAME);
             DataContext = MyAppConfig;
+            
             AppVersion = GetAppVersion();
             MyInitialize();
 
@@ -67,7 +68,7 @@ namespace Pixtack3rd
             //dataGroup.Datas.Add(dataImg1);
             //dataGroup.Datas.Add(dataImg2);
             ////dataGroup.Datas.Add(new Data(TType.Image) { Source=GetBitmap(imagePath2), X = 120, Y = 120 });
-            //MyRoot.AddDataToActiveGroup(dataGroup);
+            //MyRoot.AddThumbDataToActiveGroup(dataGroup);
 
 
             //MyRoot.AddItem(group, group.Data);
@@ -742,8 +743,10 @@ namespace Pixtack3rd
                 var fileList2 = ((string[])e.Data.GetData(DataFormats.FileDrop)).ToArray();
                 Array.Sort(fileList2);
 
-                double x = MyRoot.Data.XShift;
-                double y = MyRoot.Data.YShift;
+                double x = MyAppConfig.XShift;
+                double y = MyAppConfig.YShift;
+                //double x = MyRoot.Data.XShift;
+                //double y = MyRoot.Data.YShift;
                 if (MyRoot.ActiveThumb != null)
                 {
                     x += MyRoot.ActiveThumb.Data.X;
@@ -757,10 +760,10 @@ namespace Pixtack3rd
                         X = x,
                         Y = y
                     });
-                    MyRoot.AddThumb(tTImage);
+                    MyRoot.AddThumbToActiveGroup(tTImage);
                     MyRoot.ActiveThumb = tTImage;
-                    x += MyRoot.Data.XShift;
-                    y += MyRoot.Data.YShift;
+                    x += MyAppConfig.XShift;
+                    y += MyAppConfig.YShift;
                 }
 
 
@@ -963,7 +966,7 @@ namespace Pixtack3rd
             }
         }
 
-        //ActiveThumbのDataを保存
+        //個別保存、ActiveThumbのDataを保存
         private void ButtonSaveDataThumb_Click(object sender, RoutedEventArgs e)
         {
             //TTRootのDataを保存
@@ -996,16 +999,18 @@ namespace Pixtack3rd
             }
         }
 
+        //個別Data読み込み
         private void ButtonLoadDataThumb_Click(object sender, RoutedEventArgs e)
         {
-            //個別Data読み込み
             Microsoft.Win32.OpenFileDialog dialog = new();
             dialog.Filter = "(azt)|*.azt";
             if (dialog.ShowDialog() == true)
             {
                 if (LoadFromZip(dialog.FileName) is Data data)
                 {
-                    MyRoot.AddDataToActiveGroup(data);
+                    data.X = MyAppConfig.XShift;
+                    data.Y = MyAppConfig.YShift;
+                    MyRoot.AddThumbDataToActiveGroup(data);
                 }
             }
         }
@@ -1035,6 +1040,15 @@ namespace Pixtack3rd
         //{
         //    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         //}
+
+        private int _xShift;
+        [DataMember] public int XShift { get => _xShift; set => SetProperty(ref _xShift, value); }
+        private int _yShift;
+        [DataMember] public int YShift { get => _yShift; set => SetProperty(ref _yShift, value); }
+        private int _grid;
+        [DataMember] public int Grid { get => _grid; set => SetProperty(ref _grid, value); }
+
+
 
         [DataMember] public int JpegQuality { get; set; } = 96;//jpeg画質
         [DataMember] public double Top { get; set; }//アプリ
