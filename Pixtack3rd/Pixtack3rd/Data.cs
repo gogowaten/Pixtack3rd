@@ -28,11 +28,11 @@ namespace Pixtack3rd
 
         [DataMember] public ObservableCollection<Data> Datas { get; set; } = new();
 
-        private int _xShift;
-        [DataMember] public int XShift { get => _xShift; set => SetProperty(ref _xShift, value); }
+        //private int _xShift;
+        //[DataMember] public int XShift { get => _xShift; set => SetProperty(ref _xShift, value); }
 
-        private int _yShift;
-        [DataMember] public int YShift { get => _yShift; set => SetProperty(ref _yShift, value); }
+        //private int _yShift;
+        //[DataMember] public int YShift { get => _yShift; set => SetProperty(ref _yShift, value); }
 
         private int _grid;
         [DataMember] public int Grid { get => _grid; set => SetProperty(ref _grid, value); }
@@ -56,10 +56,10 @@ namespace Pixtack3rd
 
 
         //画像、それ自体は直接シリアライズしないので[IgnoreDataMember]
-        //        [IgnoreDataMember] public BitmapSource? Source { get; set; }
+        //        [IgnoreDataMember] public BitmapSource? BitmapSource { get; set; }
 
-        [IgnoreDataMember] private BitmapSource? _source;
-        [IgnoreDataMember] public BitmapSource? Source { get => _source; set => SetProperty(ref _source, value); }
+        [IgnoreDataMember] private BitmapSource? _bitmapSource;
+        [IgnoreDataMember] public BitmapSource? BitmapSource { get => _bitmapSource; set => SetProperty(ref _bitmapSource, value); }
 
         //シリアライズ時の画像ファイル名に使用、Guidで一意の名前作成している
         [DataMember] public string Guid { get; set; } = System.Guid.NewGuid().ToString();

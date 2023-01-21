@@ -53,7 +53,7 @@ namespace Pixtack3rd
         #endregion 依存プロパティ
         protected readonly string TEMPLATE_NAME = "NEMO";
         public TTGroup? TTParent { get; set; } = null;//親Group
-        public TType Type { get; set; }
+        public TType Type { get;private set; }
         public Data Data { get; set; }// = new(TType.None);
 
         public TThumb() : this(new Data(TType.None)) { }
@@ -106,6 +106,45 @@ namespace Pixtack3rd
     [ContentProperty(nameof(Thumbs))]
     public class TTGroup : TThumb
     {
+        #region 依存プロパティ
+
+        public int TTXShift
+        {
+            get { return (int)GetValue(TTXShiftProperty); }
+            set { SetValue(TTXShiftProperty, value); }
+        }
+        public static readonly DependencyProperty TTXShiftProperty =
+            DependencyProperty.Register(nameof(TTXShift), typeof(int), typeof(TTRoot),
+                new FrameworkPropertyMetadata(32,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public int TTYShift
+        {
+            get { return (int)GetValue(TTYShiftProperty); }
+            set { SetValue(TTYShiftProperty, value); }
+        }
+        public static readonly DependencyProperty TTYShiftProperty =
+            DependencyProperty.Register(nameof(TTYShift), typeof(int), typeof(TTRoot),
+                new FrameworkPropertyMetadata(32,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public int TTGrid
+        {
+            get { return (int)GetValue(TTGridProperty); }
+            set { SetValue(TTGridProperty, value); }
+        }
+        public static readonly DependencyProperty TTGridProperty =
+            DependencyProperty.Register(nameof(TTGrid), typeof(int), typeof(TTRoot),
+                new FrameworkPropertyMetadata(8,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        #endregion 依存プロパティ
         private ItemsControl MyTemplateElement;
         public ObservableCollection<TThumb> Thumbs { get; private set; } = new();
 
@@ -235,45 +274,7 @@ namespace Pixtack3rd
 
     public class TTRoot : TTGroup, INotifyPropertyChanged
     {
-        #region 依存プロパティ
-
-        public int TTXShift
-        {
-            get { return (int)GetValue(TTXShiftProperty); }
-            set { SetValue(TTXShiftProperty, value); }
-        }
-        public static readonly DependencyProperty TTXShiftProperty =
-            DependencyProperty.Register(nameof(TTXShift), typeof(int), typeof(TTRoot),
-                new FrameworkPropertyMetadata(32,
-                    FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure |
-                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        public int TTYShift
-        {
-            get { return (int)GetValue(TTYShiftProperty); }
-            set { SetValue(TTYShiftProperty, value); }
-        }
-        public static readonly DependencyProperty TTYShiftProperty =
-            DependencyProperty.Register(nameof(TTYShift), typeof(int), typeof(TTRoot),
-                new FrameworkPropertyMetadata(32,
-                    FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure |
-                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        public int TTGrid
-        {
-            get { return (int)GetValue(TTGridProperty); }
-            set { SetValue(TTGridProperty, value); }
-        }
-        public static readonly DependencyProperty TTGridProperty =
-            DependencyProperty.Register(nameof(TTGrid), typeof(int), typeof(TTRoot),
-                new FrameworkPropertyMetadata(8,
-                    FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure |
-                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        #endregion 依存プロパティ
+       
         #region 通知プロパティ
 
         protected void SetProperty<T>(ref T field, T value, [CallerMemberName] string? name = null)
@@ -325,8 +326,8 @@ namespace Pixtack3rd
                 FixDataDatas();
             };
 
-            SetBinding(TTXShiftProperty, nameof(Data.XShift));
-            SetBinding(TTYShiftProperty, nameof(Data.YShift));
+            //SetBinding(TTXShiftProperty, nameof(Data.XShift));
+            //SetBinding(TTYShiftProperty, nameof(Data.YShift));
             SetBinding(TTGridProperty, nameof(Data.Grid));
 
         }
@@ -369,6 +370,7 @@ namespace Pixtack3rd
                 //直下のThumbにはドラッグ移動イベント付加
                 thumb.DragDelta += Thumb_DragDelta;
                 thumb.DragCompleted += Thumb_DragCompleted;
+                thumb.DragStarted += Thumb_DragStarted;
                 //追加子要素がGroupだった場合
                 if (thumb is TTGroup group)
                 {
@@ -376,6 +378,7 @@ namespace Pixtack3rd
                 }
             }
         }
+
 
         //GroupのThumbsに子要素追加
         private void SetData(TTGroup group)
@@ -394,6 +397,7 @@ namespace Pixtack3rd
 
 
         #region ドラッグ移動
+
         //ActiveGroup用、ドラッグ移動イベント脱着
         private void ChildrenDragEventDesoption(TTGroup removeTarget, TTGroup addTarget)
         {
@@ -401,20 +405,50 @@ namespace Pixtack3rd
             {
                 item.DragDelta -= Thumb_DragDelta;
                 item.DragCompleted -= Thumb_DragCompleted;
+                item.DragStarted -= Thumb_DragStarted;
             }
             foreach (var item in addTarget.Thumbs)
             {
                 item.DragDelta += Thumb_DragDelta;
                 item.DragCompleted += Thumb_DragCompleted;
+                item.DragStarted += Thumb_DragStarted;
             }
         }
+        private void Thumb_DragStarted(object sender, DragStartedEventArgs e)
+        {
+            //グリッドスナップ
+            if (sender is TThumb thumb)
+            {
+                thumb.TTLeft = (int)(thumb.TTLeft / Data.Grid + 0.5) * Data.Grid;
+                thumb.TTTop = (int)(thumb.TTTop / Data.Grid + 0.5) * Data.Grid;
+            }
+        }
+
         private void Thumb_DragDelta(object seneer, DragDeltaEventArgs e)
         {
             //複数選択時は全てを移動
             foreach (TThumb item in SelectedThumbs)
-            {
-                item.TTLeft += e.HorizontalChange;
-                item.TTTop += e.VerticalChange;
+            {   
+                double hc = e.HorizontalChange;
+                if (hc > 0)
+                {
+                    item.TTLeft += (int)(hc / Data.Grid + 0.5) * Data.Grid;
+                }
+                else if (hc < 0)
+                {
+                    item.TTLeft += (int)(hc / Data.Grid - 0.5) * Data.Grid;
+                }
+
+                double vc = e.VerticalChange;
+                if (vc > 0)
+                {
+                    item.TTTop += (int)(vc / Data.Grid + 0.5) * Data.Grid;
+                }
+                else if(vc < 0)
+                {
+                    item.TTTop += (int)(vc / Data.Grid - 0.5) * Data.Grid;
+                }
+                
             }
         }
         private void Thumb_DragCompleted(object sender, DragCompletedEventArgs e)
@@ -435,6 +469,7 @@ namespace Pixtack3rd
                 {
                     item.DragDelta += Thumb_DragDelta;
                     item.DragCompleted += Thumb_DragCompleted;
+                    item.DragStarted += Thumb_DragStarted;
                 }
             }
             //TTGroupUpdateLayout();
@@ -505,6 +540,7 @@ namespace Pixtack3rd
 
         #region その他関数
 
+      
         private bool CheckIsActive(TThumb thumb)
         {
             if (thumb.TTParent is TTGroup ttg && ttg == ActiveGroup)
@@ -566,13 +602,7 @@ namespace Pixtack3rd
         #endregion その他関数
 
         #region 追加と削除
-        //基本的にActiveThumbのChildrenに対して行う
-        //削除対象はActiveThumbになる
-        //ドラッグ移動イベントの着脱も行う
-        public void AddThumb(TThumb thumb)
-        {
-            AddThumb(thumb, ActiveGroup);
-        }
+
         /// <summary>
         /// 追加先Groupを指定して追加、挿入Indexは最後尾(最前面)
         /// </summary>
@@ -580,7 +610,8 @@ namespace Pixtack3rd
         /// <param name="destGroup">追加先Group</param>
         protected void AddThumb(TThumb thumb, TTGroup destGroup)
         {
-            AddThumb(thumb, destGroup, destGroup.Thumbs.Count - 1);
+            AddThumb(thumb, destGroup, destGroup.Thumbs.Count);
+            //AddThumbToActiveGroup(thumb, destGroup, destGroup.Thumbs.Count - 1);
         }
         /// <summary>
         /// 追加先Groupと挿入Indexを指定して追加
@@ -597,14 +628,21 @@ namespace Pixtack3rd
                 //ドラッグ移動イベント付加
                 thumb.DragDelta += Thumb_DragDelta;
                 thumb.DragCompleted += Thumb_DragCompleted;
+                thumb.DragStarted += Thumb_DragStarted;
             }
         }
-
+        //基本的にActiveThumbのChildrenに対して行う
+        //削除対象はActiveThumbになる
+        //ドラッグ移動イベントの着脱も行う
+        public void AddThumbToActiveGroup(TThumb thumb)
+        {
+            AddThumb(thumb, ActiveGroup);
+        }
         /// <summary>
         /// ActiveThumbに要素をDataで追加
         /// </summary>
         /// <param name="data"></param>
-        public void AddDataToActiveGroup(Data data)
+        public void AddThumbDataToActiveGroup(Data data)
         {
             if (BuildThumb(data) is TThumb thumb)
             {
@@ -612,17 +650,29 @@ namespace Pixtack3rd
                 //位置修正、追加先のActiveThumbに合わせる
                 if (ActiveThumb != null)
                 {
-                    data.X += ActiveThumb.Data.X;
-                    data.Y += ActiveThumb.Data.Y;
+                    data.X = ActiveThumb.Data.X + TTXShift;
+                    data.Y = ActiveThumb.Data.Y + TTYShift;
                 }
-                //中の子要素にはドラッグ移動イベント追加しない
+                else
+                {
+                    data.X = 0;
+                    data.Y = 0;
+                }
+                //Groupだった場合は子要素も追加、子要素にドラッグ移動イベント追加しない
                 if (thumb is TTGroup group)
                 {
                     SetData(group);
                 }
+                ActiveThumb = thumb;
             }
         }
 
+        /// <summary>
+        /// Dataから各種Thumbを構築
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
         public TThumb BuildThumb(Data data)
         {
             switch (data.Type)
@@ -679,6 +729,7 @@ namespace Pixtack3rd
             {
                 thumb.DragCompleted -= Thumb_DragCompleted;
                 thumb.DragDelta -= Thumb_DragDelta;
+                thumb.DragStarted -= Thumb_DragStarted;
                 group.TTGroupUpdateLayout();
                 return true;
             }
@@ -725,6 +776,7 @@ namespace Pixtack3rd
                 destGroup.Data.Datas.Remove(item.Data);
                 item.DragDelta -= Thumb_DragDelta;
                 item.DragCompleted -= Thumb_DragCompleted;
+                item.DragStarted -= Thumb_DragStarted;
 
                 newGroup.Thumbs.Add(item);
                 newGroup.Data.Datas.Add(item.Data);
@@ -779,6 +831,7 @@ namespace Pixtack3rd
                 group.Thumbs.Remove(item);//親Groupから削除
                 item.DragDelta -= Thumb_DragDelta;
                 item.DragCompleted -= Thumb_DragCompleted;
+                item.DragStarted -= Thumb_DragStarted;
                 //親親Groupに挿入
                 AddThumb(item, destGroup, insertIndex);
                 insertIndex++;
@@ -789,6 +842,7 @@ namespace Pixtack3rd
             destGroup.Thumbs.Remove(group);
             group.DragCompleted -= Thumb_DragCompleted;//いる？
             group.DragDelta -= Thumb_DragDelta;
+            group.DragStarted -= Thumb_DragStarted;
         }
         #endregion グループ解除
 
@@ -1082,7 +1136,7 @@ namespace Pixtack3rd
         {
             if (d is TTImage obj)
             {
-                obj.Data.Source = new BitmapImage(new Uri((string)e.NewValue));
+                obj.Data.BitmapSource = new BitmapImage(new Uri((string)e.NewValue));
             }
         }
 
@@ -1097,8 +1151,8 @@ namespace Pixtack3rd
             if (MakeTemplate<Image>() is Image element) { MyTemplateElement = element; }
             else { throw new ArgumentException("テンプレート作成できんかった"); }
 
-            //SetBinding(TTSourceProperty, nameof(Data.Source));
-            MyTemplateElement.SetBinding(Image.SourceProperty, nameof(Data.Source));
+            //SetBinding(TTSourceProperty, nameof(Data.BitmapSource));
+            MyTemplateElement.SetBinding(Image.SourceProperty, nameof(Data.BitmapSource));
             //MySetXYBinging(this.Data);
         }
 
