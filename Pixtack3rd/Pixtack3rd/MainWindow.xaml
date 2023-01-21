@@ -57,11 +57,11 @@
       <StackPanel DataContext="{Binding ElementName=MyRoot}">
         <WrapPanel DataContext="{Binding ActiveGroup}">
           <tomato:NumericUpDown BorderBrush="DodgerBlue"
-                              MyValue="{Binding XShift}" MyStringFormat="シフトX 000;シフトX -000;シフトX 000"
+                              MyValue="{Binding TTXShift}" MyStringFormat="シフトX 000;シフトX -000;シフトX 000"
                             Margin="10" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
                             MyMinValue="-1024" MyMaxValue="1024"/>
           <tomato:NumericUpDown BorderBrush="DodgerBlue"
-                              MyValue="{Binding YShift}" MyStringFormat="シフトY 000;シフトY -000;シフトY 000"
+                              MyValue="{Binding TTYShift}" MyStringFormat="シフトY 000;シフトY -000;シフトY 000"
                             Margin="10" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
                             MyMinValue="-1024" MyMaxValue="1024"/>
           <tomato:NumericUpDown BorderBrush="DodgerBlue"

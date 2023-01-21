@@ -793,8 +793,11 @@ namespace Pixtack3rd
                             img.BeginInit();
                             img.StreamSource = stream;
                             img.EndInit();
-                            var inu = img.StreamSource;
-
+                            Data data = new(TType.Image)
+                            {
+                                BitmapSource = img
+                            };
+                            MyRoot.AddThumbDataToActiveGroup(data);
                         }
                         catch (Exception ex)
                         {
