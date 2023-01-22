@@ -7,11 +7,11 @@
         xmlns:tomato="clr-namespace:ControlLibraryCore20200620;assembly=ControlLibraryCore20200620"
         d:DataContext="{d:DesignInstance Type=local:AppConfig}"
         mc:Ignorable="d"
-        Title="MainWindow" Height="650" Width="600" ResizeMode="CanResizeWithGrip"
+        Title="MainWindow" Height="850" Width="600" ResizeMode="CanResizeWithGrip"
         Top="{Binding Path=Top, Mode=TwoWay}" Left="{Binding Left, Mode=TwoWay}"
         AllowDrop="True" Name="Main">
 
-  <Grid Name="MyGrid">
+  <Grid Name="MyGrid" UseLayoutRounding="False">
     <Grid.ColumnDefinitions>
       <ColumnDefinition/>
       <ColumnDefinition Width="200"/>
@@ -87,8 +87,15 @@
             <TextBlock Text="{Binding ActualHeight, StringFormat=高さ \= {0:000}}"/>
           </StackPanel>
         </GroupBox>
+
         <GroupBox Header="ActiveGroup" DataContext="{Binding ActiveGroup}">
           <StackPanel>
+            <Rectangle Width="100" Height="100">
+              <Rectangle.Fill>
+                <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
+              </Rectangle.Fill>
+            </Rectangle>
+            
             <WrapPanel>
               <tomato:NumericUpDown BorderBrush="DodgerBlue"
                               MyValue="{Binding TTXShift}" MyStringFormat="シフトX 000;シフトX -000;シフトX 000"
@@ -97,7 +104,7 @@
               <tomato:NumericUpDown BorderBrush="DodgerBlue"
                               MyValue="{Binding TTGrid}" MyStringFormat="Grid 000;Grid -000;Grid 000"
                             MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
-                            MyMinValue="0" MyMaxValue="1024"/>
+                            MyMinValue="1" MyMaxValue="1024"/>
               <tomato:NumericUpDown BorderBrush="DodgerBlue"
                               MyValue="{Binding TTYShift}" MyStringFormat="シフトY 000;シフトY -000;シフトY 000"
                             MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
@@ -113,6 +120,11 @@
         </GroupBox>
         <GroupBox Header="ActiveThumb" DataContext="{Binding ActiveThumb}">
           <StackPanel>
+            <Rectangle Width="100" Height="100">
+              <Rectangle.Fill>
+                <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
+              </Rectangle.Fill>
+            </Rectangle>
             <TextBlock Text="{Binding Data.Guid, StringFormat=Guid \= {0}}"/>
             <TextBlock Text="{Binding Data.Type, StringFormat=Type \= {0}}"/>
             <StackPanel Orientation="Horizontal">
@@ -122,7 +134,7 @@
               <TextBlock Text="{Binding ActualHeight, StringFormat=高さ\={0:000}}"/>
             </StackPanel>
             <TextBlock Text="{Binding Data.Text}"/>
-            <Image Source="{Binding Data.BitmapSource}" Width="100" Height="100"/>
+            <!--<Image Source="{Binding Data.BitmapSource}" Width="100" Height="100"/>-->
           </StackPanel>
         </GroupBox>
         <GroupBox Header="ClickedThumb" DataContext="{Binding ClickedThumb}">
