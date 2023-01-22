@@ -19,7 +19,8 @@
 
     <ScrollViewer x:Name="MyScrollViewer" HorizontalScrollBarVisibility="Auto">
       <!--<local:TTTextBlock TTText="222"/>-->
-      <local:TTRoot x:Name="MyRoot" HorizontalAlignment="Left" VerticalAlignment="Top" TTGrid="8">
+      <local:TTRoot x:Name="MyRoot" HorizontalAlignment="Left" VerticalAlignment="Top" TTGrid="8"
+                   TTVisibleBorder="Hidden">
 
         <!--<local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
         <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
@@ -28,13 +29,13 @@
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection3.png"/>
         <local:TTImage x:Name="MyImage2" TTLeft="120" TTTop="120"
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection4.png"/>-->
-        <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
+        <!--<local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect000.png"/>
         <local:TTImage x:Name="MyImage1" TTLeft="30" TTTop="30"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect030.png"/>
         <local:TTImage x:Name="MyImage2" TTLeft="60" TTTop="60"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect060.png"/>
-        <!--<local:TTImage x:Name="MyImage3" TTLeft="90" TTTop="90"
+        <local:TTImage x:Name="MyImage3" TTLeft="90" TTTop="90"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect090.png"/>
         <local:TTImage x:Name="MyImage4" TTLeft="120" TTTop="120"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect135.png"/>-->
@@ -68,22 +69,9 @@
           <Button x:Name="ButtonMostUp" Content="MaxAge" Click="ButtonMostUp_Click" Width="60"/>
           <Button x:Name="ButtonMostDown" Content="MaxSage" Click="ButtonMostDown_Click"/>
         </DockPanel>
+        <CheckBox Content="前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>
       </StackPanel>
       <StackPanel DataContext="{Binding ElementName=MyRoot}">
-        <WrapPanel DataContext="{Binding ActiveGroup}">
-          <tomato:NumericUpDown BorderBrush="DodgerBlue"
-                              MyValue="{Binding TTXShift}" MyStringFormat="シフトX 000;シフトX -000;シフトX 000"
-                            Margin="10" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
-                            MyMinValue="-1024" MyMaxValue="1024"/>
-          <tomato:NumericUpDown BorderBrush="DodgerBlue"
-                              MyValue="{Binding TTYShift}" MyStringFormat="シフトY 000;シフトY -000;シフトY 000"
-                            Margin="10" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
-                            MyMinValue="-1024" MyMaxValue="1024"/>
-          <tomato:NumericUpDown BorderBrush="DodgerBlue"
-                              MyValue="{Binding TTGrid}" MyStringFormat="Grid 000;Grid -000;Grid 000"
-                            Margin="10" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
-                            MyMinValue="0" MyMaxValue="1024"/>
-        </WrapPanel>
         <GroupBox Header="Root">
           <StackPanel>
             <TextBlock Text="{Binding ActualWidth, StringFormat=width \= {0:000}}"/>
@@ -92,6 +80,20 @@
         </GroupBox>
         <GroupBox Header="ActiveGroup" DataContext="{Binding ActiveGroup}">
           <StackPanel>
+            <WrapPanel>
+              <tomato:NumericUpDown BorderBrush="DodgerBlue"
+                              MyValue="{Binding TTXShift}" MyStringFormat="シフトX 000;シフトX -000;シフトX 000"
+                            Margin="1" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
+                            MyMinValue="-1024" MyMaxValue="1024"/>
+              <tomato:NumericUpDown BorderBrush="DodgerBlue"
+                              MyValue="{Binding TTYShift}" MyStringFormat="シフトY 000;シフトY -000;シフトY 000"
+                            Margin="1" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
+                            MyMinValue="-1024" MyMaxValue="1024"/>
+              <tomato:NumericUpDown BorderBrush="DodgerBlue"
+                              MyValue="{Binding TTGrid}" MyStringFormat="Grid 000;Grid -000;Grid 000"
+                            Margin="1" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
+                            MyMinValue="0" MyMaxValue="1024"/>
+            </WrapPanel>
             <TextBlock Text="{Binding Data.X}"/>
             <TextBlock Text="{Binding Data.Y}"/>
             <TextBlock Text="{Binding ActualWidth, StringFormat=ActWidth \= 0}"/>
