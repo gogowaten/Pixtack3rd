@@ -17,9 +17,11 @@
       <ColumnDefinition Width="200"/>
     </Grid.ColumnDefinitions>
 
-    <ScrollViewer x:Name="MyScrollViewer" HorizontalScrollBarVisibility="Auto">
+    <ScrollViewer x:Name="MyScrollViewer" HorizontalScrollBarVisibility="Auto"
+                  VerticalScrollBarVisibility="Auto">
       <!--<local:TTTextBlock TTText="222"/>-->
-      <local:TTRoot x:Name="MyRoot" HorizontalAlignment="Left" VerticalAlignment="Top" TTGrid="8">
+      <local:TTRoot x:Name="MyRoot" HorizontalAlignment="Left" VerticalAlignment="Top" TTGrid="8"
+                   TTVisibleBorder="Hidden">
 
         <!--<local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
         <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
@@ -28,7 +30,7 @@
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection3.png"/>
         <local:TTImage x:Name="MyImage2" TTLeft="120" TTTop="120"
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection4.png"/>-->
-        <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
+        <!--<local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect000.png"/>
         <local:TTImage x:Name="MyImage1" TTLeft="30" TTTop="30"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect030.png"/>
@@ -37,7 +39,7 @@
         <local:TTImage x:Name="MyImage3" TTLeft="90" TTTop="90"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect090.png"/>
         <local:TTImage x:Name="MyImage4" TTLeft="120" TTTop="120"
-                       TTSourcePath="D:\ブログ用\テスト用画像\hueRect135.png"/>
+                       TTSourcePath="D:\ブログ用\テスト用画像\hueRect135.png"/>-->
 
       </local:TTRoot>
     </ScrollViewer>
@@ -50,47 +52,75 @@
         <Button x:Name="ButtonLoadData" Content="データ読み込み(全体)" Click="ButtonLoadData_Click"/>
         <Button x:Name="ButtonLoadDataThumb" Content="データ読み込み(個別)" Click="ButtonLoadDataThumb_Click"/>
         <Button x:Name="ButtonLoadDataRootToGroup" Content="データ読み込み、Rootをグループとして追加" Click="ButtonLoadDataRootToGroup_Click"/>
-        <Button x:Name="ButtonToGroup" Content="グループ化" Click="ButtonToGroup_Click"/>
-        <Button x:Name="ButtonUnGroup" Content="グループ解除" Click="ButtonUnGroup_Click"/>
-
+        <DockPanel>
+          <Button x:Name="ButtonToGroup" Content="グループ化" Click="ButtonToGroup_Click" Width="100"/>
+          <Button x:Name="ButtonUnGroup" Content="グループ解除" Click="ButtonUnGroup_Click"/>
+        </DockPanel>
+        <DockPanel>
+          <Button x:Name="ButtonIn" Content="In" Click="ButtonIn_Click" Width="100"/>
+          <Button x:Name="ButtonOut" Content="Out" Click="ButtonOut_Click"/>
+        </DockPanel>
+        <DockPanel>
+          <Button x:Name="ButtonRemove" Content="選択Thumb削除" Click="ButtonRemove_Click" Width="100"/>
+          <Button x:Name="ButtonRemoveAll" Content="全削除" Click="ButtonRemoveAll_Click"/>
+        </DockPanel>
+        <DockPanel>
+          <Button x:Name="ButtonUp" Content="Age" Click="ButtonUp_Click" Width="40"/>
+          <Button x:Name="ButtonDown" Content="Sage" Click="ButtonDown_Click" Width="40"/>
+          <Button x:Name="ButtonMostUp" Content="MaxAge" Click="ButtonMostUp_Click" Width="60"/>
+          <Button x:Name="ButtonMostDown" Content="MaxSage" Click="ButtonMostDown_Click"/>
+        </DockPanel>
+        <CheckBox Content="前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>
       </StackPanel>
       <StackPanel DataContext="{Binding ElementName=MyRoot}">
-        <WrapPanel DataContext="{Binding ActiveGroup}">
-          <tomato:NumericUpDown BorderBrush="DodgerBlue"
-                              MyValue="{Binding TTXShift}" MyStringFormat="シフトX 000;シフトX -000;シフトX 000"
-                            Margin="10" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
-                            MyMinValue="-1024" MyMaxValue="1024"/>
-          <tomato:NumericUpDown BorderBrush="DodgerBlue"
-                              MyValue="{Binding TTYShift}" MyStringFormat="シフトY 000;シフトY -000;シフトY 000"
-                            Margin="10" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
-                            MyMinValue="-1024" MyMaxValue="1024"/>
-          <tomato:NumericUpDown BorderBrush="DodgerBlue"
-                              MyValue="{Binding TTGrid}" MyStringFormat="Grid 000;Grid -000;Grid 000"
-                            Margin="10" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
-                            MyMinValue="0" MyMaxValue="1024"/>
-        </WrapPanel>
+        <StackPanel.Resources>
+          <Style TargetType="TextBlock">
+            <Setter Property="Margin" Value="2,1,4,1"/>
+          </Style>
+          <Style TargetType="tomato:NumericUpDown">
+            <Setter Property="Margin" Value="2,1,4,4"/>
+          </Style>
+        </StackPanel.Resources>
         <GroupBox Header="Root">
-          <StackPanel>
-            <TextBlock Text="{Binding ActualWidth, StringFormat=width \= {0:000}}"/>
-            <TextBlock Text="{Binding ActualHeight, StringFormat=height \= {0:000}}"/>
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Text="{Binding ActualWidth, StringFormat=幅 \= {0:000}}"/>
+            <TextBlock Text="{Binding ActualHeight, StringFormat=高さ \= {0:000}}"/>
           </StackPanel>
         </GroupBox>
         <GroupBox Header="ActiveGroup" DataContext="{Binding ActiveGroup}">
           <StackPanel>
-            <TextBlock Text="{Binding Data.X}"/>
-            <TextBlock Text="{Binding Data.Y}"/>
-            <TextBlock Text="{Binding ActualWidth, StringFormat=ActWidth \= 0}"/>
-            <TextBlock Text="{Binding ActualHeight, StringFormat=ActHeight \= 0}"/>
+            <WrapPanel>
+              <tomato:NumericUpDown BorderBrush="DodgerBlue"
+                              MyValue="{Binding TTXShift}" MyStringFormat="シフトX 000;シフトX -000;シフトX 000"
+                            MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
+                            MyMinValue="-1024" MyMaxValue="1024"/>
+              <tomato:NumericUpDown BorderBrush="DodgerBlue"
+                              MyValue="{Binding TTGrid}" MyStringFormat="Grid 000;Grid -000;Grid 000"
+                            MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
+                            MyMinValue="0" MyMaxValue="1024"/>
+              <tomato:NumericUpDown BorderBrush="DodgerBlue"
+                              MyValue="{Binding TTYShift}" MyStringFormat="シフトY 000;シフトY -000;シフトY 000"
+                            MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
+                            MyMinValue="-1024" MyMaxValue="1024"/>
+            </WrapPanel>
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="{Binding Data.X, StringFormat=x\={0:000}}"/>
+              <TextBlock Text="{Binding Data.Y, StringFormat=y\={0:000}}"/>
+              <TextBlock Text="{Binding ActualWidth, StringFormat=幅\={0:000}}"/>
+              <TextBlock Text="{Binding ActualHeight, StringFormat=高さ\={0:000}}"/>
+            </StackPanel>
           </StackPanel>
         </GroupBox>
         <GroupBox Header="ActiveThumb" DataContext="{Binding ActiveThumb}">
           <StackPanel>
-            <TextBlock Text="{Binding Data.Guid}"/>
-            <TextBlock Text="{Binding Data.Type}"/>
-            <TextBlock Text="{Binding Data.X}"/>
-            <TextBlock Text="{Binding Data.Y}"/>
-            <TextBlock Text="{Binding ActualWidth,StringFormat=ActWidht \= 0}"/>
-            <TextBlock Text="{Binding ActualHeight, StringFormat=ActHeight \= 0}"/>
+            <TextBlock Text="{Binding Data.Guid, StringFormat=Guid \= {0}}"/>
+            <TextBlock Text="{Binding Data.Type, StringFormat=Type \= {0}}"/>
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="{Binding Data.X, StringFormat=x\={0:000}}"/>
+              <TextBlock Text="{Binding Data.Y, StringFormat=y\={0:000}}"/>
+              <TextBlock Text="{Binding ActualWidth, StringFormat=幅\={0:000}}"/>
+              <TextBlock Text="{Binding ActualHeight, StringFormat=高さ\={0:000}}"/>
+            </StackPanel>
             <TextBlock Text="{Binding Data.Text}"/>
             <Image Source="{Binding Data.BitmapSource}" Width="100" Height="100"/>
           </StackPanel>
@@ -98,8 +128,12 @@
         <GroupBox Header="ClickedThumb" DataContext="{Binding ClickedThumb}">
           <StackPanel>
             <TextBlock Text="{Binding Data.Type}"/>
-            <TextBlock Text="{Binding Data.X}"/>
-            <TextBlock Text="{Binding Data.Y}"/>
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="{Binding Data.X, StringFormat=x\={0:000}}"/>
+              <TextBlock Text="{Binding Data.Y, StringFormat=y\={0:000}}"/>
+              <TextBlock Text="{Binding ActualWidth, StringFormat=幅\={0:000}}"/>
+              <TextBlock Text="{Binding ActualHeight, StringFormat=高さ\={0:000}}"/>
+            </StackPanel>
           </StackPanel>
         </GroupBox>
         <GroupBox Header="SelectedThumbs" DataContext="{Binding SelectedThumbs}">

@@ -17,6 +17,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Input;
 using System.Collections.Specialized;
+using System.Windows.Shapes;
 
 namespace Pixtack3rd
 {
@@ -53,7 +54,7 @@ namespace Pixtack3rd
         #endregion 依存プロパティ
         protected readonly string TEMPLATE_NAME = "NEMO";
         public TTGroup? TTParent { get; set; } = null;//親Group
-        public TType Type { get;private set; }
+        public TType Type { get; private set; }
         public Data Data { get; set; }// = new(TType.None);
 
         public TThumb() : this(new Data(TType.None)) { }
@@ -114,7 +115,7 @@ namespace Pixtack3rd
             set { SetValue(TTXShiftProperty, value); }
         }
         public static readonly DependencyProperty TTXShiftProperty =
-            DependencyProperty.Register(nameof(TTXShift), typeof(int), typeof(TTRoot),
+            DependencyProperty.Register(nameof(TTXShift), typeof(int), typeof(TTGroup),
                 new FrameworkPropertyMetadata(32,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
@@ -126,7 +127,7 @@ namespace Pixtack3rd
             set { SetValue(TTYShiftProperty, value); }
         }
         public static readonly DependencyProperty TTYShiftProperty =
-            DependencyProperty.Register(nameof(TTYShift), typeof(int), typeof(TTRoot),
+            DependencyProperty.Register(nameof(TTYShift), typeof(int), typeof(TTGroup),
                 new FrameworkPropertyMetadata(32,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
@@ -138,8 +139,21 @@ namespace Pixtack3rd
             set { SetValue(TTGridProperty, value); }
         }
         public static readonly DependencyProperty TTGridProperty =
-            DependencyProperty.Register(nameof(TTGrid), typeof(int), typeof(TTRoot),
+            DependencyProperty.Register(nameof(TTGrid), typeof(int), typeof(TTGroup),
                 new FrameworkPropertyMetadata(8,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+
+        public Visibility TTVisibleBorder
+        {
+            get { return (Visibility)GetValue(VisibleBorderProperty); }
+            set { SetValue(VisibleBorderProperty, value); }
+        }
+        public static readonly DependencyProperty VisibleBorderProperty =
+            DependencyProperty.Register(nameof(TTVisibleBorder), typeof(Visibility), typeof(TTGroup),
+                new FrameworkPropertyMetadata(Visibility.Hidden,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
@@ -160,13 +174,13 @@ namespace Pixtack3rd
             Thumbs.CollectionChanged += Thumbs_CollectionChanged;
             Data = data;
             MyTemplateElement = MyInitializeBinding();
-            MyTemplateElement.SetBinding(ItemsControl.ItemsSourceProperty, new Binding(nameof(Thumbs)) { Source = this });
+            MyTemplateElement.SetBinding(ItemsControl.ItemsSourceProperty,
+                new Binding(nameof(Thumbs)) { Source = this });
 
-            //子要素
-            foreach (var item in Data.Datas)
-            {
+            SetBinding(TTXShiftProperty, nameof(Data.XShift));
+            SetBinding(TTYShiftProperty, nameof(Data.YShift));
+            SetBinding(TTGridProperty, nameof(Data.Grid));
 
-            }
         }
 
         private void Thumbs_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -191,10 +205,18 @@ namespace Pixtack3rd
         }
         private ItemsControl MakeTemplate()
         {
+            FrameworkElementFactory fGrid = new(typeof(Grid));
+            FrameworkElementFactory fWaku = new(typeof(Rectangle));
+
+            fWaku.SetValue(VisibilityProperty, new Binding(nameof(TTVisibleBorder)) { Source = this });
+            fWaku.SetValue(Shape.StrokeProperty, Brushes.Red);
+            fWaku.SetValue(Shape.StrokeThicknessProperty, 10.0);
             FrameworkElementFactory factory = new(typeof(ItemsControl), TEMPLATE_NAME);
             factory.SetValue(ItemsControl.ItemsPanelProperty,
                 new ItemsPanelTemplate(new FrameworkElementFactory(typeof(Canvas))));
-            this.Template = new() { VisualTree = factory };
+            fGrid.AppendChild(fWaku);
+            fGrid.AppendChild(factory);
+            this.Template = new() { VisualTree = fGrid };
             this.ApplyTemplate();
             if (this.Template.FindName(TEMPLATE_NAME, this) is ItemsControl element)
             {
@@ -202,6 +224,19 @@ namespace Pixtack3rd
             }
             else { throw new ArgumentException("テンプレート作成できんかった"); }
         }
+        //private ItemsControl MakeTemplate()
+        //{
+        //    FrameworkElementFactory factory = new(typeof(ItemsControl), TEMPLATE_NAME);
+        //    factory.SetValue(ItemsControl.ItemsPanelProperty,
+        //        new ItemsPanelTemplate(new FrameworkElementFactory(typeof(Canvas))));
+        //    this.Template = new() { VisualTree = factory };
+        //    this.ApplyTemplate();
+        //    if (this.Template.FindName(TEMPLATE_NAME, this) is ItemsControl element)
+        //    {
+        //        return element;
+        //    }
+        //    else { throw new ArgumentException("テンプレート作成できんかった"); }
+        //}
 
         #region サイズと位置の更新
 
@@ -274,7 +309,7 @@ namespace Pixtack3rd
 
     public class TTRoot : TTGroup, INotifyPropertyChanged
     {
-       
+
         #region 通知プロパティ
 
         protected void SetProperty<T>(ref T field, T value, [CallerMemberName] string? name = null)
@@ -328,7 +363,7 @@ namespace Pixtack3rd
 
             //SetBinding(TTXShiftProperty, nameof(Data.XShift));
             //SetBinding(TTYShiftProperty, nameof(Data.YShift));
-            SetBinding(TTGridProperty, nameof(Data.Grid));
+            //SetBinding(TTGridProperty, nameof(Data.Grid));
 
         }
 
@@ -419,8 +454,9 @@ namespace Pixtack3rd
             //グリッドスナップ
             if (sender is TThumb thumb)
             {
-                thumb.TTLeft = (int)(thumb.TTLeft / Data.Grid + 0.5) * Data.Grid;
-                thumb.TTTop = (int)(thumb.TTTop / Data.Grid + 0.5) * Data.Grid;
+                int gridSize = ActiveGroup.Data.Grid;
+                thumb.TTLeft = (int)(thumb.TTLeft / gridSize + 0.5) * gridSize;
+                thumb.TTTop = (int)(thumb.TTTop / gridSize + 0.5) * gridSize;
             }
         }
 
@@ -428,27 +464,27 @@ namespace Pixtack3rd
         {
             //複数選択時は全てを移動
             foreach (TThumb item in SelectedThumbs)
-            {   
+            {
                 double hc = e.HorizontalChange;
+                int gridSize = ActiveGroup.Data.Grid;
                 if (hc > 0)
                 {
-                    item.TTLeft += (int)(hc / Data.Grid + 0.5) * Data.Grid;
+                    item.TTLeft += (int)(hc / gridSize + 0.5) * gridSize;
                 }
                 else if (hc < 0)
                 {
-                    item.TTLeft += (int)(hc / Data.Grid - 0.5) * Data.Grid;
+                    item.TTLeft += (int)(hc / gridSize - 0.5) * gridSize;
                 }
 
                 double vc = e.VerticalChange;
                 if (vc > 0)
                 {
-                    item.TTTop += (int)(vc / Data.Grid + 0.5) * Data.Grid;
+                    item.TTTop += (int)(vc / gridSize + 0.5) * gridSize;
                 }
-                else if(vc < 0)
+                else if (vc < 0)
                 {
-                    item.TTTop += (int)(vc / Data.Grid - 0.5) * Data.Grid;
+                    item.TTTop += (int)(vc / gridSize - 0.5) * gridSize;
                 }
-                
             }
         }
         private void Thumb_DragCompleted(object sender, DragCompletedEventArgs e)
@@ -540,7 +576,7 @@ namespace Pixtack3rd
 
         #region その他関数
 
-      
+
         private bool CheckIsActive(TThumb thumb)
         {
             if (thumb.TTParent is TTGroup ttg && ttg == ActiveGroup)
@@ -614,7 +650,7 @@ namespace Pixtack3rd
             //AddThumbToActiveGroup(thumb, destGroup, destGroup.Thumbs.Count - 1);
         }
         /// <summary>
-        /// 追加先Groupと挿入Indexを指定して追加
+        /// グループ化で使用、追加先Groupと挿入Indexを指定して追加
         /// </summary>
         /// <param name="thumb">追加する子要素</param>
         /// <param name="destGroup">追加先Group</param>
@@ -631,6 +667,7 @@ namespace Pixtack3rd
                 thumb.DragStarted += Thumb_DragStarted;
             }
         }
+
         //基本的にActiveThumbのChildrenに対して行う
         //削除対象はActiveThumbになる
         //ドラッグ移動イベントの着脱も行う
@@ -650,8 +687,10 @@ namespace Pixtack3rd
                 //位置修正、追加先のActiveThumbに合わせる
                 if (ActiveThumb != null)
                 {
-                    data.X = ActiveThumb.Data.X + TTXShift;
-                    data.Y = ActiveThumb.Data.Y + TTYShift;
+                    data.X = ActiveThumb.Data.X + ActiveGroup.TTXShift;
+                    data.Y = ActiveThumb.Data.Y + ActiveGroup.TTYShift;
+                    //data.X = ActiveThumb.Data.X + TTXShift;
+                    //data.Y = ActiveThumb.Data.Y + TTYShift;
                 }
                 else
                 {
@@ -702,19 +741,49 @@ namespace Pixtack3rd
         {
             if (SelectedThumbs == null) return false;
             bool flag = true;
+            int indexNextActThumb = 0;
             foreach (var item in SelectedThumbs.ToArray())
             {
+                indexNextActThumb = ActiveGroup.Thumbs.IndexOf(item);
                 if (RemoveThumb(item, ActiveGroup) == false)
                 {
                     flag = false;
+                    break;
                 }
                 else
                 {
                     SelectedThumbs.Remove(item);
                 }
             }
+
+            //削除後の処理、ActiveThumbの指定とSelectedThumbsの指定
+            //削除失敗時
+            if (flag == false)
+            {
+                ActiveThumb = null;
+            }
+            //削除成功時
+            else
+            {
+                //次のActiveThumbは削除されたThumbの下にあるThumb、ただし
+                //それがない場合は上のThumb、これもない場合はnull
+                if (indexNextActThumb > 0)
+                {
+                    indexNextActThumb--;
+                }
+
+                if (ActiveGroup.Thumbs.Count == 0)
+                {
+                    ActiveThumb = null;
+                }
+                else
+                {
+                    ActiveThumb = ActiveGroup.Thumbs[indexNextActThumb];
+                    SelectedThumbs.Add(ActiveThumb);
+                }
+            }
+
             ClickedThumb = null;
-            ActiveThumb = null;
             return flag;
         }
         /// <summary>
@@ -739,6 +808,15 @@ namespace Pixtack3rd
             }
         }
 
+        public void RemoveAll()
+        {
+            Thumbs.Clear();
+            SelectedThumbs.Clear();
+            ActiveThumb = null;
+            ClickedThumb = null;
+            ActiveGroup = this;
+            TTGroupUpdateLayout();
+        }
         #endregion 追加と削除
 
         #region グループ化
@@ -746,6 +824,7 @@ namespace Pixtack3rd
         //基本的にSelectedThumbsの要素群でグループ化、それをActiveGroupに追加する
         public void AddGroup()
         {
+            if (SelectedThumbs.Count < 2) { return; }
             TTGroup? group = MakeAndAddGroup(SelectedThumbs, ActiveGroup);
             if (group != null)
             {
@@ -768,7 +847,14 @@ namespace Pixtack3rd
 
             if (CheckAddGroup(sortedList, destGroup) == false) { return null; }
             var (x, y, w, h) = GetRect(sortedList);
-            TTGroup newGroup = new() { Name = "new_group", TTLeft = x, TTTop = y };
+            TTGroup newGroup = new()
+            {
+                TTLeft = x,
+                TTTop = y,
+                TTGrid = destGroup.TTGrid,
+                TTXShift= destGroup.TTXShift,
+                TTYShift= destGroup.TTYShift,
+            };
             //各要素のドラッグイベントを外す、新グループに追加
             foreach (var item in sortedList)
             {
@@ -787,14 +873,32 @@ namespace Pixtack3rd
 
             newGroup.Arrange(new(0, 0, w, h));//再配置？このタイミングで必須、Actualサイズに値が入る
             //↓はこのタイミングではいらないかも？RenderSizeChangeで実行するようにした
-            //newGroup.TTGroupUpdateLayout();//必須、サイズと位置の更新
+            //→要る！！！ここじゃないと枠表示のサイズがなぜか0x0のままになる
+            newGroup.TTGroupUpdateLayout();//必須、サイズと位置の更新
 
             return newGroup;
         }
+
+
+        /// <summary>
+        /// グループ化の条件が揃っているのかの判定
+        /// </summary>
+        /// <param name="thumbs">グループ化要素群</param>
+        /// <param name="destGroup">グループ追加先グループ</param>
+        /// <returns></returns>
         private static bool CheckAddGroup(IEnumerable<TThumb> thumbs, TTGroup destGroup)
         {
+            //要素群数が2以上
+            //要素群数が追加先グループの子要素数より少ない、ただし
+            //追加先グループがTTRootなら子要素数と同じでもいい
+            //要素群すべてが追加先グループの子要素
+            //これらすべてを満たした場合はtrue
             if (thumbs.Count() < 2) { return false; }
-            if (thumbs.Count() == destGroup.Thumbs.Count) { return false; }
+            if (thumbs.Count() == destGroup.Thumbs.Count)
+            {
+                if (destGroup.Type == TType.Root) { return true; }
+                else { return false; }
+            }
             foreach (TThumb thumb in thumbs)
             {
                 if (destGroup.Thumbs.Contains(thumb) == false) { return false; }

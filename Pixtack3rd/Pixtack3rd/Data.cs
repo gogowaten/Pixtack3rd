@@ -28,11 +28,11 @@ namespace Pixtack3rd
 
         [DataMember] public ObservableCollection<Data> Datas { get; set; } = new();
 
-        //private int _xShift;
-        //[DataMember] public int XShift { get => _xShift; set => SetProperty(ref _xShift, value); }
+        private int _xShift;
+        [DataMember] public int XShift { get => _xShift; set => SetProperty(ref _xShift, value); }
 
-        //private int _yShift;
-        //[DataMember] public int YShift { get => _yShift; set => SetProperty(ref _yShift, value); }
+        private int _yShift;
+        [DataMember] public int YShift { get => _yShift; set => SetProperty(ref _yShift, value); }
 
         private int _grid;
         [DataMember] public int Grid { get => _grid; set => SetProperty(ref _grid, value); }
