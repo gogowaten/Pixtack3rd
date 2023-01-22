@@ -53,7 +53,7 @@ namespace Pixtack3rd
         #endregion 依存プロパティ
         protected readonly string TEMPLATE_NAME = "NEMO";
         public TTGroup? TTParent { get; set; } = null;//親Group
-        public TType Type { get;private set; }
+        public TType Type { get; private set; }
         public Data Data { get; set; }// = new(TType.None);
 
         public TThumb() : this(new Data(TType.None)) { }
@@ -274,7 +274,7 @@ namespace Pixtack3rd
 
     public class TTRoot : TTGroup, INotifyPropertyChanged
     {
-       
+
         #region 通知プロパティ
 
         protected void SetProperty<T>(ref T field, T value, [CallerMemberName] string? name = null)
@@ -428,7 +428,7 @@ namespace Pixtack3rd
         {
             //複数選択時は全てを移動
             foreach (TThumb item in SelectedThumbs)
-            {   
+            {
                 double hc = e.HorizontalChange;
                 if (hc > 0)
                 {
@@ -444,11 +444,11 @@ namespace Pixtack3rd
                 {
                     item.TTTop += (int)(vc / Data.Grid + 0.5) * Data.Grid;
                 }
-                else if(vc < 0)
+                else if (vc < 0)
                 {
                     item.TTTop += (int)(vc / Data.Grid - 0.5) * Data.Grid;
                 }
-                
+
             }
         }
         private void Thumb_DragCompleted(object sender, DragCompletedEventArgs e)
@@ -540,7 +540,7 @@ namespace Pixtack3rd
 
         #region その他関数
 
-      
+
         private bool CheckIsActive(TThumb thumb)
         {
             if (thumb.TTParent is TTGroup ttg && ttg == ActiveGroup)
@@ -702,19 +702,49 @@ namespace Pixtack3rd
         {
             if (SelectedThumbs == null) return false;
             bool flag = true;
+            int indexNextActThumb = 0;
             foreach (var item in SelectedThumbs.ToArray())
             {
+                indexNextActThumb = ActiveGroup.Thumbs.IndexOf(item);
                 if (RemoveThumb(item, ActiveGroup) == false)
                 {
                     flag = false;
+                    break;
                 }
                 else
                 {
                     SelectedThumbs.Remove(item);
                 }
             }
+
+            //削除後の処理、ActiveThumbの指定とSelectedThumbsの指定
+            //削除失敗時
+            if (flag == false)
+            {
+                ActiveThumb = null;
+            }
+            //削除成功時
+            else
+            {
+                //次のActiveThumbは削除されたThumbの下にあるThumb、ただし
+                //それがない場合は上のThumb、これもない場合はnull
+                if (indexNextActThumb > 0)
+                {
+                    indexNextActThumb--;
+                }
+
+                if (ActiveGroup.Thumbs.Count == 0)
+                {
+                    ActiveThumb = null;
+                }
+                else
+                {
+                    ActiveThumb = ActiveGroup.Thumbs[indexNextActThumb];
+                    SelectedThumbs.Add(ActiveThumb);
+                }
+            }
+
             ClickedThumb = null;
-            ActiveThumb = null;
             return flag;
         }
         /// <summary>
@@ -739,6 +769,15 @@ namespace Pixtack3rd
             }
         }
 
+        public void RemoveAll()
+        {
+            Thumbs.Clear();
+            SelectedThumbs.Clear();
+            ActiveThumb = null;
+            ClickedThumb= null;
+            ActiveGroup = this;
+            TTGroupUpdateLayout();
+        }
         #endregion 追加と削除
 
         #region グループ化
@@ -746,6 +785,7 @@ namespace Pixtack3rd
         //基本的にSelectedThumbsの要素群でグループ化、それをActiveGroupに追加する
         public void AddGroup()
         {
+            if (SelectedThumbs.Count < 2) { return; }
             TTGroup? group = MakeAndAddGroup(SelectedThumbs, ActiveGroup);
             if (group != null)
             {
@@ -791,10 +831,27 @@ namespace Pixtack3rd
 
             return newGroup;
         }
+
+
+        /// <summary>
+        /// グループ化の条件が揃っているのかの判定
+        /// </summary>
+        /// <param name="thumbs">グループ化要素群</param>
+        /// <param name="destGroup">グループ追加先グループ</param>
+        /// <returns></returns>
         private static bool CheckAddGroup(IEnumerable<TThumb> thumbs, TTGroup destGroup)
         {
+            //要素群数が2以上
+            //要素群数が追加先グループの子要素数より少ない、ただし
+            //追加先グループがTTRootなら子要素数と同じでもいい
+            //要素群すべてが追加先グループの子要素
+            //これらすべてを満たした場合はtrue
             if (thumbs.Count() < 2) { return false; }
-            if (thumbs.Count() == destGroup.Thumbs.Count) { return false; }
+            if (thumbs.Count() == destGroup.Thumbs.Count)
+            {
+                if (destGroup.Type == TType.Root) { return true; }
+                else { return false; }
+            }
             foreach (TThumb thumb in thumbs)
             {
                 if (destGroup.Thumbs.Contains(thumb) == false) { return false; }

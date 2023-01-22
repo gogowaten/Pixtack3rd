@@ -34,10 +34,10 @@
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect030.png"/>
         <local:TTImage x:Name="MyImage2" TTLeft="60" TTTop="60"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect060.png"/>
-        <local:TTImage x:Name="MyImage3" TTLeft="90" TTTop="90"
+        <!--<local:TTImage x:Name="MyImage3" TTLeft="90" TTTop="90"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect090.png"/>
         <local:TTImage x:Name="MyImage4" TTLeft="120" TTTop="120"
-                       TTSourcePath="D:\ブログ用\テスト用画像\hueRect135.png"/>
+                       TTSourcePath="D:\ブログ用\テスト用画像\hueRect135.png"/>-->
 
       </local:TTRoot>
     </ScrollViewer>
@@ -50,9 +50,24 @@
         <Button x:Name="ButtonLoadData" Content="データ読み込み(全体)" Click="ButtonLoadData_Click"/>
         <Button x:Name="ButtonLoadDataThumb" Content="データ読み込み(個別)" Click="ButtonLoadDataThumb_Click"/>
         <Button x:Name="ButtonLoadDataRootToGroup" Content="データ読み込み、Rootをグループとして追加" Click="ButtonLoadDataRootToGroup_Click"/>
-        <Button x:Name="ButtonToGroup" Content="グループ化" Click="ButtonToGroup_Click"/>
-        <Button x:Name="ButtonUnGroup" Content="グループ解除" Click="ButtonUnGroup_Click"/>
-
+        <DockPanel>
+          <Button x:Name="ButtonToGroup" Content="グループ化" Click="ButtonToGroup_Click" Width="100"/>
+          <Button x:Name="ButtonUnGroup" Content="グループ解除" Click="ButtonUnGroup_Click"/>
+        </DockPanel>
+        <DockPanel>
+          <Button x:Name="ButtonIn" Content="In" Click="ButtonIn_Click" Width="100"/>
+          <Button x:Name="ButtonOut" Content="Out" Click="ButtonOut_Click"/>
+        </DockPanel>
+        <DockPanel>
+          <Button x:Name="ButtonRemove" Content="選択Thumb削除" Click="ButtonRemove_Click" Width="100"/>
+          <Button x:Name="ButtonRemoveAll" Content="全削除" Click="ButtonRemoveAll_Click"/>
+        </DockPanel>
+        <DockPanel>
+          <Button x:Name="ButtonUp" Content="Age" Click="ButtonUp_Click" Width="40"/>
+          <Button x:Name="ButtonDown" Content="Sage" Click="ButtonDown_Click" Width="40"/>
+          <Button x:Name="ButtonMostUp" Content="MaxAge" Click="ButtonMostUp_Click" Width="60"/>
+          <Button x:Name="ButtonMostDown" Content="MaxSage" Click="ButtonMostDown_Click"/>
+        </DockPanel>
       </StackPanel>
       <StackPanel DataContext="{Binding ElementName=MyRoot}">
         <WrapPanel DataContext="{Binding ActiveGroup}">

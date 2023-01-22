@@ -770,22 +770,32 @@ namespace Pixtack3rd
 
                 foreach (var item in fileList2)
                 {
+                    //拡張子で判定、関連ファイルならDataで追加
                     var ext = System.IO.Path.GetExtension(item);
-                    if (ext == DATA_EXTENSION_NAME)
+                    if (ext == DATA_EXTENSION_NAME || ext == APP_EXTENSION_NAME)
                     {
-                        var neko = LoadFromZip(item);
-                        if (neko.data != null)
+                        var (data, appConfig) = LoadFromZip(item);
+                        if (data == null)
                         {
-                            MyRoot.AddThumbDataToActiveGroup(neko.data);
+                            errorFiles.Add(item); continue;
                         }
+                        //DataがRootならGroupに変換して追加
+                        if (data.Type == TType.Root)
+                        {
+                            data = ConvertDataRootToGroup(data);
+                            if (data != null)
+                            {
+                                MyRoot.AddThumbDataToActiveGroup(data);
+                            }
+                            else { errorFiles.Add(item); continue; }
+                        }
+                        MyRoot.AddThumbDataToActiveGroup(data);
+
                     }
-                    else if (ext == APP_EXTENSION_NAME)
-                    {
-                        MessageBox.Show("az3");
-                    }
+                    //それ以外の拡張子ファイルは画像として読み込む
                     else
                     {
-                        //画像ファイル判定はエラーで
+                        //試みてエラーだったらファイル名を表示
                         try
                         {
                             FileStream stream = new(item, FileMode.Open, FileAccess.Read);
@@ -799,52 +809,12 @@ namespace Pixtack3rd
                             };
                             MyRoot.AddThumbDataToActiveGroup(data);
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                             errorFiles.Add(item);
                             continue;
                         }
-
                     }
-                 
-
-                    //try
-                    //{
-                    //    if (new BitmapImage(new Uri(item)) is BitmapSource bmp)
-                    //    {
-                    //        Data data = new(TType.Image)
-                    //        {
-                    //            BitmapSource = bmp,
-                    //            X = x,
-                    //            Y = y,
-                    //        };
-                    //        MyRoot.AddThumbDataToActiveGroup(data);
-                    //    }
-                    //    else
-                    //    {
-
-                    //    }
-                    //}
-                    //catch (Exception ex)
-                    //{
-                    //    MessageBox.Show(ex.Message);
-                    //    throw;
-                    //}
-
-                    //foreach (var item in fileList2)
-                    //{
-                    //    TTImage tTImage = new(new Data(TType.Image)
-                    //    {
-                    //        BitmapSource = new BitmapImage(new Uri(item)),
-                    //        X = x,
-                    //        Y = y
-                    //    });
-                    //    MyRoot.AddThumbToActiveGroup(tTImage);
-                    //    MyRoot.ActiveThumb = tTImage;
-                    //    x += MyAppConfig.XShift;
-                    //    y += MyAppConfig.YShift;
-                    //}
-
                 }
                 if (errorFiles.Count > 0)
                 {
@@ -853,7 +823,7 @@ namespace Pixtack3rd
                     {
                         ms += $"{name}\n";
                     }
-                    MessageBox.Show(ms,"開くことができなかったファイル一覧",MessageBoxButton.OK,MessageBoxImage.Error);
+                    MessageBox.Show(ms, "開くことができなかったファイル一覧", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -1041,7 +1011,7 @@ namespace Pixtack3rd
         }
 
         //RootDataであるaz3ファイルを読み込んで、TTGroupに変換して追加
-        //変換部部が怪しい、項目が増えた場合はここも増やす必要があるのでバグ発生源になる？
+        //変換部分が怪しい、項目が増えた場合はここも増やす必要があるのでバグ発生源になる？
         private void ButtonLoadDataRootToGroup_Click(object sender, RoutedEventArgs e)
         {
             Microsoft.Win32.OpenFileDialog dialog = new();
@@ -1049,18 +1019,30 @@ namespace Pixtack3rd
             if (dialog.ShowDialog() == true)
             {
                 (Data? data, AppConfig? appConfig) = LoadFromZip(dialog.FileName);
-                if (data != null)
+                if (ConvertDataRootToGroup(data) is Data groupData)
                 {
-                    //新たにGroupDataを作成してコピー
-                    Data newGroup = new(TType.Group)
-                    {
-                        Datas = data.Datas,
-                        X = MyRoot.ActiveGroup.TTXShift,
-                        Y = MyRoot.ActiveGroup.TTYShift
-                    };
-                    MyRoot.AddThumbDataToActiveGroup(newGroup);
+                    MyRoot.AddThumbDataToActiveGroup(groupData);
                 }
             }
+        }
+        /// <summary>
+        /// RootDataであるaz3ファイルをGroupDataに変換する
+        /// 変換部分が怪しい、項目が増えた場合はここも増やす必要があるのでバグ発生源になる？
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        private Data? ConvertDataRootToGroup(Data? data)
+        {
+            if (data == null) return null;
+            if (data.Type == TType.Root)
+            {
+                Data groupData = new(TType.Group)
+                {
+                    Datas = data.Datas
+                };
+                return groupData;
+            }
+            else return null;
         }
 
         //個別Data読み込み
@@ -1134,6 +1116,53 @@ namespace Pixtack3rd
         {
             //グループ解除、ActiveThumbが対象
             MyRoot.UnGroup();
+        }
+
+        private void ButtonIn_Click(object sender, RoutedEventArgs e)
+        {
+            //ActiveGroupの外へ
+            MyRoot.ActiveGroupInside();
+        }
+
+        private void ButtonOut_Click(object sender, RoutedEventArgs e)
+        {
+            //ActiveGroupの中へ
+            MyRoot.ActiveGroupOutside();
+        }
+
+        private void ButtonRemove_Click(object sender, RoutedEventArgs e)
+        {
+            //選択Thumbを削除
+            MyRoot.RemoveThumb();
+        }
+        private void ButtonRemoveAll_Click(object sender, RoutedEventArgs e)
+        {
+            //全削除
+            MyRoot.RemoveAll();
+        }
+
+        private void ButtonUp_Click(object sender, RoutedEventArgs e)
+        {
+            //前面へ移動
+            MyRoot.ZUp();
+        }
+
+        private void ButtonDown_Click(object sender, RoutedEventArgs e)
+        {
+            //背面へ移動
+            MyRoot.ZDown();
+        }
+
+        private void ButtonMostUp_Click(object sender, RoutedEventArgs e)
+        {
+            //最前面へ
+            MyRoot.ZUpFrontMost();
+        }
+
+        private void ButtonMostDown_Click(object sender, RoutedEventArgs e)
+        {
+            //最背面へ移動
+            MyRoot.ZDownBackMost();
         }
 
     }
