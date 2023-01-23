@@ -35,16 +35,18 @@ namespace Pixtack3rd
         //アプリ情報
         private const string APP_NAME = "Pixtack3rd";
         private const string APP_CONFIG_FILE_NAME = "config.xml";
-        private const string APP_ROOT_DATA_FILENAME = "TTRoot" + DATA_EXTENSION_NAME;
+        
+        private const string APP_EXTENSION_NAME = ".p3rd";//Rootデータとアプリの設定を含んだ拡張子
+        private const string DATA_EXTENSION_NAME = ".p3";//データだけの拡張子
+
+        private const string EXTENSION_FILTER_P3 = "Pixtace3 設定＆全Data|*" + APP_EXTENSION_NAME;
+        private const string EXTENSION_FILTER_P3D = "Pixtack3 アイテムData|*" + DATA_EXTENSION_NAME;
         private string AppVersion;
         //datetime.tostringの書式、これを既定値にする
         private const string DATE_TIME_STRING_FORMAT = "yyyyMMdd'_'HHmmss'_'fff";
         //データ保存時のxmlのファイル名
         private readonly string XML_FILE_NAME = "Data.xml";
-        //データだけの拡張子
-        private const string DATA_EXTENSION_NAME = ".azt";
-        //Rootデータとアプリの設定を含んだ拡張子
-        private const string APP_EXTENSION_NAME = ".az3";
+        private const string APP_ROOT_DATA_FILENAME = "TTRoot" + DATA_EXTENSION_NAME;
 
         public MainWindow()
         {
@@ -222,7 +224,28 @@ namespace Pixtack3rd
             }
         }
         #endregion 設定保存と読み込み
+
         #region その他関数
+
+        /// <summary>
+        /// DataTypeの変換、RootDataだった場合GroupDataに変換する、それ以外だったらそのまま返す
+        /// 変換部分が怪しい、項目が増えた場合はここも増やす必要があるのでバグ発生源になる？
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        private Data? ConvertDataRootToGroup(Data? data)
+        {
+            if (data == null) return null;
+            if (data.Type == TType.Root)
+            {
+                Data groupData = new(TType.Group)
+                {
+                    Datas = data.Datas
+                };
+                return groupData;
+            }
+            else return data;
+        }
 
         /// <summary>
         /// アプリのバージョン取得、できなかかったときはstring.Emptyを返す
@@ -743,8 +766,9 @@ namespace Pixtack3rd
         //    MyNumericUpDownFileNameSerial.MyValue += MyNumericUpDownFileNameSerialIncreace.MyValue;
         //}
 
-        private bool SaveBitmapFromThumb(TThumb thumb)
+        private bool SaveBitmapFromThumb(TThumb? thumb)
         {
+            if (thumb == null) return false;
             if (MyRoot.GetBitmap(thumb) is BitmapSource bitmap)
             {
 
@@ -793,6 +817,13 @@ namespace Pixtack3rd
                         //DataがRootならGroupに変換して追加
                         if (data.Type == TType.Root)
                         {
+                            //2
+                            //MyRoot.SetRootData(data);
+
+                            //3
+                            //MyRoot.AddThumbDataToActiveGroup(data);
+
+                            //1
                             data = ConvertDataRootToGroup(data);
                             if (data != null)
                             {
@@ -800,7 +831,11 @@ namespace Pixtack3rd
                             }
                             else { errorFiles.Add(item); continue; }
                         }
-                        MyRoot.AddThumbDataToActiveGroup(data);
+                        else
+                        {
+                            MyRoot.AddThumbDataToActiveGroup(data);
+                        }
+
 
                     }
                     //それ以外の拡張子ファイルは画像として読み込む
@@ -849,7 +884,7 @@ namespace Pixtack3rd
         /// <param name="filePath">拡張子も含めたフルパス</param>
         /// <param name="data"></param>
         /// <param name="isWithAppConfigSave">アプリの設定も保存するときはtrue</param>
-        private void SaveDataToAz3(string filePath, Data data, bool isWithAppConfigSave = false)
+        private void SaveDataToAz3(string filePath, Data data, bool isWithAppConfigSave)
         {
             try
             {
@@ -932,6 +967,11 @@ namespace Pixtack3rd
 
         #region データ読み込み、アプリの設定読み込み
 
+        /// <summary>
+        /// ファイルからData読み込み
+        /// </summary>
+        /// <param name="filePath">フルパス</param>
+        /// <returns></returns>
         private (Data? data, AppConfig? appConfig) LoadDataFromFile(string filePath)
         {
             try
@@ -1006,7 +1046,7 @@ namespace Pixtack3rd
         private void ButtonLoadData_Click(object sender, RoutedEventArgs e)
         {
             Microsoft.Win32.OpenFileDialog dialog = new();
-            dialog.Filter = "(az3)|*.az3";
+            dialog.Filter = EXTENSION_FILTER_P3;
             if (dialog.ShowDialog() == true)
             {
                 (Data? data, AppConfig? appConfig) = LoadDataFromFile(dialog.FileName);
@@ -1027,7 +1067,7 @@ namespace Pixtack3rd
         private void ButtonLoadDataRootToGroup_Click(object sender, RoutedEventArgs e)
         {
             Microsoft.Win32.OpenFileDialog dialog = new();
-            dialog.Filter = "(az3)|*.az3";
+            dialog.Filter = EXTENSION_FILTER_P3;
             if (dialog.ShowDialog() == true)
             {
                 (Data? data, AppConfig? appConfig) = LoadDataFromFile(dialog.FileName);
@@ -1037,38 +1077,18 @@ namespace Pixtack3rd
                 }
             }
         }
-        /// <summary>
-        /// RootDataであるaz3ファイルをGroupDataに変換する
-        /// 変換部分が怪しい、項目が増えた場合はここも増やす必要があるのでバグ発生源になる？
-        /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        private Data? ConvertDataRootToGroup(Data? data)
-        {
-            if (data == null) return null;
-            if (data.Type == TType.Root)
-            {
-                Data groupData = new(TType.Group)
-                {
-                    Datas = data.Datas
-                };
-                return groupData;
-            }
-            else return null;
-        }
 
         //個別Data読み込み
         private void ButtonLoadDataThumb_Click(object sender, RoutedEventArgs e)
         {
             Microsoft.Win32.OpenFileDialog dialog = new();
-            dialog.Filter = "(azt)|*.azt";
+            dialog.Filter = EXTENSION_FILTER_P3D;
             if (dialog.ShowDialog() == true)
             {
                 (Data? data, AppConfig? appConfig) = LoadDataFromFile(dialog.FileName);
+                data = ConvertDataRootToGroup(data);
                 if (data is not null)
                 {
-                    data.X = MyRoot.ActiveGroup.TTXShift;
-                    data.Y = MyRoot.ActiveGroup.TTYShift;
                     MyRoot.AddThumbDataToActiveGroup(data);
                 }
             }
@@ -1080,8 +1100,22 @@ namespace Pixtack3rd
         //Rootを画像ファイルとして保存
         private void ButtonSaveToImage_Click(object sender, RoutedEventArgs e)
         {
-            if (MyRoot.Thumbs.Count == 0) return;
             if (SaveBitmapFromThumb(MyRoot) == false)
+            {
+                MessageBox.Show("保存できなかった");
+            }
+        }
+        private void ButtonSaveToImageActive_Click(object sender, RoutedEventArgs e)
+        {//ActiveThumb            
+            if (SaveBitmapFromThumb(MyRoot.ActiveThumb) == false)
+            {
+                MessageBox.Show("保存できなかった");
+            }
+        }
+
+        private void ButtonSaveToImageClicked_Click(object sender, RoutedEventArgs e)
+        {//ClickedThumb
+            if (SaveBitmapFromThumb(MyRoot.ClickedThumb) == false)
             {
                 MessageBox.Show("保存できなかった");
             }
@@ -1090,7 +1124,7 @@ namespace Pixtack3rd
         private void ButtonSaveData_Click(object sender, RoutedEventArgs e)
         {
             Microsoft.Win32.SaveFileDialog dialog = new();
-            dialog.Filter = "(az3)|*.az3";
+            dialog.Filter = EXTENSION_FILTER_P3;
             if (dialog.ShowDialog() == true)
             {
                 SaveDataToAz3(dialog.FileName, MyRoot.Data, true);
@@ -1105,7 +1139,7 @@ namespace Pixtack3rd
                 Environment.CurrentDirectory, APP_CONFIG_FILE_NAME), MyAppConfig);
             //RootData保存
             SaveDataToAz3(System.IO.Path.Combine(
-                Environment.CurrentDirectory, APP_ROOT_DATA_FILENAME), MyRoot.Data);
+                Environment.CurrentDirectory, APP_ROOT_DATA_FILENAME), MyRoot.Data, true);
         }
 
         private void ButtonSaveDataThumb_Click(object sender, RoutedEventArgs e)
@@ -1114,13 +1148,65 @@ namespace Pixtack3rd
             if (MyRoot.ActiveThumb?.Data is Data data)
             {
                 Microsoft.Win32.SaveFileDialog dialog = new();
-                dialog.Filter = "(azt)|*.azt";
+                dialog.Filter = EXTENSION_FILTER_P3D;
                 if (dialog.ShowDialog() == true)
                 {
-                    SaveDataToAz3(dialog.FileName, data);
+                    SaveDataToAz3(dialog.FileName, data, false);
                 }
             }
         }
+        private void SaveData(Data data)
+        {
+
+        }
+        private string? GetSaveDataFilePath(string extFilter)
+        {
+            Microsoft.Win32.SaveFileDialog dialog = new();
+            dialog.Filter = extFilter;
+            if (dialog.ShowDialog() == true)
+            {
+                return dialog.FileName;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        private void ButtonSaveAllData_Click(object sender, RoutedEventArgs e)
+        {
+            if (GetSaveDataFilePath(EXTENSION_FILTER_P3) is string path)
+            {
+                SaveDataToAz3(path, MyRoot.Data, true);
+            }
+        }
+
+        private void ButtonSaveRootThumb_Click(object sender, RoutedEventArgs e)
+        {
+            if (MyRoot.Thumbs.Count == 0) { return; }
+            if (GetSaveDataFilePath(EXTENSION_FILTER_P3D) is string path)
+            {
+                SaveDataToAz3(path, MyRoot.Data, false);
+            }
+        }
+
+        private void ButtonSaveCickedThumb_Click(object sender, RoutedEventArgs e)
+        {
+            if (MyRoot.ClickedThumb?.Data == null) { return; }
+            if (GetSaveDataFilePath(EXTENSION_FILTER_P3D) is string path)
+            {
+                SaveDataToAz3(path, MyRoot.ClickedThumb.Data, false);
+            }
+        }
+
+        private void ButtonSaveActiveThumb_Click(object sender, RoutedEventArgs e)
+        {
+            if (MyRoot.ActiveThumb?.Data == null) { return; }
+            if (GetSaveDataFilePath(EXTENSION_FILTER_P3D) is string path)
+            {
+                SaveDataToAz3(path, MyRoot.ActiveThumb.Data, false);
+            }
+        }
+
         private void ButtonToGroup_Click(object sender, RoutedEventArgs e)
         {
             //グループ化

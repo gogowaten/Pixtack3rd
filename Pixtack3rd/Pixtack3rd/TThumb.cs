@@ -326,7 +326,22 @@ namespace Pixtack3rd
 
         //注目しているThumb、選択Thumb群の筆頭
         private TThumb? _activeThumb;
-        public TThumb? ActiveThumb { get => _activeThumb; set => SetProperty(ref _activeThumb, value); }
+        public TThumb? ActiveThumb
+        {
+            get => _activeThumb;
+            set
+            {
+                SetProperty(ref _activeThumb, value);
+                //FrontActiveThumbとBackActiveThumbを更新する
+                ChangedActiveThumb(value);
+            }
+        }
+
+        private TThumb? _frontActiveThumb;
+        public TThumb? FrontActiveThumb { get => _frontActiveThumb; set => SetProperty(ref _frontActiveThumb, value); }
+
+        private TThumb? _backActiveThumb;
+        public TThumb? BackActiveThumb { get => _backActiveThumb; set => SetProperty(ref _backActiveThumb, value); }
 
         //ActiveThumbの親要素、移動可能なThumbはこの要素の中のThumbだけ。起動直後はRootThumbがこれになる
         private TTGroup _activeGroup;
@@ -339,6 +354,7 @@ namespace Pixtack3rd
                 SetProperty(ref _activeGroup, value);
             }
         }
+
         #endregion 通知プロパティ
 
         //選択状態の要素を保持
@@ -393,9 +409,9 @@ namespace Pixtack3rd
             SelectedThumbs.Clear();
             this.Data = data;
             DataContext = this.Data;
-            _activeGroup = this;
-            _clickedThumb = null;
-            _activeThumb = null;
+            ActiveGroup = this;
+            ClickedThumb = null;
+            ActiveThumb = null;
 
             //子要素追加
             foreach (var item in data.Datas)
@@ -577,6 +593,49 @@ namespace Pixtack3rd
         #region その他関数
 
 
+        /// <summary>
+        /// ActiveThumb変更時に実行、FrontActiveThumbとBackActiveThumbを更新する
+        /// </summary>
+        /// <param name="value"></param>
+        private void ChangedActiveThumb(TThumb? value)
+        {
+            if (value == null)
+            {
+                FrontActiveThumb = null;
+                BackActiveThumb = null;
+            }
+            else
+            {
+                int ii = ActiveGroup.Thumbs.IndexOf(value);
+                int tc = ActiveGroup.Thumbs.Count;
+
+                if (tc <= 1)
+                {
+                    FrontActiveThumb = null;
+                    BackActiveThumb = null;
+                }
+                else
+                {
+                    if (ii - 1 >= 0)
+                    {
+                        BackActiveThumb = ActiveGroup.Thumbs[ii - 1];
+                    }
+                    else
+                    {
+                        BackActiveThumb = null;
+                    }
+                    if (ii + 1 >= tc)
+                    {
+                        FrontActiveThumb = null;
+                    }
+                    else
+                    {
+                        FrontActiveThumb = ActiveGroup.Thumbs[ii + 1];
+                    }
+                }
+            }
+        }
+
         private bool CheckIsActive(TThumb thumb)
         {
             if (thumb.TTParent is TTGroup ttg && ttg == ActiveGroup)
@@ -681,6 +740,7 @@ namespace Pixtack3rd
         /// <param name="data"></param>
         public void AddThumbDataToActiveGroup(Data data)
         {
+            //data.Guid = Guid.NewGuid().ToString();
             if (BuildThumb(data) is TThumb thumb)
             {
                 AddThumb(thumb, ActiveGroup);//直下にはドラッグ移動イベント付加
@@ -689,8 +749,6 @@ namespace Pixtack3rd
                 {
                     data.X = ActiveThumb.Data.X + ActiveGroup.TTXShift;
                     data.Y = ActiveThumb.Data.Y + ActiveGroup.TTYShift;
-                    //data.X = ActiveThumb.Data.X + TTXShift;
-                    //data.Y = ActiveThumb.Data.Y + TTYShift;
                 }
                 else
                 {
@@ -812,6 +870,7 @@ namespace Pixtack3rd
         {
             Thumbs.Clear();
             SelectedThumbs.Clear();
+            Data.Datas.Clear();
             ActiveThumb = null;
             ClickedThumb = null;
             ActiveGroup = this;
@@ -852,8 +911,8 @@ namespace Pixtack3rd
                 TTLeft = x,
                 TTTop = y,
                 TTGrid = destGroup.TTGrid,
-                TTXShift= destGroup.TTXShift,
-                TTYShift= destGroup.TTYShift,
+                TTXShift = destGroup.TTXShift,
+                TTYShift = destGroup.TTYShift,
             };
             //各要素のドラッグイベントを外す、新グループに追加
             foreach (var item in sortedList)
