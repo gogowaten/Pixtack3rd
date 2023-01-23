@@ -332,47 +332,11 @@ namespace Pixtack3rd
             set
             {
                 SetProperty(ref _activeThumb, value);
+                //FrontActiveThumbとBackActiveThumbを更新する
                 ChangedActiveThumb(value);
             }
         }
-        private void ChangedActiveThumb(TThumb value)
-        {
-            if (value == null)
-            {
-                FrontActiveThumb = null;
-                BackActiveThumb = null;
-            }
-            else
-            {
-                int ii = ActiveGroup.Thumbs.IndexOf(value);
-                int tc = ActiveGroup.Thumbs.Count;
 
-                if (tc <= 1)
-                {
-                    FrontActiveThumb = null;
-                    BackActiveThumb = null;
-                }
-                else
-                {
-                    if (ii - 1 >= 0)
-                    {
-                        BackActiveThumb = ActiveGroup.Thumbs[ii - 1];
-                    }
-                    else
-                    {
-                        BackActiveThumb = null;
-                    }
-                    if (ii + 1 >= tc)
-                    {
-                        FrontActiveThumb = null;
-                    }
-                    else
-                    {
-                        FrontActiveThumb = ActiveGroup.Thumbs[ii + 1];
-                    }
-                }
-            }
-        }
         private TThumb? _frontActiveThumb;
         public TThumb? FrontActiveThumb { get => _frontActiveThumb; set => SetProperty(ref _frontActiveThumb, value); }
 
@@ -445,9 +409,9 @@ namespace Pixtack3rd
             SelectedThumbs.Clear();
             this.Data = data;
             DataContext = this.Data;
-            _activeGroup = this;
-            _clickedThumb = null;
-            _activeThumb = null;
+            ActiveGroup = this;
+            ClickedThumb = null;
+            ActiveThumb = null;
 
             //子要素追加
             foreach (var item in data.Datas)
@@ -628,6 +592,49 @@ namespace Pixtack3rd
 
         #region その他関数
 
+
+        /// <summary>
+        /// ActiveThumb変更時に実行、FrontActiveThumbとBackActiveThumbを更新する
+        /// </summary>
+        /// <param name="value"></param>
+        private void ChangedActiveThumb(TThumb? value)
+        {
+            if (value == null)
+            {
+                FrontActiveThumb = null;
+                BackActiveThumb = null;
+            }
+            else
+            {
+                int ii = ActiveGroup.Thumbs.IndexOf(value);
+                int tc = ActiveGroup.Thumbs.Count;
+
+                if (tc <= 1)
+                {
+                    FrontActiveThumb = null;
+                    BackActiveThumb = null;
+                }
+                else
+                {
+                    if (ii - 1 >= 0)
+                    {
+                        BackActiveThumb = ActiveGroup.Thumbs[ii - 1];
+                    }
+                    else
+                    {
+                        BackActiveThumb = null;
+                    }
+                    if (ii + 1 >= tc)
+                    {
+                        FrontActiveThumb = null;
+                    }
+                    else
+                    {
+                        FrontActiveThumb = ActiveGroup.Thumbs[ii + 1];
+                    }
+                }
+            }
+        }
 
         private bool CheckIsActive(TThumb thumb)
         {

@@ -49,8 +49,10 @@
         <Button x:Name="ButtonSaveToImage" Content="画像として保存" Click="ButtonSaveToImage_Click"/>
         <Button x:Name="ButtonSaveToImageActive" Content="画像として保存(ActiveThumb)" Click="ButtonSaveToImageActive_Click"/>
         <Button x:Name="ButtonSaveToImageClicked" Content="画像として保存(Clicked)" Click="ButtonSaveToImageClicked_Click"/>
-        <Button x:Name="ButtonSaveData" Content="データ保存(全体)" Click="ButtonSaveData_Click"/>
-        <Button x:Name="ButtonSaveDataThumb" Content="データ保存(個別)" Click="ButtonSaveDataThumb_Click"/>
+        <Button x:Name="ButtonSaveAllData" Content="アプリの設定含めて保存" Click="ButtonSaveAllData_Click"/>
+        <Button x:Name="ButtonSaveActiveThumb" Content="ActiveThumb保存" Click="ButtonSaveActiveThumb_Click"/>
+        <Button x:Name="ButtonSaveCickedThumb" Content="ClickedThumb保存" Click="ButtonSaveCickedThumb_Click"/>
+        <Button x:Name="ButtonSaveRootThumb" Content="RootThumb保存" Click="ButtonSaveRootThumb_Click"/>
         <Button x:Name="ButtonLoadData" Content="データ読み込み(全体)" Click="ButtonLoadData_Click"/>
         <Button x:Name="ButtonLoadDataThumb" Content="データ読み込み(個別)" Click="ButtonLoadDataThumb_Click"/>
         <Button x:Name="ButtonLoadDataRootToGroup" Content="データ読み込み、Rootをグループとして追加" Click="ButtonLoadDataRootToGroup_Click"/>
