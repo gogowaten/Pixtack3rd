@@ -7,11 +7,11 @@
         xmlns:tomato="clr-namespace:ControlLibraryCore20200620;assembly=ControlLibraryCore20200620"
         d:DataContext="{d:DesignInstance Type=local:AppConfig}"
         mc:Ignorable="d"
-        Title="MainWindow" Height="850" Width="600" ResizeMode="CanResizeWithGrip"
+        Title="MainWindow" Height="950" Width="600" ResizeMode="CanResizeWithGrip"
         Top="{Binding Path=Top, Mode=TwoWay}" Left="{Binding Left, Mode=TwoWay}"
         AllowDrop="True" Name="Main">
 
-  <Grid Name="MyGrid" UseLayoutRounding="False">
+  <Grid Name="MyGrid" UseLayoutRounding="True">
     <Grid.ColumnDefinitions>
       <ColumnDefinition/>
       <ColumnDefinition Width="200"/>
@@ -47,6 +47,8 @@
       <StackPanel>
         <ComboBox x:Name="ComboBoxSaveFileType" SelectedItem="{Binding ImageType}"/>
         <Button x:Name="ButtonSaveToImage" Content="画像として保存" Click="ButtonSaveToImage_Click"/>
+        <Button x:Name="ButtonSaveToImageActive" Content="画像として保存(ActiveThumb)" Click="ButtonSaveToImageActive_Click"/>
+        <Button x:Name="ButtonSaveToImageClicked" Content="画像として保存(Clicked)" Click="ButtonSaveToImageClicked_Click"/>
         <Button x:Name="ButtonSaveData" Content="データ保存(全体)" Click="ButtonSaveData_Click"/>
         <Button x:Name="ButtonSaveDataThumb" Content="データ保存(個別)" Click="ButtonSaveDataThumb_Click"/>
         <Button x:Name="ButtonLoadData" Content="データ読み込み(全体)" Click="ButtonLoadData_Click"/>
@@ -90,29 +92,31 @@
 
         <GroupBox Header="ActiveGroup" DataContext="{Binding ActiveGroup}">
           <StackPanel>
-            <Grid Width="180" Height="110">
-              <Border Background="White" BorderBrush="Gray" BorderThickness="1">
-                <Rectangle>
-                  <Rectangle.Fill>
-                    <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
-                  </Rectangle.Fill>
-                </Rectangle>
-              </Border>
-            </Grid>
-            <WrapPanel>
-              <tomato:NumericUpDown BorderBrush="DodgerBlue"
+            <StackPanel Orientation="Horizontal">
+              <Grid Width="110" Height="110">
+                <Border Background="White" BorderBrush="Gray" BorderThickness="1">
+                  <Rectangle>
+                    <Rectangle.Fill>
+                      <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
+                    </Rectangle.Fill>
+                  </Rectangle>
+                </Border>
+              </Grid>
+              <WrapPanel Width="100">
+                <tomato:NumericUpDown BorderBrush="DodgerBlue"
                               MyValue="{Binding TTXShift}" MyStringFormat="シフトX 000;シフトX -000;シフトX 000"
                             MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
                             MyMinValue="-1024" MyMaxValue="1024"/>
-              <tomato:NumericUpDown BorderBrush="DodgerBlue"
-                              MyValue="{Binding TTGrid}" MyStringFormat="Grid 000;Grid -000;Grid 000"
-                            MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
-                            MyMinValue="1" MyMaxValue="1024"/>
-              <tomato:NumericUpDown BorderBrush="DodgerBlue"
+                <tomato:NumericUpDown BorderBrush="DodgerBlue"
                               MyValue="{Binding TTYShift}" MyStringFormat="シフトY 000;シフトY -000;シフトY 000"
                             MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
                             MyMinValue="-1024" MyMaxValue="1024"/>
-            </WrapPanel>
+                <tomato:NumericUpDown BorderBrush="DodgerBlue"
+                              MyValue="{Binding TTGrid}" MyStringFormat="Grid 000;Grid -000;Grid 000"
+                            MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
+                            MyMinValue="1" MyMaxValue="1024"/>
+              </WrapPanel>
+            </StackPanel>
             <StackPanel Orientation="Horizontal">
               <TextBlock Text="{Binding Data.X, StringFormat=x\={0:000}}"/>
               <TextBlock Text="{Binding Data.Y, StringFormat=y\={0:000}}"/>
@@ -169,6 +173,16 @@
         </GroupBox>
         <GroupBox Header="ClickedThumb" DataContext="{Binding ClickedThumb}">
           <StackPanel>
+            <Grid Width="90" Height="70">
+              <Border  Background="White" BorderBrush="Gray" BorderThickness="1">
+                <Rectangle Width="80" Height="60" DataContext="{Binding ElementName=MyRoot}"
+                       Canvas.Left="0" Canvas.Top="0">
+                  <Rectangle.Fill>
+                    <VisualBrush Visual="{Binding ClickedThumb}" Stretch="Uniform"/>
+                  </Rectangle.Fill>
+                </Rectangle>
+              </Border>
+            </Grid>
             <TextBlock Text="{Binding Data.Type}"/>
             <StackPanel Orientation="Horizontal">
               <TextBlock Text="{Binding Data.X, StringFormat=x\={0:000}}"/>
@@ -182,7 +196,14 @@
           <ListBox ItemsSource="{Binding}">
             <ListBox.ItemTemplate>
               <DataTemplate>
-                <TextBlock Text="{Binding Data.Type}"/>
+                <StackPanel Orientation="Horizontal">
+                  <Rectangle Width="20" Height="20">
+                    <Rectangle.Fill>
+                      <VisualBrush Visual="{Binding}"/>
+                    </Rectangle.Fill>
+                  </Rectangle>
+                  <TextBlock Text="{Binding Data.Type}"/>
+                </StackPanel>
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>

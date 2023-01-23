@@ -743,8 +743,9 @@ namespace Pixtack3rd
         //    MyNumericUpDownFileNameSerial.MyValue += MyNumericUpDownFileNameSerialIncreace.MyValue;
         //}
 
-        private bool SaveBitmapFromThumb(TThumb thumb)
+        private bool SaveBitmapFromThumb(TThumb? thumb)
         {
+            if (thumb == null) return false;
             if (MyRoot.GetBitmap(thumb) is BitmapSource bitmap)
             {
 
@@ -793,6 +794,13 @@ namespace Pixtack3rd
                         //DataがRootならGroupに変換して追加
                         if (data.Type == TType.Root)
                         {
+                            //2
+                            //MyRoot.SetRootData(data);
+
+                            //3
+                            //MyRoot.AddThumbDataToActiveGroup(data);
+
+                            //1
                             data = ConvertDataRootToGroup(data);
                             if (data != null)
                             {
@@ -800,7 +808,11 @@ namespace Pixtack3rd
                             }
                             else { errorFiles.Add(item); continue; }
                         }
-                        MyRoot.AddThumbDataToActiveGroup(data);
+                        else
+                        {
+                            MyRoot.AddThumbDataToActiveGroup(data);
+                        }
+                        
 
                     }
                     //それ以外の拡張子ファイルは画像として読み込む
@@ -1067,8 +1079,6 @@ namespace Pixtack3rd
                 (Data? data, AppConfig? appConfig) = LoadDataFromFile(dialog.FileName);
                 if (data is not null)
                 {
-                    data.X = MyRoot.ActiveGroup.TTXShift;
-                    data.Y = MyRoot.ActiveGroup.TTYShift;
                     MyRoot.AddThumbDataToActiveGroup(data);
                 }
             }
@@ -1080,8 +1090,22 @@ namespace Pixtack3rd
         //Rootを画像ファイルとして保存
         private void ButtonSaveToImage_Click(object sender, RoutedEventArgs e)
         {
-            if (MyRoot.Thumbs.Count == 0) return;
             if (SaveBitmapFromThumb(MyRoot) == false)
+            {
+                MessageBox.Show("保存できなかった");
+            }
+        }
+        private void ButtonSaveToImageActive_Click(object sender, RoutedEventArgs e)
+        {//ActiveThumb            
+            if (SaveBitmapFromThumb(MyRoot.ActiveThumb) == false)
+            {
+                MessageBox.Show("保存できなかった");
+            }
+        }
+
+        private void ButtonSaveToImageClicked_Click(object sender, RoutedEventArgs e)
+        {//ClickedThumb
+            if (SaveBitmapFromThumb(MyRoot.ClickedThumb) == false)
             {
                 MessageBox.Show("保存できなかった");
             }

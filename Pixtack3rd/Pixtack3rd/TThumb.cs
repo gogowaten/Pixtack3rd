@@ -733,6 +733,7 @@ namespace Pixtack3rd
         /// <param name="data"></param>
         public void AddThumbDataToActiveGroup(Data data)
         {
+            //data.Guid = Guid.NewGuid().ToString();
             if (BuildThumb(data) is TThumb thumb)
             {
                 AddThumb(thumb, ActiveGroup);//直下にはドラッグ移動イベント付加
@@ -741,8 +742,6 @@ namespace Pixtack3rd
                 {
                     data.X = ActiveThumb.Data.X + ActiveGroup.TTXShift;
                     data.Y = ActiveThumb.Data.Y + ActiveGroup.TTYShift;
-                    //data.X = ActiveThumb.Data.X + TTXShift;
-                    //data.Y = ActiveThumb.Data.Y + TTYShift;
                 }
                 else
                 {
@@ -864,6 +863,7 @@ namespace Pixtack3rd
         {
             Thumbs.Clear();
             SelectedThumbs.Clear();
+            Data.Datas.Clear();
             ActiveThumb = null;
             ClickedThumb = null;
             ActiveGroup = this;
