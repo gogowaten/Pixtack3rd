@@ -90,12 +90,15 @@
 
         <GroupBox Header="ActiveGroup" DataContext="{Binding ActiveGroup}">
           <StackPanel>
-            <Rectangle Width="100" Height="100">
-              <Rectangle.Fill>
-                <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
-              </Rectangle.Fill>
-            </Rectangle>
-            
+            <Grid Width="180" Height="110">
+              <Border Background="White" BorderBrush="Gray" BorderThickness="1">
+                <Rectangle>
+                  <Rectangle.Fill>
+                    <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
+                  </Rectangle.Fill>
+                </Rectangle>
+              </Border>
+            </Grid>
             <WrapPanel>
               <tomato:NumericUpDown BorderBrush="DodgerBlue"
                               MyValue="{Binding TTXShift}" MyStringFormat="シフトX 000;シフトX -000;シフトX 000"
@@ -120,11 +123,39 @@
         </GroupBox>
         <GroupBox Header="ActiveThumb" DataContext="{Binding ActiveThumb}">
           <StackPanel>
-            <Rectangle Width="100" Height="100">
-              <Rectangle.Fill>
-                <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
-              </Rectangle.Fill>
-            </Rectangle>
+            <Canvas Width="180" Height="160">
+              <Grid Width="90" Height="70" Canvas.Top="90">
+                <Border Background="White" BorderBrush="Gray" BorderThickness="1">
+                  <Rectangle Width="80" Height="60"
+                         DataContext="{Binding ElementName=MyRoot}"
+                       Canvas.Left="0" Canvas.Top="100">
+                    <Rectangle.Fill>
+                      <VisualBrush Visual="{Binding BackActiveThumb}" Stretch="Uniform"/>
+                    </Rectangle.Fill>
+                  </Rectangle>
+                </Border>
+              </Grid>
+              <Grid Canvas.Left="60" Canvas.Top="30" Width="130" Height="100">
+                <Border Background="White" BorderBrush="Gray" BorderThickness="1">
+                  <Rectangle Width="120" Height="90" Canvas.Left="60" Canvas.Top="35">
+                    <Rectangle.Fill>
+                      <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
+                    </Rectangle.Fill>
+                  </Rectangle>
+                </Border>
+              </Grid>
+              <Grid Width="90" Height="70">
+                <Border  Background="White" BorderBrush="Gray" BorderThickness="1">
+                  <Rectangle Width="80" Height="60"
+                         DataContext="{Binding ElementName=MyRoot}"
+                       Canvas.Left="0" Canvas.Top="0">
+                    <Rectangle.Fill>
+                      <VisualBrush Visual="{Binding FrontActiveThumb}" Stretch="Uniform"/>
+                    </Rectangle.Fill>
+                  </Rectangle>
+                </Border>
+              </Grid>
+            </Canvas>
             <TextBlock Text="{Binding Data.Guid, StringFormat=Guid \= {0}}"/>
             <TextBlock Text="{Binding Data.Type, StringFormat=Type \= {0}}"/>
             <StackPanel Orientation="Horizontal">
@@ -134,7 +165,6 @@
               <TextBlock Text="{Binding ActualHeight, StringFormat=高さ\={0:000}}"/>
             </StackPanel>
             <TextBlock Text="{Binding Data.Text}"/>
-            <!--<Image Source="{Binding Data.BitmapSource}" Width="100" Height="100"/>-->
           </StackPanel>
         </GroupBox>
         <GroupBox Header="ClickedThumb" DataContext="{Binding ClickedThumb}">
