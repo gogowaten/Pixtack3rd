@@ -7,17 +7,35 @@
         xmlns:tomato="clr-namespace:ControlLibraryCore20200620;assembly=ControlLibraryCore20200620"
         d:DataContext="{d:DesignInstance Type=local:AppConfig}"
         mc:Ignorable="d"
-        Title="MainWindow" Height="950" Width="600" ResizeMode="CanResizeWithGrip"
+        Title="MainWindow" Height="950" Width="800" ResizeMode="CanResizeWithGrip"
         Top="{Binding Path=Top, Mode=TwoWay}" Left="{Binding Left, Mode=TwoWay}"
         AllowDrop="True" Name="Main">
 
   <Grid Name="MyGrid" UseLayoutRounding="True">
     <Grid.ColumnDefinitions>
       <ColumnDefinition/>
-      <ColumnDefinition Width="200"/>
+      <ColumnDefinition Width="260"/>
     </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="auto"/>
+      <RowDefinition/>
+      <RowDefinition Height="auto"/>
+    </Grid.RowDefinitions>
+    <StackPanel Grid.ColumnSpan="2">
+      <Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+        <MenuItem Header="ファイル(_F)"/>
+      </Menu>
+    </StackPanel>
 
-    <ScrollViewer x:Name="MyScrollViewer" HorizontalScrollBarVisibility="Auto"
+    <StatusBar Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">
+      <DockPanel DataContext="{Binding ElementName=MyRoot}">
+        <TextBlock Text="{Binding ActualWidth, StringFormat=size\(0x}"/>
+        <TextBlock Text="{Binding ActualHeight, StringFormat=0\)}"/>
+      </DockPanel>
+    </StatusBar>
+
+    <ScrollViewer Grid.Row="1" Grid.Column="0"
+                  x:Name="MyScrollViewer" HorizontalScrollBarVisibility="Auto"
                   VerticalScrollBarVisibility="Auto">
       <!--<local:TTTextBlock TTText="222"/>-->
       <local:TTRoot x:Name="MyRoot" HorizontalAlignment="Left" VerticalAlignment="Top" TTGrid="8"
@@ -43,19 +61,41 @@
 
       </local:TTRoot>
     </ScrollViewer>
-    <StackPanel Grid.Column="1">
+
+    <StackPanel Grid.Row="1" Grid.Column="1">
+      <StackPanel.Resources>
+        <Style TargetType="Button">
+          <Setter Property="Margin" Value="4,0,4,0"/>
+        </Style>
+      </StackPanel.Resources>
       <StackPanel>
         <ComboBox x:Name="ComboBoxSaveFileType" SelectedItem="{Binding ImageType}"/>
-        <Button x:Name="ButtonSaveToImage" Content="画像として保存" Click="ButtonSaveToImage_Click"/>
-        <Button x:Name="ButtonSaveToImageActive" Content="画像として保存(ActiveThumb)" Click="ButtonSaveToImageActive_Click"/>
-        <Button x:Name="ButtonSaveToImageClicked" Content="画像として保存(Clicked)" Click="ButtonSaveToImageClicked_Click"/>
-        <Button x:Name="ButtonSaveAllData" Content="アプリの設定含めて保存" Click="ButtonSaveAllData_Click"/>
-        <Button x:Name="ButtonSaveActiveThumb" Content="ActiveThumb保存" Click="ButtonSaveActiveThumb_Click"/>
-        <Button x:Name="ButtonSaveCickedThumb" Content="ClickedThumb保存" Click="ButtonSaveCickedThumb_Click"/>
-        <Button x:Name="ButtonSaveRootThumb" Content="RootThumb保存" Click="ButtonSaveRootThumb_Click"/>
-        <Button x:Name="ButtonLoadData" Content="データ読み込み(全体)" Click="ButtonLoadData_Click"/>
-        <Button x:Name="ButtonLoadDataThumb" Content="データ読み込み(個別)" Click="ButtonLoadDataThumb_Click"/>
-        <Button x:Name="ButtonLoadDataRootToGroup" Content="データ読み込み、Rootをグループとして追加" Click="ButtonLoadDataRootToGroup_Click"/>
+        <GroupBox Header="SaveImage">
+          <WrapPanel>
+            <Button x:Name="ButtonSaveToImage" Content="Root" Click="ButtonSaveToImage_Click"/>
+            <Button x:Name="ButtonSaveToImageActive" Content="ActiveThumb" Click="ButtonSaveToImageActive_Click"/>
+            <Button x:Name="ButtonSaveToImageClicked" Content="Clicked" Click="ButtonSaveToImageClicked_Click"/>
+          </WrapPanel>
+        </GroupBox>
+        <GroupBox Header="SaveData">
+          <WrapPanel>
+            <Button x:Name="ButtonSaveAllData" Content="アプリ設+Root" Click="ButtonSaveAllData_Click"/>
+            <Button x:Name="ButtonSaveRootThumb" Content="Root" Click="ButtonSaveRootThumb_Click"/>
+            <Button x:Name="ButtonSaveActiveThumb" Content="Active" Click="ButtonSaveActiveThumb_Click"/>
+            <Button x:Name="ButtonSaveCickedThumb" Content="Clicked" Click="ButtonSaveCickedThumb_Click"/>
+          </WrapPanel>
+        </GroupBox>
+        <GroupBox Header="LoadDataデータ読み込み">
+          <WrapPanel>
+            <Button x:Name="ButtonLoadData" Content="全体" Click="ButtonLoadData_Click"/>
+            <Button x:Name="ButtonLoadDataThumb" Content="個別" Click="ButtonLoadDataThumb_Click"/>
+            <Button x:Name="ButtonLoadDataRootToGroup" Content="Rootをグループとして追加" Click="ButtonLoadDataRootToGroup_Click"/>
+          </WrapPanel>
+        </GroupBox>
+        <StackPanel>
+          <Button x:Name="ButtonAddFromClipboard" Content="clipboard" Click="ButtonAddFromClipboard_Click"/>
+          <Button x:Name="ButtonAddFromClipboardPNG" Content="clipboardPNG" Click="ButtonAddFromClipboardPNG_Click"/>
+        </StackPanel>
         <DockPanel>
           <Button x:Name="ButtonToGroup" Content="グループ化" Click="ButtonToGroup_Click" Width="100"/>
           <Button x:Name="ButtonUnGroup" Content="グループ解除" Click="ButtonUnGroup_Click"/>
@@ -68,12 +108,14 @@
           <Button x:Name="ButtonRemove" Content="選択Thumb削除" Click="ButtonRemove_Click" Width="100"/>
           <Button x:Name="ButtonRemoveAll" Content="全削除" Click="ButtonRemoveAll_Click"/>
         </DockPanel>
-        <DockPanel>
-          <Button x:Name="ButtonUp" Content="Age" Click="ButtonUp_Click" Width="40"/>
-          <Button x:Name="ButtonDown" Content="Sage" Click="ButtonDown_Click" Width="40"/>
-          <Button x:Name="ButtonMostUp" Content="MaxAge" Click="ButtonMostUp_Click" Width="60"/>
-          <Button x:Name="ButtonMostDown" Content="MaxSage" Click="ButtonMostDown_Click"/>
-        </DockPanel>
+        <GroupBox Header="上下(Z軸)移動、対象はActiveThumb">
+          <UniformGrid Rows="1">
+            <Button x:Name="ButtonUp" Content="前面" Click="ButtonUp_Click"/>
+            <Button x:Name="ButtonDown" Content="背面" Click="ButtonDown_Click"/>
+            <Button x:Name="ButtonMostUp" Content="最前面" Click="ButtonMostUp_Click"/>
+            <Button x:Name="ButtonMostDown" Content="最背面" Click="ButtonMostDown_Click"/>
+          </UniformGrid>
+        </GroupBox>
         <CheckBox Content="前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>
       </StackPanel>
       <StackPanel DataContext="{Binding ElementName=MyRoot}">
@@ -85,12 +127,6 @@
             <Setter Property="Margin" Value="2,1,4,4"/>
           </Style>
         </StackPanel.Resources>
-        <GroupBox Header="Root">
-          <StackPanel Orientation="Horizontal">
-            <TextBlock Text="{Binding ActualWidth, StringFormat=幅 \= {0:000}}"/>
-            <TextBlock Text="{Binding ActualHeight, StringFormat=高さ \= {0:000}}"/>
-          </StackPanel>
-        </GroupBox>
 
         <GroupBox Header="ActiveGroup" DataContext="{Binding ActiveGroup}">
           <StackPanel>

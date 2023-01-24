@@ -34,8 +34,8 @@ namespace Pixtack3rd
         private AppConfig MyAppConfig;
         //アプリ情報
         private const string APP_NAME = "Pixtack3rd";
-        private const string APP_CONFIG_FILE_NAME = "config.xml";
-        
+        private const string APP_CONFIG_FILE_NAME = "config" + APP_EXTENSION_NAME;
+
         private const string APP_EXTENSION_NAME = ".p3rd";//Rootデータとアプリの設定を含んだ拡張子
         private const string DATA_EXTENSION_NAME = ".p3";//データだけの拡張子
 
@@ -282,14 +282,16 @@ namespace Pixtack3rd
                     AppConfig? result = (AppConfig?)serializer.ReadObject(reader);
                     if (result == null)
                     {
-                        throw new ArgumentException("読込できんかった");
+                        MessageBox.Show("読込できんかった");
+                        return null;
                     }
                     else { return result; }
                 }
             }
             catch (Exception ex)
             {
-                throw new ArgumentException("読込できんかった", ex.Message);
+                MessageBox.Show(ex.Message, "読込できんかった");
+                return null;
             }
         }
 
@@ -323,6 +325,26 @@ namespace Pixtack3rd
             return directory;
         }
 
+        /// <summary>
+        /// クリップボードから画像を取得してActiveGroupに追加
+        /// <paramref name="isPreferPng">取得時に"PNG"形式を優先するときはtrue</paramref>
+        /// </summary>
+        private void AddImageFromClipboard(bool isPreferPng)
+        {
+            BitmapSource? bmp;
+            if (isPreferPng)
+            {
+                bmp = GetPngImageFromClipboardWithAlphaFix();
+            }
+            else
+            {
+                bmp = GetImageFromClipboardWithAlphaFix();
+            }
+            if (bmp != null)
+            {//追加
+                MyRoot.AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
+            }
+        }
 
         #endregion その他関数
 
@@ -1041,7 +1063,7 @@ namespace Pixtack3rd
             }
         }
 
-        //az3ファイルの読み込み
+        //dataファイルの読み込み
         //TTRootのDataとアプリの設定を取得して設定
         private void ButtonLoadData_Click(object sender, RoutedEventArgs e)
         {
@@ -1097,6 +1119,192 @@ namespace Pixtack3rd
         #endregion データ読み込み、アプリの設定読み込み
 
 
+
+        #region クリップボード監視、画像取得、画像保存
+        //       クリップボードの中にある画像をWPFで取得してみた、Clipboard.GetImage() だけだと透明になる - 午後わてんのブログ
+        //https://gogowaten.hatenablog.com/entry/2019/11/12/201852
+
+        //        アルファ値を失わずに画像のコピペできた、.NET WPFのClipboard - 午後わてんのブログ
+        //https://gogowaten.hatenablog.com/entry/2021/02/10/134406
+
+
+        //四角形の場合は"PNG"で取得してBgr32に変換
+        //テキストボックスはGetImage()で取得してBgr32に変換
+
+        /// <summary>
+        /// クリップボードから画像を取得する、なかった場合はnullを返す
+        /// </summary>
+        /// <returns>BitmapSource</returns>
+        private BitmapSource? GetImageFromClipboard()
+        {
+
+            BitmapSource? source = null;
+            int count = 1;
+            int limit = 5;
+            do
+            {
+                try { source = Clipboard.GetImage(); }
+                catch (Exception) { }
+                finally { count++; }
+            } while (limit >= count && source == null);
+
+            if (source == null) { return null; }
+
+            //エクセル系のデータだった場合はGetImageで取得、このままだとアルファ値が0になっているので
+            //Bgr32に変換することでファルファ値を255にする
+            if (IsExcelCell())
+            {
+                source = new FormatConvertedBitmap(source, PixelFormats.Bgr32, null, 0);
+            }
+            //エクセル系以外はPNG形式で取得を試みて、得られなければGetImageで取得
+            else
+            {
+                BitmapSource? png = GetPngImageFromCripboard();
+                if (png != null)
+                {
+                    source = png;
+                }
+            }
+
+            if (source == null) { return null; }
+
+            //アルファ値が異常な画像ならピクセルフォーマットをBgr32に変換(アルファ値を255にする)
+            if (IsExceptionTransparent(source))
+            //if (IsExceptionTransparent(source))
+            {
+                source = new FormatConvertedBitmap(source, PixelFormats.Bgr32, null, 0);
+            }
+
+            return source;
+        }
+
+        /// <summary>
+        /// クリップボードから画像取得、
+        /// アルファ値をチェックして異常だった場合は修正する
+        /// </summary>
+        /// <returns></returns>
+        private BitmapSource? GetImageFromClipboardWithAlphaFix()
+        {
+            BitmapSource? source = null;
+            int count = 1;
+            int limit = 5;
+            do
+            {
+                try { source = Clipboard.GetImage(); }
+                catch (Exception) { }
+                finally { count++; }
+            } while (limit >= count && source == null);
+
+            if (source == null) { return null; }
+
+            //アルファ値が異常な画像ならピクセルフォーマットをBgr32に変換(アルファ値を255にする)
+            if (IsExceptionTransparent(source))
+            //if (IsExceptionTransparent(source))
+            {
+                source = new FormatConvertedBitmap(source, PixelFormats.Bgr32, null, 0);
+            }
+            return source;
+        }
+
+        /// <summary>
+        /// クリップボードから"PNG"形式で画像取得、
+        /// アルファ値をチェックして異常だった場合は修正する
+        /// </summary>
+        /// <returns></returns>
+        private BitmapSource? GetPngImageFromClipboardWithAlphaFix()
+        {
+            if (GetPngImageFromCripboard() is BitmapSource source)
+            {
+                if (IsExceptionTransparent(source))
+                {
+                    //アルファ値が異常な画像ならピクセルフォーマットをBgr32に変換(アルファ値を255にする)
+                    return source = new FormatConvertedBitmap(source, PixelFormats.Bgr32, null, 0);
+                }
+                else { return source; }
+            }
+            else { return null; }
+        }
+
+
+        /// <summary>
+        /// BitmapSourceの全ピクセルのアルファ値を検査、一つでも1以上があれば正常なのでfalseを返す
+        /// すべて0だった場合はtrueを返す、Bgra32専用
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        private bool IsExceptionTransparent(BitmapSource source)
+        {
+            if (source.Format != PixelFormats.Bgra32) return false;
+            int stride = source.PixelWidth * 4;
+            byte[] pixels = new byte[stride * source.PixelHeight];
+            source.CopyPixels(pixels, stride, 0);
+            for (int i = 3; i < pixels.Length; i += 4)
+            {
+                if (pixels[i] > 0) return false;
+            }
+            return true;
+        }
+
+
+        /// <summary>
+        /// クリップボードのPNG形式の画像を取得する、ない場合はnullを返す
+        /// </summary>
+        /// <returns></returns>
+        private static BitmapFrame? GetPngImageFromCripboard()
+        {
+            try
+            {
+                using MemoryStream stream = (MemoryStream)Clipboard.GetData("PNG");
+                //source = BitmapFrame.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+                return BitmapFrame.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+            }
+            catch (Exception)
+            {
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// クリップボードのデータ判定、エクセル判定、
+        /// データの中にEnhancedMetafile形式があればエクセルと判定してtrueを返す
+        /// </summary>
+        /// <returns></returns>
+        private static bool IsExcelCell()
+        {
+
+            IDataObject? obj = null;
+            int count = 1;
+            int limit = 5;
+            do
+            {
+                try { obj = Clipboard.GetDataObject(); }
+                catch (Exception) { }
+                finally
+                {
+                    count++;
+                    Task.Delay(10);
+                }
+            } while (obj == null && limit >= count);
+
+            if (obj == null) { return false; }
+
+            string[] formats = obj.GetFormats();
+            foreach (var item in formats)
+            {
+                if (item == "EnhancedMetafile")
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        #endregion クリップボード監視、画像取得
+
+
+
+
         //Rootを画像ファイルとして保存
         private void ButtonSaveToImage_Click(object sender, RoutedEventArgs e)
         {
@@ -1134,7 +1342,7 @@ namespace Pixtack3rd
         //アプリ終了時
         private void MainWindow_Closed(object? sender, EventArgs e)
         {
-            ////設定保存
+            //設定保存
             SaveConfig(System.IO.Path.Combine(
                 Environment.CurrentDirectory, APP_CONFIG_FILE_NAME), MyAppConfig);
             //RootData保存
@@ -1240,6 +1448,14 @@ namespace Pixtack3rd
         {
             //全削除
             MyRoot.RemoveAll();
+        }
+        private void ButtonAddFromClipboard_Click(object sender, RoutedEventArgs e)
+        {//クリップボードから画像追加
+            AddImageFromClipboard(false);
+        }
+        private void ButtonAddFromClipboardPNG_Click(object sender, RoutedEventArgs e)
+        {//クリップボードから画像追加、"PNG"形式で取得
+            AddImageFromClipboard(true);
         }
 
         private void ButtonUp_Click(object sender, RoutedEventArgs e)
