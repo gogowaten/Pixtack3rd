@@ -16,8 +16,26 @@
       <ColumnDefinition/>
       <ColumnDefinition Width="200"/>
     </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="auto"/>
+      <RowDefinition/>
+      <RowDefinition Height="auto"/>
+    </Grid.RowDefinitions>
+    <StackPanel Grid.ColumnSpan="2">
+      <Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+        <MenuItem Header="ファイル(_F)"/>
+      </Menu>
+    </StackPanel>
 
-    <ScrollViewer x:Name="MyScrollViewer" HorizontalScrollBarVisibility="Auto"
+    <StatusBar Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">
+      <DockPanel DataContext="{Binding ElementName=MyRoot}">
+        <TextBlock Text="{Binding ActualWidth, StringFormat=size\(0 x\ }"/>
+        <TextBlock Text="{Binding ActualHeight, StringFormat=\ 0\)}"/>
+      </DockPanel>
+    </StatusBar>
+
+    <ScrollViewer Grid.Row="1" Grid.Column="0"
+                  x:Name="MyScrollViewer" HorizontalScrollBarVisibility="Auto"
                   VerticalScrollBarVisibility="Auto">
       <!--<local:TTTextBlock TTText="222"/>-->
       <local:TTRoot x:Name="MyRoot" HorizontalAlignment="Left" VerticalAlignment="Top" TTGrid="8"
@@ -43,7 +61,8 @@
 
       </local:TTRoot>
     </ScrollViewer>
-    <StackPanel Grid.Column="1">
+
+    <StackPanel Grid.Row="1" Grid.Column="1">
       <StackPanel>
         <ComboBox x:Name="ComboBoxSaveFileType" SelectedItem="{Binding ImageType}"/>
         <Button x:Name="ButtonSaveToImage" Content="画像として保存" Click="ButtonSaveToImage_Click"/>
@@ -85,13 +104,7 @@
             <Setter Property="Margin" Value="2,1,4,4"/>
           </Style>
         </StackPanel.Resources>
-        <GroupBox Header="Root">
-          <StackPanel Orientation="Horizontal">
-            <TextBlock Text="{Binding ActualWidth, StringFormat=幅 \= {0:000}}"/>
-            <TextBlock Text="{Binding ActualHeight, StringFormat=高さ \= {0:000}}"/>
-          </StackPanel>
-        </GroupBox>
-
+        
         <GroupBox Header="ActiveGroup" DataContext="{Binding ActiveGroup}">
           <StackPanel>
             <StackPanel Orientation="Horizontal">

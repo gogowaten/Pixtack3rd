@@ -761,6 +761,9 @@ namespace Pixtack3rd
                     SetData(group);
                 }
                 ActiveThumb = thumb;
+                SelectedThumbs.Clear();
+                SelectedThumbs.Add(thumb);
+                ClickedThumb= thumb;
             }
         }
 

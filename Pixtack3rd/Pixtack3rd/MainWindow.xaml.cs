@@ -34,7 +34,7 @@ namespace Pixtack3rd
         private AppConfig MyAppConfig;
         //アプリ情報
         private const string APP_NAME = "Pixtack3rd";
-        private const string APP_CONFIG_FILE_NAME = "config.xml";
+        private const string APP_CONFIG_FILE_NAME = "config" + APP_EXTENSION_NAME;
         
         private const string APP_EXTENSION_NAME = ".p3rd";//Rootデータとアプリの設定を含んだ拡張子
         private const string DATA_EXTENSION_NAME = ".p3";//データだけの拡張子
@@ -282,14 +282,16 @@ namespace Pixtack3rd
                     AppConfig? result = (AppConfig?)serializer.ReadObject(reader);
                     if (result == null)
                     {
-                        throw new ArgumentException("読込できんかった");
+                        MessageBox.Show("読込できんかった");
+                        return null;
                     }
                     else { return result; }
                 }
             }
             catch (Exception ex)
             {
-                throw new ArgumentException("読込できんかった", ex.Message);
+                MessageBox.Show(ex.Message,"読込できんかった");
+                return null;
             }
         }
 
@@ -1041,7 +1043,7 @@ namespace Pixtack3rd
             }
         }
 
-        //az3ファイルの読み込み
+        //dataファイルの読み込み
         //TTRootのDataとアプリの設定を取得して設定
         private void ButtonLoadData_Click(object sender, RoutedEventArgs e)
         {
@@ -1134,7 +1136,7 @@ namespace Pixtack3rd
         //アプリ終了時
         private void MainWindow_Closed(object? sender, EventArgs e)
         {
-            ////設定保存
+            //設定保存
             SaveConfig(System.IO.Path.Combine(
                 Environment.CurrentDirectory, APP_CONFIG_FILE_NAME), MyAppConfig);
             //RootData保存
