@@ -327,22 +327,41 @@ namespace Pixtack3rd
 
         /// <summary>
         /// クリップボードから画像を取得してActiveGroupに追加
-        /// <paramref name="isPreferPng">取得時に"PNG"形式を優先するときはtrue</paramref>
+        /// <paramref name="isPreferPNG">取得時に"PNG"形式を優先するときはtrue</paramref>
+        /// <paramref name="isBgr32">ピクセルフォーマットをBgr32に変換(アルファ値を255に)するときはtrue</paramref>
         /// </summary>
-        private void AddImageFromClipboard(bool isPreferPng)
+        private void AddImageFromClipboard(bool isPreferPNG, bool isBgr32)
         {
             BitmapSource? bmp;
-            if (isPreferPng)
+            if (isPreferPNG)
             {
-                bmp = GetPngImageFromClipboardWithAlphaFix();
+                if (isBgr32)
+                {
+                    bmp = GetPngImageFromClipboard();
+                }
+                else
+                {
+                    bmp = GetPngImageFromClipboardWithAlphaFix();
+                }
             }
             else
             {
-                bmp = GetImageFromClipboardWithAlphaFix();
+                if (isBgr32)
+                {
+                    bmp = GetImageFromClipboardConvertBgr32();
+                }
+                else
+                {
+                    bmp = GetImageFromClipboardWithAlphaFix();
+                }
             }
             if (bmp != null)
             {//追加
                 MyRoot.AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
+            }
+            else
+            {
+                MessageBox.Show("画像は得られなかった");
             }
         }
 
@@ -1205,6 +1224,25 @@ namespace Pixtack3rd
             }
             return source;
         }
+        private BitmapSource? GetImageFromClipboardConvertBgr32()
+        {
+            BitmapSource? source = null;
+            int count = 1;
+            int limit = 5;
+            do
+            {
+                try { source = Clipboard.GetImage(); }
+                catch (Exception) { }
+                finally { count++; }
+            } while (limit >= count && source == null);
+
+            if (source == null) { return null; }
+
+            //ピクセルフォーマットをBgr32に変換(アルファ値を255にする)
+            source = new FormatConvertedBitmap(source, PixelFormats.Bgr32, null, 0);
+
+            return source;
+        }
 
         /// <summary>
         /// クリップボードから"PNG"形式で画像取得、
@@ -1221,6 +1259,15 @@ namespace Pixtack3rd
                     return source = new FormatConvertedBitmap(source, PixelFormats.Bgr32, null, 0);
                 }
                 else { return source; }
+            }
+            else { return null; }
+        }
+        private BitmapSource? GetPngImageFromClipboard()
+        {
+            if (GetPngImageFromCripboard() is BitmapSource source)
+            {
+                //ピクセルフォーマットをBgr32に変換(アルファ値を255にする)
+                return new FormatConvertedBitmap(source, PixelFormats.Bgr32, null, 0);
             }
             else { return null; }
         }
@@ -1451,12 +1498,22 @@ namespace Pixtack3rd
         }
         private void ButtonAddFromClipboard_Click(object sender, RoutedEventArgs e)
         {//クリップボードから画像追加
-            AddImageFromClipboard(false);
+            AddImageFromClipboard(false, false);
         }
         private void ButtonAddFromClipboardPNG_Click(object sender, RoutedEventArgs e)
         {//クリップボードから画像追加、"PNG"形式で取得
-            AddImageFromClipboard(true);
+            AddImageFromClipboard(true, false);
         }
+        private void ButtonAddFromClipboardBgr32_Click(object sender, RoutedEventArgs e)
+        {//クリップボードから画像追加、"PNG"形式で取得＋強制Bgr32
+            AddImageFromClipboard(false, true); ;
+        }
+
+        //private void ButtonAddFromClipboardPNGBgr32_Click(object sender, RoutedEventArgs e)
+        //{
+        //    AddImageFromClipboard(true, true);
+        //}
+
 
         private void ButtonUp_Click(object sender, RoutedEventArgs e)
         {
@@ -1481,6 +1538,8 @@ namespace Pixtack3rd
             //最背面へ移動
             MyRoot.ZDownBackMost();
         }
+
+
 
     }
 
