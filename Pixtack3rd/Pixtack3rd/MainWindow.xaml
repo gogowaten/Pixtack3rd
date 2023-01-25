@@ -92,10 +92,14 @@
             <Button x:Name="ButtonLoadDataRootToGroup" Content="Rootをグループとして追加" Click="ButtonLoadDataRootToGroup_Click"/>
           </WrapPanel>
         </GroupBox>
-        <StackPanel>
-          <Button x:Name="ButtonAddFromClipboard" Content="clipboard" Click="ButtonAddFromClipboard_Click"/>
-          <Button x:Name="ButtonAddFromClipboardPNG" Content="clipboardPNG" Click="ButtonAddFromClipboardPNG_Click"/>
-        </StackPanel>
+        <GroupBox Header="クリップボードから画像貼り付け">
+        <UniformGrid Rows="1">
+          <Button x:Name="ButtonAddFromClipboard" Content="通常" Click="ButtonAddFromClipboard_Click"/>
+          <Button x:Name="ButtonAddFromClipboardBgr32" Content="Bgr32" Click="ButtonAddFromClipboardBgr32_Click"/>
+          <Button x:Name="ButtonAddFromClipboardPNG" Content="png" Click="ButtonAddFromClipboardPNG_Click"/>
+          <!--<Button x:Name="ButtonAddFromClipboardPNGBgr32" Content="pngBgr32" Click="ButtonAddFromClipboardPNGBgr32_Click"/>-->
+          </UniformGrid>
+        </GroupBox>
         <DockPanel>
           <Button x:Name="ButtonToGroup" Content="グループ化" Click="ButtonToGroup_Click" Width="100"/>
           <Button x:Name="ButtonUnGroup" Content="グループ解除" Click="ButtonUnGroup_Click"/>
