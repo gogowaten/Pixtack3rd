@@ -31,6 +31,8 @@
       <DockPanel DataContext="{Binding ElementName=MyRoot}">
         <TextBlock Text="{Binding ActualWidth, StringFormat=size\(0x}"/>
         <TextBlock Text="{Binding ActualHeight, StringFormat=0\)}"/>
+        <TextBlock Text="{Binding Thumbs.Count, StringFormat=thumbs 0}"/>
+        <TextBlock Text="{Binding Data.Datas.Count, StringFormat=datas 0}"/>
       </DockPanel>
     </StatusBar>
 
@@ -93,11 +95,32 @@
           </WrapPanel>
         </GroupBox>
         <GroupBox Header="クリップボードから画像貼り付け">
-        <UniformGrid Rows="1">
-          <Button x:Name="ButtonAddFromClipboard" Content="通常" Click="ButtonAddFromClipboard_Click"/>
-          <Button x:Name="ButtonAddFromClipboardBgr32" Content="Bgr32" Click="ButtonAddFromClipboardBgr32_Click"/>
-          <Button x:Name="ButtonAddFromClipboardPNG" Content="png" Click="ButtonAddFromClipboardPNG_Click"/>
-          <!--<Button x:Name="ButtonAddFromClipboardPNGBgr32" Content="pngBgr32" Click="ButtonAddFromClipboardPNGBgr32_Click"/>-->
+          <UniformGrid Rows="1">
+            <Button x:Name="ButtonAddFromClipboard" Content="通常" Click="ButtonAddFromClipboard_Click"/>
+            <Button x:Name="ButtonAddFromClipboardBgr32" Content="Bgr32" Click="ButtonAddFromClipboardBgr32_Click"/>
+            <Button x:Name="ButtonAddFromClipboardPNG" Content="png" Click="ButtonAddFromClipboardPNG_Click"/>
+            <!--<Button x:Name="ButtonAddFromClipboardPNGBgr32" Content="pngBgr32" Click="ButtonAddFromClipboardPNGBgr32_Click"/>-->
+          </UniformGrid>
+        </GroupBox>
+        <GroupBox Header="画像としてコピー">
+          <UniformGrid Rows="1">
+            <Button x:Name="ButtonCopyImage" Content="全体" Click="ButtonCopyImage_Click"/>
+            <Button x:Name="ButtonCopyImageActiveThumb" Content="Active" Click="ButtonCopyImageActiveThumb_Click"/>
+            <Button x:Name="ButtonCopyImageClicedThumb" Content="Clicked" Click="ButtonCopyImageClicedThumb_Click"/>
+          </UniformGrid>
+        </GroupBox>
+        <GroupBox Header="画像としてコピペ(複製)">
+          <UniformGrid Rows="1">
+            <Button x:Name="ButtonDuplicateImage" Content="全体" Click="ButtonDuplicateImage_Click"/>
+            <Button x:Name="ButtpmDuplicateImageActiveThumb" Content="Active" Click="ButtpmDuplicateImageActiveThumb_Click"/>
+            <Button x:Name="ButtonDuplicateImageClickedThumb" Content="Clicked" Click="ButtonDuplicateImageClickedThumb_Click"/>
+          </UniformGrid>
+        </GroupBox>
+        <GroupBox Header="Dataとしてコピペ(複製)">
+          <UniformGrid Rows="1">
+            <Button x:Name="ButtonDuplicateData" Content="全体" Click="ButtonDuplicateData_Click"/>
+            <Button x:Name="ButtpmDuplicateDataActiveThumb" Content="Active" Click="ButtpmDuplicateDataActiveThumb_Click"/>
+            <Button x:Name="ButtonDuplicateDataClickedThumb" Content="Clicked" Click="ButtonDuplicateDataClickedThumb_Click"/>
           </UniformGrid>
         </GroupBox>
         <DockPanel>
@@ -135,7 +158,7 @@
         <GroupBox Header="ActiveGroup" DataContext="{Binding ActiveGroup}">
           <StackPanel>
             <StackPanel Orientation="Horizontal">
-              <Grid Width="110" Height="110">
+              <Grid Width="140" Height="110">
                 <Border Background="White" BorderBrush="Gray" BorderThickness="1">
                   <Rectangle>
                     <Rectangle.Fill>
@@ -164,6 +187,8 @@
               <TextBlock Text="{Binding Data.Y, StringFormat=y\={0:000}}"/>
               <TextBlock Text="{Binding ActualWidth, StringFormat=幅\={0:000}}"/>
               <TextBlock Text="{Binding ActualHeight, StringFormat=高さ\={0:000}}"/>
+              <TextBlock Text="{Binding Data.Datas.Count, StringFormat= datas 0}"/>
+              <TextBlock Text="{Binding Thumbs.Count, StringFormat= th 0}"/>
             </StackPanel>
           </StackPanel>
         </GroupBox>

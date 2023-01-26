@@ -228,7 +228,8 @@ namespace Pixtack3rd
         #region その他関数
 
         /// <summary>
-        /// DataTypeの変換、RootDataだった場合GroupDataに変換する、それ以外だったらそのまま返す
+        /// DataTypeの変換、RootDataだった場合GroupDataに変換する
+        /// ディープコピーしてTypeだけGroupに書き換える、Datasもディープコピーする
         /// 変換部分が怪しい、項目が増えた場合はここも増やす必要があるのでバグ発生源になる？
         /// </summary>
         /// <param name="data"></param>
@@ -236,16 +237,17 @@ namespace Pixtack3rd
         private Data? ConvertDataRootToGroup(Data? data)
         {
             if (data == null) return null;
-            if (data.Type == TType.Root)
+            if (data.Type == TType.Group) return data;
+            if (data.Type != TType.Root) return null;
+
+            if (data.DeepCopy() is Data groupData)
             {
-                Data groupData = new(TType.Group)
-                {
-                    Datas = data.Datas
-                };
+                groupData.Type = TType.Group;
                 return groupData;
             }
-            else return data;
+            return null;
         }
+  
 
         /// <summary>
         /// アプリのバージョン取得、できなかかったときはstring.Emptyを返す
@@ -363,6 +365,18 @@ namespace Pixtack3rd
             {
                 MessageBox.Show("画像は得られなかった");
             }
+        }
+        /// <summary>
+        /// クリップボードから画像を取得してActiveGroupに追加
+        /// "PNG"形式優先で取得、できなければGetImageで取得
+        /// </summary>
+        private void AddImageFromClipboard()
+        {
+            if (GetImageFromClipboardPreferPNG() is BitmapSource bmp)
+            {
+                MyRoot.AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
+            }
+            else { MessageBox.Show("画像は得られなかった"); }
         }
 
         #endregion その他関数
@@ -1224,6 +1238,43 @@ namespace Pixtack3rd
             }
             return source;
         }
+        /// <summary>
+        /// "PNG"形式優先でクリップボードから画像取得
+        /// </summary>
+        /// <returns></returns>
+        private BitmapSource? GetImageFromClipboardPreferPNG()
+        {
+            //"PNG"形式で取得できたら返す
+            if (GetPngImageFromClipboardWithAlphaFix() is BitmapSource png)
+            {
+                if (IsExceptionTransparent(png) == false)
+                {
+                    return png;
+                }
+            }
+
+            //取得できなかった場合はGetImageで取得
+            int count = 1;
+            int limit = 5;
+            BitmapSource? source = null;
+            do
+            {
+                try { source = Clipboard.GetImage(); }
+                catch (Exception) { }
+                finally { count++; }
+            } while (limit >= count && source == null);
+
+            if (source == null) { return null; }
+
+            //アルファ値が異常な画像ならピクセルフォーマットをBgr32に変換(アルファ値を255にする)
+            if (IsExceptionTransparent(source))
+            //if (IsExceptionTransparent(source))
+            {
+                source = new FormatConvertedBitmap(source, PixelFormats.Bgr32, null, 0);
+            }
+            return source;
+        }
+
         private BitmapSource? GetImageFromClipboardConvertBgr32()
         {
             BitmapSource? source = null;
@@ -1347,10 +1398,43 @@ namespace Pixtack3rd
             return false;
         }
 
+
+        //アルファ値を失わずに画像のコピペできた、.NET WPFのClipboard - 午後わてんのブログ
+        //        https://gogowaten.hatenablog.com/entry/2021/02/10/134406
+
+        /// <summary>
+        /// BitmapSourceをPNG形式に変換したものと、そのままの形式の両方をクリップボードにコピーする
+        /// </summary>
+        /// <param name="source"></param>
+        private static void ClipboardSetBitmapWithPng(BitmapSource source)
+        {
+            //DataObjectに入れたいデータを入れて、それをクリップボードにセットする
+            DataObject data = new();
+
+            //BitmapSource形式そのままでセット
+            data.SetData(typeof(BitmapSource), source);
+
+            //PNG形式にエンコードしたものをMemoryStreamして、それをセット
+            //画像をPNGにエンコード
+            PngBitmapEncoder pngEnc = new();
+            pngEnc.Frames.Add(BitmapFrame.Create(source));
+            //エンコードした画像をMemoryStreamにSava
+            using var ms = new System.IO.MemoryStream();
+            pngEnc.Save(ms);
+            data.SetData("PNG", ms);
+
+            //クリップボードにセット
+            Clipboard.SetDataObject(data, true);
+        }
+
+
         #endregion クリップボード監視、画像取得
 
 
 
+        #region ボタンクリックイベント
+
+        #region 保存系
 
         //Rootを画像ファイルとして保存
         private void ButtonSaveToImage_Click(object sender, RoutedEventArgs e)
@@ -1410,10 +1494,7 @@ namespace Pixtack3rd
                 }
             }
         }
-        private void SaveData(Data data)
-        {
 
-        }
         private string? GetSaveDataFilePath(string extFilter)
         {
             Microsoft.Win32.SaveFileDialog dialog = new();
@@ -1461,6 +1542,7 @@ namespace Pixtack3rd
                 SaveDataToAz3(path, MyRoot.ActiveThumb.Data, false);
             }
         }
+        #endregion 保存系
 
         private void ButtonToGroup_Click(object sender, RoutedEventArgs e)
         {
@@ -1497,9 +1579,10 @@ namespace Pixtack3rd
             MyRoot.RemoveAll();
         }
         private void ButtonAddFromClipboard_Click(object sender, RoutedEventArgs e)
-        {//クリップボードから画像追加
-            AddImageFromClipboard(false, false);
+        {//クリップボードから画像追加、"PNG"形式優先で取得
+            AddImageFromClipboard();
         }
+
         private void ButtonAddFromClipboardPNG_Click(object sender, RoutedEventArgs e)
         {//クリップボードから画像追加、"PNG"形式で取得
             AddImageFromClipboard(true, false);
@@ -1514,6 +1597,88 @@ namespace Pixtack3rd
         //    AddImageFromClipboard(true, true);
         //}
 
+
+        private void ButtonCopyImage_Click(object sender, RoutedEventArgs e)
+        {//画像として全体をコピー、クリップボードにセット
+            if (MyRoot.GetBitmap(MyRoot) is BitmapSource bmp)
+            {
+                ClipboardSetBitmapWithPng(bmp);
+            }
+        }
+
+        private void ButtonCopyImageActiveThumb_Click(object sender, RoutedEventArgs e)
+        {
+            //画像としてActiveThumbをコピー、クリップボードにセット
+            if (MyRoot.ActiveThumb is not null)
+            {
+                if (MyRoot.GetBitmap(MyRoot.ActiveThumb) is BitmapSource bmp)
+                {
+                    ClipboardSetBitmapWithPng(bmp);
+                }
+            }
+        }
+
+        private void ButtonCopyImageClicedThumb_Click(object sender, RoutedEventArgs e)
+        {
+            //画像としてClickedThumbをコピー、クリップボードにセット
+            if (MyRoot.ClickedThumb is not null)
+            {
+                if (MyRoot.GetBitmap(MyRoot.ClickedThumb) is BitmapSource bmp)
+                {
+                    ClipboardSetBitmapWithPng(bmp);
+                }
+            }
+        }
+        private void ButtonDuplicateImage_Click(object sender, RoutedEventArgs e)
+        {
+            //画像として複製、全体
+            if (MyRoot.GetBitmap(MyRoot) is BitmapSource bmp)
+            {
+                MyRoot.AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
+            }
+        }
+
+
+        private void ButtpmDuplicateImageActiveThumb_Click(object sender, RoutedEventArgs e)
+        {
+            //画像として複製、ActiveThumb
+            if (MyRoot.ActiveThumb is TThumb thumb && MyRoot.GetBitmap(thumb) is BitmapSource bmp)
+            {
+                MyRoot.AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
+            }
+        }
+        private void ButtonDuplicateImageClickedThumb_Click(object sender, RoutedEventArgs e)
+        {
+            //画像として複製、ClickedThumb
+            if (MyRoot.ClickedThumb is TThumb thumb && MyRoot.GetBitmap(thumb) is BitmapSource bmp)
+            {
+                MyRoot.AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
+            }
+        }
+        private void ButtonDuplicateData_Click(object sender, RoutedEventArgs e)
+        {
+            //Dataとして複製、全体
+            if (ConvertDataRootToGroup(MyRoot.Data) is Data data)
+            {
+                MyRoot.AddThumbDataToActiveGroup(data);
+            }
+        }
+
+        private void ButtpmDuplicateDataActiveThumb_Click(object sender, RoutedEventArgs e)
+        {
+            if(MyRoot.ActiveThumb?.Data.DeepCopy() is Data data)
+            {
+                MyRoot.AddThumbDataToActiveGroup(data);
+            }
+        }
+
+        private void ButtonDuplicateDataClickedThumb_Click(object sender, RoutedEventArgs e)
+        {
+            if (MyRoot.ClickedThumb?.Data.DeepCopy() is Data data)
+            {
+                MyRoot.AddThumbDataToActiveGroup(data);
+            }
+        }
 
         private void ButtonUp_Click(object sender, RoutedEventArgs e)
         {
@@ -1539,6 +1704,10 @@ namespace Pixtack3rd
             MyRoot.ZDownBackMost();
         }
 
+
+
+
+        #endregion ボタンクリックイベント
 
 
     }

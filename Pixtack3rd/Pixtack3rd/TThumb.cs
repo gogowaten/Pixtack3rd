@@ -582,8 +582,10 @@ namespace Pixtack3rd
             {
                 SelectedThumbs.Remove(ActiveThumb);//削除
                 IsSelectedPreviewMouseDown = false;//フラグ切り替え
-                ActiveThumb = null;
-                ClickedThumb = null;
+                ActiveThumb = SelectedThumbs[^1];
+                ClickedThumb = SelectedThumbs[^1];
+                //ActiveThumb = null;
+                //ClickedThumb = null;
             }
 
         }
@@ -716,15 +718,17 @@ namespace Pixtack3rd
         /// <param name="insert">挿入Index</param>
         protected void AddThumb(TThumb thumb, TTGroup destGroup, int insert)
         {
-            if (destGroup.Data.Datas != null)
-            {
-                destGroup.Thumbs.Insert(insert, thumb);
-                destGroup.Data.Datas.Insert(insert, thumb.Data);
-                //ドラッグ移動イベント付加
-                thumb.DragDelta += Thumb_DragDelta;
-                thumb.DragCompleted += Thumb_DragCompleted;
-                thumb.DragStarted += Thumb_DragStarted;
-            }
+            destGroup.Thumbs.Insert(insert, thumb);
+            destGroup.Data.Datas.Insert(insert, thumb.Data);
+            //ドラッグ移動イベント付加
+            thumb.DragDelta += Thumb_DragDelta;
+            thumb.DragCompleted += Thumb_DragCompleted;
+            thumb.DragStarted += Thumb_DragStarted;
+        }
+        protected void AddThumbWithoutDragEvent(TThumb thumb, TTGroup destGroup)
+        {
+            destGroup.Thumbs.Add(thumb);
+            destGroup.Data.Datas.Add(thumb.Data);
         }
 
         //基本的にActiveThumbのChildrenに対して行う
@@ -763,7 +767,7 @@ namespace Pixtack3rd
                 ActiveThumb = thumb;
                 SelectedThumbs.Clear();
                 SelectedThumbs.Add(thumb);
-                ClickedThumb= thumb;
+                ClickedThumb = thumb;
             }
         }
 
@@ -900,10 +904,11 @@ namespace Pixtack3rd
         /// </summary>
         /// <param name="thumbs">グループ化する要素群</param>
         /// <param name="destGroup">新グループの追加先</param>
-        private TTGroup? MakeAndAddGroup(IEnumerable<TThumb> thumbs, TTGroup destGroup)
+        private TTGroup? MakeAndAddGroup(ObservableCollection<TThumb> thumbs, TTGroup destGroup)
         {
             //選択要素群をActiveGroupを基準に並べ替え
             List<TThumb> sortedList = MakeSortedList(thumbs, destGroup);
+
             //新グループの挿入Index、[^1]は末尾から数えて1番目の要素って意味
             int insertIndex = destGroup.Thumbs.IndexOf(sortedList[^1]) - (sortedList.Count - 1);
 
@@ -917,22 +922,26 @@ namespace Pixtack3rd
                 TTXShift = destGroup.TTXShift,
                 TTYShift = destGroup.TTYShift,
             };
+
             //各要素のドラッグイベントを外す、新グループに追加
             foreach (var item in sortedList)
             {
-                destGroup.Thumbs.Remove(item);
-                destGroup.Data.Datas.Remove(item.Data);
-                item.DragDelta -= Thumb_DragDelta;
-                item.DragCompleted -= Thumb_DragCompleted;
-                item.DragStarted -= Thumb_DragStarted;
+                if (destGroup.Thumbs.Remove(item) && destGroup.Data.Datas.Remove(item.Data))
+                {
+                    thumbs.Remove(item);
 
-                newGroup.Thumbs.Add(item);
-                newGroup.Data.Datas.Add(item.Data);
-                item.TTLeft -= x;
-                item.TTTop -= y;
+                    item.DragDelta -= Thumb_DragDelta;
+                    item.DragCompleted -= Thumb_DragCompleted;
+                    item.DragStarted -= Thumb_DragStarted;
+
+                    newGroup.Thumbs.Add(item);
+                    newGroup.Data.Datas.Add(item.Data);
+                    item.TTLeft -= x;
+                    item.TTTop -= y;
+                }
             }
-            AddThumb(newGroup, destGroup, insertIndex);
 
+            AddThumb(newGroup, destGroup, insertIndex);
             newGroup.Arrange(new(0, 0, w, h));//再配置？このタイミングで必須、Actualサイズに値が入る
             //↓はこのタイミングではいらないかも？RenderSizeChangeで実行するようにした
             //→要る！！！ここじゃないと枠表示のサイズがなぜか0x0のままになる
@@ -940,6 +949,48 @@ namespace Pixtack3rd
 
             return newGroup;
         }
+        //  private TTGroup? MakeAndAddGroup(IEnumerable<TThumb> thumbs, TTGroup destGroup)
+        //{
+        //    //選択要素群をActiveGroupを基準に並べ替え
+        //    List<TThumb> sortedList = MakeSortedList(thumbs, destGroup);
+
+        //    //新グループの挿入Index、[^1]は末尾から数えて1番目の要素って意味
+        //    int insertIndex = destGroup.Thumbs.IndexOf(sortedList[^1]) - (sortedList.Count - 1);
+
+        //    if (CheckAddGroup(sortedList, destGroup) == false) { return null; }
+        //    var (x, y, w, h) = GetRect(sortedList);
+        //    TTGroup newGroup = new()
+        //    {
+        //        TTLeft = x,
+        //        TTTop = y,
+        //        TTGrid = destGroup.TTGrid,
+        //        TTXShift = destGroup.TTXShift,
+        //        TTYShift = destGroup.TTYShift,
+        //    };
+        //    AddThumb(newGroup, destGroup, insertIndex);
+
+        //    //各要素のドラッグイベントを外す、新グループに追加
+        //    foreach (var item in sortedList)
+        //    {
+        //        destGroup.Thumbs.Remove(item);
+        //        destGroup.Data.Datas.Remove(item.Data);
+        //        item.DragDelta -= Thumb_DragDelta;
+        //        item.DragCompleted -= Thumb_DragCompleted;
+        //        item.DragStarted -= Thumb_DragStarted;
+
+        //        newGroup.Thumbs.Add(item);
+        //        newGroup.Data.Datas.Add(item.Data);
+        //        item.TTLeft -= x;
+        //        item.TTTop -= y;
+        //    }
+
+        //    newGroup.Arrange(new(0, 0, w, h));//再配置？このタイミングで必須、Actualサイズに値が入る
+        //    //↓はこのタイミングではいらないかも？RenderSizeChangeで実行するようにした
+        //    //→要る！！！ここじゃないと枠表示のサイズがなぜか0x0のままになる
+        //    newGroup.TTGroupUpdateLayout();//必須、サイズと位置の更新
+
+        //    return newGroup;
+        //}
 
 
         /// <summary>
