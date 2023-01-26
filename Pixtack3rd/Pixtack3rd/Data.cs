@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media.Imaging;
 
 
@@ -40,7 +41,7 @@ namespace Pixtack3rd
 
 
 
-        [DataMember] public TType Type { get; protected set; }
+        [DataMember] public TType Type { get; set; }
         public ExtensionDataObject? ExtensionData { get; set; }
 
 
@@ -92,5 +93,67 @@ namespace Pixtack3rd
         #endregion コンストラクタ
 
 
+        /// <summary>
+        /// ディープコピー、シリアライズを使ってディープコピー
+        /// </summary>
+        /// <returns></returns>
+        public Data? DeepCopy()
+        {
+            try
+            {
+                using System.IO.MemoryStream stream = new();
+                DataContractSerializer serializer = new(typeof(Data));
+                serializer.WriteObject(stream, this);
+                stream.Position = 0;
+                if (serializer.ReadObject(stream) is Data data)
+                {
+                    //Guidはコピーしないで更新する
+                    data.Guid = System.Guid.NewGuid().ToString();
+                    //BitmapSourceはシリアライズできないので、BitmapFrameで複製
+                    if (data.Type == TType.Image)
+                    {
+                        data.BitmapSource = BitmapFrame.Create(this.BitmapSource);
+                    }
+
+                    //Groupだった場合はDatasの要素もディープコピーする
+                    else if (data.Type == TType.Root || data.Type == TType.Group)
+                    {
+                        DatasDeepCopy(this.Datas, data.Datas);
+                    }
+                    return data;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                throw;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Datasの要素をディープコピーする
+        /// </summary>
+        /// <param name="moto"></param>
+        /// <returns></returns>
+        private void DatasDeepCopy(ObservableCollection<Data> moto, ObservableCollection<Data> saki)
+        {
+            for (int i = 0; i < moto.Count; i++)
+            {
+                Data motoItem = moto[i];
+                Data sakiItem = saki[i];
+                sakiItem.Guid = System.Guid.NewGuid().ToString();
+                if (motoItem.Type == TType.Image)
+                {
+                    sakiItem.BitmapSource = BitmapFrame.Create(motoItem.BitmapSource);
+                }
+                else if (motoItem.Type == TType.Group)
+                {
+                    DatasDeepCopy(motoItem.Datas, sakiItem.Datas);
+                }
+            }
+        }
+
     }
+
 }

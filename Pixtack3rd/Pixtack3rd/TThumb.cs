@@ -763,7 +763,7 @@ namespace Pixtack3rd
                 ActiveThumb = thumb;
                 SelectedThumbs.Clear();
                 SelectedThumbs.Add(thumb);
-                ClickedThumb= thumb;
+                ClickedThumb = thumb;
             }
         }
 
@@ -904,6 +904,7 @@ namespace Pixtack3rd
         {
             //選択要素群をActiveGroupを基準に並べ替え
             List<TThumb> sortedList = MakeSortedList(thumbs, destGroup);
+
             //新グループの挿入Index、[^1]は末尾から数えて1番目の要素って意味
             int insertIndex = destGroup.Thumbs.IndexOf(sortedList[^1]) - (sortedList.Count - 1);
 
@@ -917,6 +918,8 @@ namespace Pixtack3rd
                 TTXShift = destGroup.TTXShift,
                 TTYShift = destGroup.TTYShift,
             };
+            AddThumb(newGroup, destGroup, insertIndex);
+
             //各要素のドラッグイベントを外す、新グループに追加
             foreach (var item in sortedList)
             {
@@ -931,7 +934,6 @@ namespace Pixtack3rd
                 item.TTLeft -= x;
                 item.TTTop -= y;
             }
-            AddThumb(newGroup, destGroup, insertIndex);
 
             newGroup.Arrange(new(0, 0, w, h));//再配置？このタイミングで必須、Actualサイズに値が入る
             //↓はこのタイミングではいらないかも？RenderSizeChangeで実行するようにした
