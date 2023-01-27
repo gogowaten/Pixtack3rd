@@ -51,6 +51,8 @@ namespace Pixtack3rd
         public MainWindow()
         {
             InitializeComponent();
+            var neko = MyRooot.Thumbs;
+
             MyAppConfig = GetAppConfig(APP_CONFIG_FILE_NAME);
             DataContext = MyAppConfig;
 

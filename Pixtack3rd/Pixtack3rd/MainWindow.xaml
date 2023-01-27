@@ -35,12 +35,18 @@
         <TextBlock Text="{Binding Data.Datas.Count, StringFormat=datas 0}"/>
       </DockPanel>
     </StatusBar>
-
+    <local:Root x:Name="MyRooot" Grid.Row="1" Grid.Column="0" Height="200" Width="200">
+      <local:TTTextBlock TTText="2333"/>
+      <local:TTTextBlock TTText="2333"/>
+      <local:TTImage TTSourcePath="D:\\ブログ用\\テスト用画像\\collection2.png"/>
+    </local:Root>
+    <!--<local:Root></local:Root>-->
     <ScrollViewer Grid.Row="1" Grid.Column="0"
                   x:Name="MyScrollViewer" HorizontalScrollBarVisibility="Auto"
                   VerticalScrollBarVisibility="Auto">
       <!--<local:TTTextBlock TTText="222"/>-->
-      <local:TTRoot x:Name="MyRoot" HorizontalAlignment="Left" VerticalAlignment="Top" TTGrid="8"
+      <local:TTGroup x:Name="MyRoot"
+                     HorizontalAlignment="Left" VerticalAlignment="Top" TTGrid="8"
                    TTVisibleBorder="Hidden">
 
         <!--<local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
@@ -61,7 +67,7 @@
         <local:TTImage x:Name="MyImage4" TTLeft="120" TTTop="120"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect135.png"/>-->
 
-      </local:TTRoot>
+      </local:TTGroup>
     </ScrollViewer>
 
     <StackPanel Grid.Row="1" Grid.Column="1">
