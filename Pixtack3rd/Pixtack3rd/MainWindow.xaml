@@ -35,10 +35,10 @@
         <TextBlock Text="{Binding Data.Datas.Count, StringFormat=datas 0}"/>
       </DockPanel>
     </StatusBar>
-    <local:Root x:Name="MyRooot" Grid.Row="1" Grid.Column="0" Height="200" Width="200">
-      <local:TTTextBlock TTText="2333"/>
-      <local:TTTextBlock TTText="2333"/>
-      <local:TTImage TTSourcePath="D:\\ブログ用\\テスト用画像\\collection2.png"/>
+    <local:Root x:Name="MyRooot" Grid.Row="1" Grid.Column="0">
+      <local:TTTextBlock TTText="2333" FontSize="20"/>
+      <local:TTTextBlock TTText="2333" FontSize="20" TTLeft="100" TTTop="20"/>
+      <local:TTImage TTSourcePath="D:\\ブログ用\\テスト用画像\\collection2.png" TTLeft="200"/>
     </local:Root>
     <!--<local:Root></local:Root>-->
     <ScrollViewer Grid.Row="1" Grid.Column="0"

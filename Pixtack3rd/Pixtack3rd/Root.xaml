@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:Pixtack3rd"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="400">
+  
     <local:TTGroup x:Name="MyRoot">
             
     </local:TTGroup>
