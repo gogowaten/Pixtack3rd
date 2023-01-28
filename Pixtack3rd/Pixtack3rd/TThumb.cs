@@ -861,6 +861,7 @@ namespace Pixtack3rd
         {
             if (group.Thumbs.Remove(thumb))
             {
+                Data.Datas.Remove(thumb.Data);
                 thumb.DragCompleted -= Thumb_DragCompleted;
                 thumb.DragDelta -= Thumb_DragDelta;
                 thumb.DragStarted -= Thumb_DragStarted;
@@ -896,9 +897,20 @@ namespace Pixtack3rd
             {
                 SelectedThumbs.Clear();
                 SelectedThumbs.Add(group);
-                ActiveThumb = group;
+                //ActiveThumb = group;//これとXAMLでのActiveThumbとClickedThumbの表示の組み合わせでフリーズする
+
+                //フリーズ回避？
+                //Clickedを一旦nullにしてからActiveThumbを入れ替える
+                //入れ替えた後にClickedを元に戻す
+                var temp = ClickedThumb;
+                ClickedThumb = null;//一旦null
+                ActiveThumb = group;//入れ替え
+                ClickedThumb = temp;//元に戻す
+
+
             }
         }
+
         /// <summary>
         /// グループ化
         /// </summary>
@@ -1046,6 +1058,7 @@ namespace Pixtack3rd
             foreach (var item in group.Thumbs.ToArray())
             {
                 group.Thumbs.Remove(item);//親Groupから削除
+                group.Data.Datas.Remove(item.Data);
                 item.DragDelta -= Thumb_DragDelta;
                 item.DragCompleted -= Thumb_DragCompleted;
                 item.DragStarted -= Thumb_DragStarted;
@@ -1057,6 +1070,7 @@ namespace Pixtack3rd
             }
             //抜け殻になった元のグループ要素削除
             destGroup.Thumbs.Remove(group);
+            destGroup.Data.Datas.Remove(group.Data);
             group.DragCompleted -= Thumb_DragCompleted;//いる？
             group.DragDelta -= Thumb_DragDelta;
             group.DragStarted -= Thumb_DragStarted;

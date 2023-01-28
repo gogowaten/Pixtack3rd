@@ -11,7 +11,7 @@
         Top="{Binding Path=Top, Mode=TwoWay}" Left="{Binding Left, Mode=TwoWay}"
         AllowDrop="True" Name="Main">
 
-  <Grid Name="MyGrid" UseLayoutRounding="True">
+  <Grid Name="MyGrid" UseLayoutRounding="True" DataContext="{Binding ElementName=MyRoot}">
     <Grid.ColumnDefinitions>
       <ColumnDefinition/>
       <ColumnDefinition Width="260"/>
@@ -33,6 +33,11 @@
         <TextBlock Text="{Binding ActualHeight, StringFormat=0\)}"/>
         <TextBlock Text="{Binding Thumbs.Count, StringFormat=thumbs 0}"/>
         <TextBlock Text="{Binding Data.Datas.Count, StringFormat=datas 0}"/>
+        <Rectangle Width="20" Height="20">
+          <Rectangle.Fill>
+            <VisualBrush Visual="{Binding ClickedThumb}" Stretch="Uniform"/>
+          </Rectangle.Fill>
+        </Rectangle>
       </DockPanel>
     </StatusBar>
 
@@ -50,7 +55,7 @@
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection3.png"/>
         <local:TTImage x:Name="MyImage2" TTLeft="120" TTTop="120"
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection4.png"/>-->
-        <!--<local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
+        <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect000.png"/>
         <local:TTImage x:Name="MyImage1" TTLeft="30" TTTop="30"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect030.png"/>
@@ -59,7 +64,7 @@
         <local:TTImage x:Name="MyImage3" TTLeft="90" TTTop="90"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect090.png"/>
         <local:TTImage x:Name="MyImage4" TTLeft="120" TTTop="120"
-                       TTSourcePath="D:\ブログ用\テスト用画像\hueRect135.png"/>-->
+                       TTSourcePath="D:\ブログ用\テスト用画像\hueRect135.png"/>
 
       </local:TTRoot>
     </ScrollViewer>
@@ -70,7 +75,8 @@
           <Setter Property="Margin" Value="4,0,4,0"/>
         </Style>
       </StackPanel.Resources>
-      <StackPanel>
+      <StackPanel x:Name="MyStackPanel" d:DataContext="{d:DesignInstance Type=local:AppConfig}">
+        <CheckBox Content="前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>
         <ComboBox x:Name="ComboBoxSaveFileType" SelectedItem="{Binding ImageType}"/>
         <GroupBox Header="SaveImage">
           <WrapPanel>
@@ -143,9 +149,8 @@
             <Button x:Name="ButtonMostDown" Content="最背面" Click="ButtonMostDown_Click"/>
           </UniformGrid>
         </GroupBox>
-        <CheckBox Content="前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>
       </StackPanel>
-      <StackPanel DataContext="{Binding ElementName=MyRoot}">
+      <StackPanel>
         <StackPanel.Resources>
           <Style TargetType="TextBlock">
             <Setter Property="Margin" Value="2,1,4,1"/>
@@ -154,7 +159,30 @@
             <Setter Property="Margin" Value="2,1,4,4"/>
           </Style>
         </StackPanel.Resources>
-
+        <TextBlock Text="{Binding Thumbs.Count}"/>
+        <TreeView ItemsSource="{Binding Data.Datas}">
+          <TreeView.Resources>
+            <Style TargetType="TreeViewItem">
+              <Setter Property="VerticalContentAlignment" Value="Center"/>
+              <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            </Style>
+          </TreeView.Resources>
+          <TreeView.ItemContainerStyle>
+            <Style TargetType="TreeViewItem">
+              <Setter Property="VerticalContentAlignment" Value="Center"/>
+              <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            </Style>
+          </TreeView.ItemContainerStyle>
+          <TreeView.ItemTemplate>
+            <HierarchicalDataTemplate DataType="{x:Type local:Data}" ItemsSource="{Binding Datas}">
+              <StackPanel Orientation="Horizontal">
+                <Image Source="{Binding BitmapSource}" Width="20" Height="20"/>
+                <TextBlock Text="{Binding Type}"/>
+              </StackPanel>
+            </HierarchicalDataTemplate>
+          </TreeView.ItemTemplate>
+        </TreeView>
+        
         <GroupBox Header="ActiveGroup" DataContext="{Binding ActiveGroup}">
           <StackPanel>
             <StackPanel Orientation="Horizontal">
@@ -194,12 +222,11 @@
         </GroupBox>
         <GroupBox Header="ActiveThumb" DataContext="{Binding ActiveThumb}">
           <StackPanel>
-            <Canvas Width="180" Height="160">
-              <Grid Width="90" Height="70" Canvas.Top="90">
+            <Canvas Width="250" Height="160" HorizontalAlignment="Left">
+              <Grid Width="90" Height="70" Canvas.Left="160" Canvas.Top="90">
                 <Border Background="White" BorderBrush="Gray" BorderThickness="1">
                   <Rectangle Width="80" Height="60"
-                         DataContext="{Binding ElementName=MyRoot}"
-                       Canvas.Left="0" Canvas.Top="100">
+                         DataContext="{Binding ElementName=MyRoot}">
                     <Rectangle.Fill>
                       <VisualBrush Visual="{Binding BackActiveThumb}" Stretch="Uniform"/>
                     </Rectangle.Fill>
@@ -238,14 +265,15 @@
             <TextBlock Text="{Binding Data.Text}"/>
           </StackPanel>
         </GroupBox>
+        
         <GroupBox Header="ClickedThumb" DataContext="{Binding ClickedThumb}">
           <StackPanel>
             <Grid Width="90" Height="70">
               <Border  Background="White" BorderBrush="Gray" BorderThickness="1">
-                <Rectangle Width="80" Height="60" DataContext="{Binding ElementName=MyRoot}"
+                <Rectangle Width="80" Height="60"
                        Canvas.Left="0" Canvas.Top="0">
                   <Rectangle.Fill>
-                    <VisualBrush Visual="{Binding ClickedThumb}" Stretch="Uniform"/>
+                    <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
                   </Rectangle.Fill>
                 </Rectangle>
               </Border>
@@ -259,6 +287,7 @@
             </StackPanel>
           </StackPanel>
         </GroupBox>
+        
         <GroupBox Header="SelectedThumbs" DataContext="{Binding SelectedThumbs}">
           <ListBox ItemsSource="{Binding}">
             <ListBox.ItemTemplate>

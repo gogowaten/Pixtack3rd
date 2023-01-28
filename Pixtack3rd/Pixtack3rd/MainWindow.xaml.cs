@@ -52,7 +52,8 @@ namespace Pixtack3rd
         {
             InitializeComponent();
             MyAppConfig = GetAppConfig(APP_CONFIG_FILE_NAME);
-            DataContext = MyAppConfig;
+            //DataContext = MyAppConfig;
+            MyStackPanel.DataContext = MyAppConfig;
 
             AppVersion = GetAppVersion();
             MyInitialize();
@@ -1666,7 +1667,8 @@ namespace Pixtack3rd
 
         private void ButtpmDuplicateDataActiveThumb_Click(object sender, RoutedEventArgs e)
         {
-            if(MyRoot.ActiveThumb?.Data.DeepCopy() is Data data)
+            //Dataとして複製、ActiveThumb
+            if (MyRoot.ActiveThumb?.Data.DeepCopy() is Data data)
             {
                 MyRoot.AddThumbDataToActiveGroup(data);
             }
@@ -1674,6 +1676,7 @@ namespace Pixtack3rd
 
         private void ButtonDuplicateDataClickedThumb_Click(object sender, RoutedEventArgs e)
         {
+            //Dataとして複製、Clicked
             if (MyRoot.ClickedThumb?.Data.DeepCopy() is Data data)
             {
                 MyRoot.AddThumbDataToActiveGroup(data);
