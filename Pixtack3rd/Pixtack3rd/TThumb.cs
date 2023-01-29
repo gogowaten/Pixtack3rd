@@ -21,8 +21,11 @@ using System.Windows.Shapes;
 
 namespace Pixtack3rd
 {
+    //public enum WakuType { None = 0, Selected, Group, ActiveGroup, Clicked, ActiveThumb }
+    public enum WakuVisibleType { None = 0, All, OnlyActiveGroup, NotGroup }
+
     [DebuggerDisplay("Type = {" + nameof(Type) + "}")]
-    public abstract class TThumb : Thumb
+    public abstract class TThumb : Thumb, INotifyPropertyChanged
     {
         //依存プロパティは主にデザイナー画面で、要素を追加して表示の確認する用
         #region 依存プロパティ
@@ -52,14 +55,44 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         #endregion 依存プロパティ
+        #region 通知プロパティ
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void SetProperty<T>(ref T field, T value, [System.Runtime.CompilerServices.CallerMemberName] string? name = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value)) return;
+            field = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+        //private WakuType _wakuType;
+        //public WakuType WakuType { get => _wakuType; set => SetProperty(ref _wakuType, value); }
+
+        private bool _isSelected;
+        public bool IsSelected { get => _isSelected; set => SetProperty(ref _isSelected, value); }
+
+        private bool _isClickedThumb;
+        public bool IsClickedThumb { get => _isClickedThumb; set => SetProperty(ref _isClickedThumb, value); }
+
+        private bool _isActiveThum;
+        public bool IsActiveThumb { get => _isActiveThum; set => SetProperty(ref _isActiveThum, value); }
+
+        #endregion 通知プロパティ
+
         protected readonly string TEMPLATE_NAME = "NEMO";
+
         public TTGroup? TTParent { get; set; } = null;//親Group
         public TType Type { get; private set; }
         public Data Data { get; set; }// = new(TType.None);
+        protected List<Brush> WakuBrush { get; set; }
+
+
 
         public TThumb() : this(new Data(TType.None)) { }
         public TThumb(Data data)
         {
+            WakuBrush = new();
+            MakeWakuBrushList();
 
             SetBinding(Canvas.LeftProperty, new Binding()
             {
@@ -88,8 +121,24 @@ namespace Pixtack3rd
 
         protected T? MakeTemplate<T>()
         {
-            FrameworkElementFactory factory = new(typeof(T), TEMPLATE_NAME);
-            this.Template = new() { VisualTree = factory };
+            FrameworkElementFactory fGrid = new(typeof(Grid));
+            FrameworkElementFactory fContent = new(typeof(T), TEMPLATE_NAME);
+            FrameworkElementFactory waku = new(typeof(Rectangle));
+            Binding b1 = new(nameof(IsSelected)) { Source = this };
+            Binding b2 = new(nameof(IsClickedThumb)) { Source = this };
+            Binding b3 = new(nameof(IsActiveThumb)) { Source = this };
+            MultiBinding mb = new();
+            mb.Bindings.Add(b1);
+            mb.Bindings.Add(b2);
+            mb.Bindings.Add(b3);
+            mb.Converter = new ConverterWakuBrush();
+            mb.ConverterParameter = WakuBrush;
+            waku.SetBinding(Rectangle.StrokeProperty, mb);
+            waku.SetValue(Panel.ZIndexProperty, 1);
+            fGrid.AppendChild(fContent);
+            fGrid.AppendChild(waku);
+
+            this.Template = new() { VisualTree = fGrid };
             this.ApplyTemplate();
             if (this.Template.FindName(TEMPLATE_NAME, this) is T element)
             {
@@ -97,6 +146,76 @@ namespace Pixtack3rd
             }
             else return default;
         }
+        private void MakeWakuBrushList()
+        {
+            WakuBrush.Add(MakeBrush2ColorsDash(4, Colors.DeepSkyBlue, Colors.White));//Selected
+            WakuBrush.Add(MakeBrush2ColorsDash(4,
+                Color.FromArgb(64, 128, 128, 128),
+                Color.FromArgb(64, 255, 255, 255)));//Group
+            //WakuBrush.Add(MakeBrush2ColorsDash(4, Colors.Gray, Colors.White));//Group
+            WakuBrush.Add(MakeBrush2ColorsDash(4, Colors.MediumOrchid, Colors.White));//ActiveGroup
+            WakuBrush.Add(MakeBrush2ColorsDash(4, Colors.Lime, Colors.White));//Clicked
+            WakuBrush.Add(MakeBrush2ColorsDash(4, Colors.Tomato, Colors.White));//ActiveThumb
+        }
+        #region 枠線ブラシ作成
+        //        WPF、Rectangleとかに2色の破線(点線)枠表示 - 午後わてんのブログ
+        //https://gogowaten.hatenablog.com/entry/2022/05/29/140321
+
+        /// <summary>
+        /// 指定した2色で破線ブラシ作成
+        /// </summary>
+        /// <param name="thickness">線の幅</param>
+        /// <param name="c1">色1</param>
+        /// <param name="c2">色2</param>
+        /// <returns></returns>
+        public static ImageBrush MakeBrush2ColorsDash(int thickness, Color c1, Color c2)
+        {
+            WriteableBitmap bitmap = MakeCheckPattern(thickness, c1, c2);
+            ImageBrush brush = new(bitmap)
+            {
+                Stretch = Stretch.None,
+                TileMode = TileMode.Tile,
+                Viewport = new Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight),
+                ViewportUnits = BrushMappingMode.Absolute
+            };
+            return brush;
+        }
+        /// <summary>
+        /// 指定した2色から市松模様のbitmapを作成
+        /// </summary>
+        /// <param name="cellSize">1以上を指定、1指定なら2x2ピクセル、2なら4x4ピクセルの画像作成</param>
+        /// <param name="c1"></param>
+        /// <param name="c2"></param>
+        /// <returns></returns>
+        private static WriteableBitmap MakeCheckPattern(int cellSize, Color c1, Color c2)
+        {
+            int width = cellSize * 2;
+            int height = cellSize * 2;
+            var wb = new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgra32, null);
+            int stride = wb.Format.BitsPerPixel / 8 * width;
+            byte[] pixels = new byte[stride * height];
+            Color iro;
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    if ((y < cellSize & x < cellSize) | (y >= cellSize & x >= cellSize))
+                    {
+                        iro = c1;
+                    }
+                    else { iro = c2; }
+
+                    int p = y * stride + x * 4;
+                    pixels[p] = iro.B;
+                    pixels[p + 1] = iro.G;
+                    pixels[p + 2] = iro.R;
+                    pixels[p + 3] = iro.A;
+                }
+            }
+            wb.WritePixels(new Int32Rect(0, 0, width, height), pixels, stride, 0);
+            return wb;
+        }
+        #endregion 枠線ブラシ作成
 
     }
 
@@ -159,6 +278,15 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         #endregion 依存プロパティ
+
+
+        private bool _isActiveGroup;
+        public bool IsActiveGroup { get => _isActiveGroup; set => SetProperty(ref _isActiveGroup, value); }
+
+        private bool _isGroup;
+        public bool IsGroup { get => _isActiveGroup; set => SetProperty(ref _isActiveGroup, value); }
+
+
         private ItemsControl MyTemplateElement;
         public ObservableCollection<TThumb> Thumbs { get; private set; } = new();
 
@@ -180,7 +308,7 @@ namespace Pixtack3rd
             SetBinding(TTXShiftProperty, nameof(Data.XShift));
             SetBinding(TTYShiftProperty, nameof(Data.YShift));
             SetBinding(TTGridProperty, nameof(Data.Grid));
-
+            IsGroup = true;
         }
 
         private void Thumbs_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -207,10 +335,26 @@ namespace Pixtack3rd
         {
             FrameworkElementFactory fGrid = new(typeof(Grid));
             FrameworkElementFactory fWaku = new(typeof(Rectangle));
+            Binding b1 = new Binding(nameof(IsActiveThumb)) { Source = this };
+            Binding b2 = new Binding(nameof(IsSelected)) { Source = this };
+            Binding b3 = new Binding(nameof(IsActiveGroup)) { Source = this };
+            Binding b4 = new Binding(nameof(IsGroup)) { Source = this };
+            MultiBinding mb = new();
+            mb.Bindings.Add(b1);
+            mb.Bindings.Add(b2);
+            mb.Bindings.Add(b3);
+            mb.Bindings.Add(b4);
+            mb.ConverterParameter = WakuBrush;
+            mb.Converter = new ConverterWakuBrushForTTGroup();
+            fWaku.SetBinding(Rectangle.StrokeProperty, mb);
 
-            fWaku.SetValue(VisibilityProperty, new Binding(nameof(TTVisibleBorder)) { Source = this });
-            fWaku.SetValue(Shape.StrokeProperty, Brushes.Red);
-            fWaku.SetValue(Shape.StrokeThicknessProperty, 10.0);
+            //fWaku.SetValue(Panel.ZIndexProperty, 1);
+
+
+
+            //fWaku.SetValue(VisibilityProperty, new Binding(nameof(TTVisibleBorder)) { Source = this });
+
+
             FrameworkElementFactory factory = new(typeof(ItemsControl), TEMPLATE_NAME);
             factory.SetValue(ItemsControl.ItemsPanelProperty,
                 new ItemsPanelTemplate(new FrameworkElementFactory(typeof(Canvas))));
@@ -226,10 +370,33 @@ namespace Pixtack3rd
         }
         //private ItemsControl MakeTemplate()
         //{
+        //    FrameworkElementFactory fGrid = new(typeof(Grid));
+        //    FrameworkElementFactory fWaku = new(typeof(Rectangle));
+
+        //    fWaku.SetValue(VisibilityProperty, new Binding(nameof(TTVisibleBorder)) { Source = this });
+
+        //    fWaku.SetValue(Shape.StrokeProperty, Brushes.Red);
+        //    fWaku.SetValue(Shape.StrokeThicknessProperty, 10.0);
         //    FrameworkElementFactory factory = new(typeof(ItemsControl), TEMPLATE_NAME);
         //    factory.SetValue(ItemsControl.ItemsPanelProperty,
         //        new ItemsPanelTemplate(new FrameworkElementFactory(typeof(Canvas))));
-        //    this.Template = new() { VisualTree = factory };
+        //    fGrid.AppendChild(fWaku);
+        //    fGrid.AppendChild(factory);
+        //    this.Template = new() { VisualTree = fGrid };
+        //    this.ApplyTemplate();
+        //    if (this.Template.FindName(TEMPLATE_NAME, this) is ItemsControl element)
+        //    {
+        //        return element;
+        //    }
+        //    else { throw new ArgumentException("テンプレート作成できんかった"); }
+        //}
+
+        //private ItemsControl MakeTemplate()
+        //{
+        //    FrameworkElementFactory fContent = new(typeof(ItemsControl), TEMPLATE_NAME);
+        //    fContent.SetValue(ItemsControl.ItemsPanelProperty,
+        //        new ItemsPanelTemplate(new FrameworkElementFactory(typeof(Canvas))));
+        //    this.Template = new() { VisualTree = fContent };
         //    this.ApplyTemplate();
         //    if (this.Template.FindName(TEMPLATE_NAME, this) is ItemsControl element)
         //    {
@@ -307,22 +474,22 @@ namespace Pixtack3rd
     }
 
 
-    public class TTRoot : TTGroup, INotifyPropertyChanged
+    public class TTRoot : TTGroup
     {
 
         #region 通知プロパティ
-
-        protected void SetProperty<T>(ref T field, T value, [CallerMemberName] string? name = null)
-        {
-            if (EqualityComparer<T>.Default.Equals(field, value)) return;
-            field = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
-        public event PropertyChangedEventHandler? PropertyChanged;
-
         //最後にクリックしたThumb
         private TThumb? _clickedThumb;
-        public TThumb? ClickedThumb { get => _clickedThumb; set => SetProperty(ref _clickedThumb, value); }
+        public TThumb? ClickedThumb
+        {
+            get => _clickedThumb;
+            set
+            {
+                if (_clickedThumb != null) { _clickedThumb.IsClickedThumb = false; }
+                SetProperty(ref _clickedThumb, value);
+                if (_clickedThumb != null) { _clickedThumb.IsClickedThumb = true; }
+            }
+        }
 
         //注目しているThumb、選択Thumb群の筆頭
         private TThumb? _activeThumb;
@@ -331,7 +498,9 @@ namespace Pixtack3rd
             get => _activeThumb;
             set
             {
+                if (_activeThumb != null) { _activeThumb.IsActiveThumb = false; }
                 SetProperty(ref _activeThumb, value);
+                if (_activeThumb != null) { _activeThumb.IsActiveThumb = true; }
                 //FrontActiveThumbとBackActiveThumbを更新する
                 ChangedActiveThumb(value);
             }
@@ -351,14 +520,17 @@ namespace Pixtack3rd
             set
             {
                 ChildrenDragEventDesoption(_activeGroup, value);
+                _activeGroup.IsActiveGroup = false;
                 SetProperty(ref _activeGroup, value);
+                _activeGroup.IsActiveGroup = true;
             }
         }
 
         #endregion 通知プロパティ
 
         //選択状態の要素を保持
-        public ObservableCollection<TThumb> SelectedThumbs { get; private set; } = new();
+        public ExObservableCollection SelectedThumbs { get; private set; } = new();
+        //public ObservableCollection<TThumb> SelectedThumbs { get; private set; } = new();
 
         //クリック前の選択状態、クリックUp時の削除に使う
         private bool IsSelectedPreviewMouseDown { get; set; }
@@ -368,7 +540,7 @@ namespace Pixtack3rd
         public TTRoot() : base(new Data(TType.Root))
         {
             _activeGroup ??= this;
-
+            IsActiveGroup = true;
             //起動直後に位置とサイズ更新
             //TTGroupUpdateLayout();//XAML上でThumb設置しても、この時点ではThumbsが0個
             Loaded += (a, b) =>
@@ -377,11 +549,9 @@ namespace Pixtack3rd
                 FixDataDatas();
             };
 
-            //SetBinding(TTXShiftProperty, nameof(Data.XShift));
-            //SetBinding(TTYShiftProperty, nameof(Data.YShift));
-            //SetBinding(TTGridProperty, nameof(Data.Grid));
-
         }
+
+
 
         private void FixDataDatas()
         {
@@ -582,8 +752,8 @@ namespace Pixtack3rd
             {
                 SelectedThumbs.Remove(ActiveThumb);//削除
                 IsSelectedPreviewMouseDown = false;//フラグ切り替え
-                ActiveThumb = SelectedThumbs[^1];
                 ClickedThumb = SelectedThumbs[^1];
+                ActiveThumb = SelectedThumbs[^1];
                 //ActiveThumb = null;
                 //ClickedThumb = null;
             }
@@ -1390,5 +1560,68 @@ namespace Pixtack3rd
     }
 
 
+    public class ConverterWakuBrush : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            List<Brush> myBrushes = (List<Brush>)parameter;
+
+            if ((bool)values[2]) { return myBrushes[4]; }
+            else if ((bool)values[1]) { return myBrushes[3]; }
+            else if ((bool)values[0]) { return myBrushes[0]; }
+            else return Brushes.Transparent;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    public class ConverterWakuBrushForTTGroup : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            List<Brush> myBrushes = (List<Brush>)parameter;
+
+            if ((bool)values[0]) { return myBrushes[4]; }
+            else if ((bool)values[1]) { return myBrushes[3]; }
+            else if ((bool)values[2]) { return myBrushes[2]; }
+            else if ((bool)values[3]) { return myBrushes[1]; }
+            else return Brushes.Transparent;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+
+    public class ExObservableCollection : ObservableCollection<TThumb>
+    {
+        protected override void ClearItems()
+        {
+            foreach (var item in Items)
+            {
+                item.IsSelected = false;
+            }
+            base.ClearItems();
+        }
+        protected override void SetItem(int index, TThumb item)
+        {
+            item.IsSelected = true;
+            base.SetItem(index, item);
+        }
+        protected override void RemoveItem(int index)
+        {
+            Items[index].IsSelected = false;
+            base.RemoveItem(index);
+        }
+        protected override void InsertItem(int index, TThumb item)
+        {
+            item.IsSelected = true;
+            base.InsertItem(index, item);
+        }
+    }
 
 }
