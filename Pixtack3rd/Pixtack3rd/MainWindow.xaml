@@ -129,18 +129,14 @@
             <Button x:Name="ButtonDuplicateDataClickedThumb" Content="Clicked" Click="ButtonDuplicateDataClickedThumb_Click"/>
           </UniformGrid>
         </GroupBox>
-        <DockPanel>
-          <Button x:Name="ButtonToGroup" Content="グループ化" Click="ButtonToGroup_Click" Width="100"/>
+        <UniformGrid Rows="3" Columns="2">
+          <Button x:Name="ButtonToGroup" Content="グループ化" Click="ButtonToGroup_Click"/>
           <Button x:Name="ButtonUnGroup" Content="グループ解除" Click="ButtonUnGroup_Click"/>
-        </DockPanel>
-        <DockPanel>
-          <Button x:Name="ButtonIn" Content="In" Click="ButtonIn_Click" Width="100"/>
+          <Button x:Name="ButtonIn" Content="In" Click="ButtonIn_Click"/>
           <Button x:Name="ButtonOut" Content="Out" Click="ButtonOut_Click"/>
-        </DockPanel>
-        <DockPanel>
-          <Button x:Name="ButtonRemove" Content="選択Thumb削除" Click="ButtonRemove_Click" Width="100"/>
+          <Button x:Name="ButtonRemove" Content="選択Thumb削除" Click="ButtonRemove_Click"/>
           <Button x:Name="ButtonRemoveAll" Content="全削除" Click="ButtonRemoveAll_Click"/>
-        </DockPanel>
+        </UniformGrid>
         <GroupBox Header="上下(Z軸)移動、対象はActiveThumb">
           <UniformGrid Rows="1">
             <Button x:Name="ButtonUp" Content="前面" Click="ButtonUp_Click"/>
