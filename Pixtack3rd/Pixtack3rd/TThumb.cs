@@ -284,7 +284,7 @@ namespace Pixtack3rd
         public bool IsActiveGroup { get => _isActiveGroup; set => SetProperty(ref _isActiveGroup, value); }
 
         private bool _isGroup;
-        public bool IsGroup { get => _isActiveGroup; set => SetProperty(ref _isActiveGroup, value); }
+        public bool IsGroup { get => _isGroup; set => SetProperty(ref _isGroup, value); }
 
 
         private ItemsControl MyTemplateElement;
@@ -535,7 +535,7 @@ namespace Pixtack3rd
         //クリック前の選択状態、クリックUp時の削除に使う
         private bool IsSelectedPreviewMouseDown { get; set; }
 
-        #region コンストラクタ
+        #region コンストラクタ、初期化
 
         public TTRoot() : base(new Data(TType.Root))
         {
@@ -564,8 +564,6 @@ namespace Pixtack3rd
                 }
             }
         }
-
-        #endregion コンストラクタ
 
         /// <summary>
         /// RootDataをセット、初期化
@@ -615,6 +613,8 @@ namespace Pixtack3rd
                 }
             }
         }
+
+        #endregion コンストラクタ、初期化
 
 
         #region ドラッグ移動
@@ -868,7 +868,7 @@ namespace Pixtack3rd
 
         #endregion その他関数
 
-        #region 追加と削除
+        #region 追加
 
         /// <summary>
         /// 追加先Groupを指定して追加、挿入Indexは最後尾(最前面)
@@ -967,27 +967,48 @@ namespace Pixtack3rd
                     throw new NotImplementedException();
             }
         }
+        #endregion 追加
+        #region 削除
 
         /// <summary>
-        /// 選択Thumbすべてを削除
+        /// 選択されているThumbすべてを削除
         /// </summary>
         /// <returns></returns>
         public bool RemoveThumb()
         {
             if (SelectedThumbs == null) return false;
+            if (SelectedThumbs.Count == ActiveGroup.Thumbs.Count)
+            {
+                if (ActiveGroup.TTParent != null)
+                {
+                    RemoveThumb(ActiveGroup, ActiveGroup.TTParent);
+                    SelectedThumbs.Clear();
+                    ClickedThumb = null;
+                    ActiveGroupOutside();
+                    return true;
+                }
+                else if (ActiveGroup.Type == TType.Root)
+                {
+                    RemoveAll();
+                    return true;
+                }
+                else { return false; }
+            }
+
             bool flag = true;
             int indexNextActThumb = 0;
             foreach (var item in SelectedThumbs.ToArray())
             {
                 indexNextActThumb = ActiveGroup.Thumbs.IndexOf(item);
-                if (RemoveThumb(item, ActiveGroup) == false)
+
+                if (RemoveThumb(item, ActiveGroup))
                 {
-                    flag = false;
-                    break;
+                    SelectedThumbs.Remove(item);
                 }
                 else
                 {
-                    SelectedThumbs.Remove(item);
+                    flag = false;
+                    break;
                 }
             }
 
@@ -1019,6 +1040,14 @@ namespace Pixtack3rd
             }
 
             ClickedThumb = null;
+            //Thumbsが1個になっていたらグループ解除
+            if (ActiveGroup.Thumbs.Count == 1 && ActiveGroup.TTParent is TTGroup parent)
+            {
+                //out
+                TTGroup temp = ActiveGroup;
+                ActiveGroupOutside();
+                UnGroup(temp, ActiveGroup);
+            }
             return flag;
         }
         /// <summary>
@@ -1031,7 +1060,7 @@ namespace Pixtack3rd
         {
             if (group.Thumbs.Remove(thumb))
             {
-                Data.Datas.Remove(thumb.Data);
+                group.Data.Datas.Remove(thumb.Data);
                 thumb.DragCompleted -= Thumb_DragCompleted;
                 thumb.DragDelta -= Thumb_DragDelta;
                 thumb.DragStarted -= Thumb_DragStarted;
@@ -1054,7 +1083,8 @@ namespace Pixtack3rd
             ActiveGroup = this;
             TTGroupUpdateLayout();
         }
-        #endregion 追加と削除
+        #endregion 削除
+
 
         #region グループ化
 
@@ -1214,6 +1244,8 @@ namespace Pixtack3rd
                 ActiveThumb = GetActiveThumb(ClickedThumb);
             }
         }
+
+
         /// <summary>
         /// 指定グループのグループ解除
         /// </summary>
@@ -1440,6 +1472,7 @@ namespace Pixtack3rd
         /// <returns></returns>
         public BitmapSource? GetBitmap(TThumb thumb)
         {
+            if (thumb.ActualHeight == 0 || thumb.ActualWidth == 0) return null;
             if (thumb.Type != TType.Root)
             {
                 return SaveImage2(thumb, thumb.TTParent);

@@ -248,7 +248,7 @@ namespace Pixtack3rd
             }
             return null;
         }
-  
+
 
         /// <summary>
         /// アプリのバージョン取得、できなかかったときはstring.Emptyを返す
@@ -1440,13 +1440,19 @@ namespace Pixtack3rd
         //Rootを画像ファイルとして保存
         private void ButtonSaveToImage_Click(object sender, RoutedEventArgs e)
         {
+            if (MyRoot.Thumbs.Count == 0)
+            {
+                MessageBox.Show("保存対象がない");
+                return;
+            }
             if (SaveBitmapFromThumb(MyRoot) == false)
             {
                 MessageBox.Show("保存できなかった");
             }
         }
         private void ButtonSaveToImageActive_Click(object sender, RoutedEventArgs e)
-        {//ActiveThumb            
+        {//ActiveThumb
+
             if (SaveBitmapFromThumb(MyRoot.ActiveThumb) == false)
             {
                 MessageBox.Show("保存できなかった");
@@ -1463,6 +1469,11 @@ namespace Pixtack3rd
         //TTRootのDataとアプリの設定を保存
         private void ButtonSaveData_Click(object sender, RoutedEventArgs e)
         {
+            if (MyRoot.Thumbs.Count == 0)
+            {
+                MessageBox.Show("保存対象がない");
+                return;
+            }
             Microsoft.Win32.SaveFileDialog dialog = new();
             dialog.Filter = EXTENSION_FILTER_P3;
             if (dialog.ShowDialog() == true)
@@ -1496,6 +1507,11 @@ namespace Pixtack3rd
             }
         }
 
+        /// <summary>
+        /// 名前をつけて保存時のファイルパス取得
+        /// </summary>
+        /// <param name="extFilter">拡張子フィルター</param>
+        /// <returns></returns>
         private string? GetSaveDataFilePath(string extFilter)
         {
             Microsoft.Win32.SaveFileDialog dialog = new();
@@ -1511,6 +1527,7 @@ namespace Pixtack3rd
         }
         private void ButtonSaveAllData_Click(object sender, RoutedEventArgs e)
         {
+            if (MyRoot.Thumbs.Count == 0) { return; }
             if (GetSaveDataFilePath(EXTENSION_FILTER_P3) is string path)
             {
                 SaveDataToAz3(path, MyRoot.Data, true);
@@ -1659,7 +1676,7 @@ namespace Pixtack3rd
         private void ButtonDuplicateData_Click(object sender, RoutedEventArgs e)
         {
             //Dataとして複製、全体
-            if (ConvertDataRootToGroup(MyRoot.Data) is Data data)
+            if (ConvertDataRootToGroup(MyRoot.Data) is Data data && MyRoot.Thumbs.Count > 0)
             {
                 MyRoot.AddThumbDataToActiveGroup(data);
             }
