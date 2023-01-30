@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.Windows.Input;
 using System.Collections.Specialized;
 using System.Windows.Shapes;
+using System.IO;
 
 namespace Pixtack3rd
 {
@@ -76,6 +77,8 @@ namespace Pixtack3rd
 
         private bool _isActiveThum;
         public bool IsActiveThumb { get => _isActiveThum; set => SetProperty(ref _isActiveThum, value); }
+        private WakuVisibleType _wakuVisibleType;
+        public WakuVisibleType WakuVisibleType { get => _wakuVisibleType; set => SetProperty(ref _wakuVisibleType, value); }
 
         #endregion 通知プロパティ
 
@@ -127,10 +130,12 @@ namespace Pixtack3rd
             Binding b1 = new(nameof(IsSelected)) { Source = this };
             Binding b2 = new(nameof(IsClickedThumb)) { Source = this };
             Binding b3 = new(nameof(IsActiveThumb)) { Source = this };
+            Binding bType = new(nameof(WakuVisibleType)) { Source = this, Mode = BindingMode.TwoWay };
             MultiBinding mb = new();
             mb.Bindings.Add(b1);
             mb.Bindings.Add(b2);
             mb.Bindings.Add(b3);
+            mb.Bindings.Add(bType);
             mb.Converter = new ConverterWakuBrush();
             mb.ConverterParameter = WakuBrush;
             waku.SetBinding(Rectangle.StrokeProperty, mb);
@@ -339,11 +344,13 @@ namespace Pixtack3rd
             Binding b2 = new Binding(nameof(IsSelected)) { Source = this };
             Binding b3 = new Binding(nameof(IsActiveGroup)) { Source = this };
             Binding b4 = new Binding(nameof(IsGroup)) { Source = this };
+            Binding bType = new Binding(nameof(WakuVisibleType)) { Source = this };
             MultiBinding mb = new();
             mb.Bindings.Add(b1);
             mb.Bindings.Add(b2);
             mb.Bindings.Add(b3);
             mb.Bindings.Add(b4);
+            mb.Bindings.Add(bType);
             mb.ConverterParameter = WakuBrush;
             mb.Converter = new ConverterWakuBrushForTTGroup();
             fWaku.SetBinding(Rectangle.StrokeProperty, mb);
@@ -526,13 +533,56 @@ namespace Pixtack3rd
             }
         }
 
+
+
+
         #endregion 通知プロパティ
+
+        //枠の表示設定、かなり煩雑
+        //コールバックですべての要素のプロパティを変更＋自身のプロパティも変更する
+        public WakuVisibleType TTWakuVisibleType
+        {
+            get { return (WakuVisibleType)GetValue(TTWakuVisibleTypeProperty); }
+            set { SetValue(TTWakuVisibleTypeProperty, value); }
+        }
+        public static readonly DependencyProperty TTWakuVisibleTypeProperty =
+            DependencyProperty.Register(nameof(TTWakuVisibleType), typeof(WakuVisibleType), typeof(TTRoot),
+                new FrameworkPropertyMetadata(WakuVisibleType.None,
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
+                    new PropertyChangedCallback(OnTTWakuVisibleTypeChanged)));
+        private static void OnTTWakuVisibleTypeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is TTRoot root)
+            {
+                root.WakuVisibleType = root.TTWakuVisibleType;//自身のプロパティ
+                //すべての要素のプロパティを変更
+                foreach (var item in root.Thumbs)
+                {
+                    item.WakuVisibleType = root.TTWakuVisibleType;
+                    if (item is TTGroup group)
+                    {
+                        SetWaku(group.Thumbs, root.TTWakuVisibleType);
+                    }
+                }
+            }
+        }
+        private static void SetWaku(ObservableCollection<TThumb> thumbs, WakuVisibleType wakuType)
+        {
+            foreach (var item in thumbs)
+            {
+                item.WakuVisibleType = wakuType;
+                if (item is TTGroup group)
+                {
+                    SetWaku(group.Thumbs, wakuType);
+                }
+            }
+        }
 
         //選択状態の要素を保持
         public ExObservableCollection SelectedThumbs { get; private set; } = new();
         //public ObservableCollection<TThumb> SelectedThumbs { get; private set; } = new();
 
-        //クリック前の選択状態、クリックUp時の削除に使う
+        //クリック前の選択状態、クリックUp時の選択Thumb削除に使う
         private bool IsSelectedPreviewMouseDown { get; set; }
 
         #region コンストラクタ、初期化
@@ -541,6 +591,8 @@ namespace Pixtack3rd
         {
             _activeGroup ??= this;
             IsActiveGroup = true;
+            
+            //SetBinding(TTWakuVisibleTypeProperty, new Binding(nameof(WakuVisibleType)) { Source = this });
             //起動直後に位置とサイズ更新
             //TTGroupUpdateLayout();//XAML上でThumb設置しても、この時点ではThumbsが0個
             Loaded += (a, b) =>
@@ -552,14 +604,19 @@ namespace Pixtack3rd
         }
 
 
-
+        /// <summary>
+        /// DataとThumbの整合性修正、XAMLに配置した場合はThumbがあるのにDataがない状態なので追加する
+        /// ついでに枠表示設定も合わせる
+        /// </summary>
         private void FixDataDatas()
         {
             if (Data.Datas == null) return;
+
             foreach (var item in Thumbs)
             {
                 if (Data.Datas.Contains(item.Data) == false)
                 {
+                    item.WakuVisibleType = WakuVisibleType;
                     Data.Datas.Add(item.Data);
                 }
             }
@@ -763,7 +820,20 @@ namespace Pixtack3rd
         #endregion オーバーライド関連
 
         #region その他関数
-
+        /// <summary>
+        /// 画像ファイルからBitmapImageを作成、ファイルロックなし
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        public static BitmapImage GetBitmap(string filePath)
+        {
+            BitmapImage bmp = new();
+            FileStream stream = new(filePath, FileMode.Open, FileAccess.Read);
+            bmp.BeginInit();
+            bmp.StreamSource = stream;
+            bmp.EndInit();
+            return bmp;
+        }
 
         /// <summary>
         /// ActiveThumb変更時に実行、FrontActiveThumbとBackActiveThumbを更新する
@@ -949,6 +1019,8 @@ namespace Pixtack3rd
         /// <exception cref="NotImplementedException"></exception>
         public TThumb BuildThumb(Data data)
         {
+            //data.WakuVisibleType = TTWakuVisibleType;
+            TThumb? result;
             switch (data.Type)
             {
                 case TType.None:
@@ -956,16 +1028,28 @@ namespace Pixtack3rd
                 case TType.Root:
                     throw new NotImplementedException();
                 case TType.Group:
-                    return new TTGroup(data);
+                    result = new TTGroup(data);
+                    //return new TTGroup(data);
+                    break;
                 case TType.TextBlock:
-                    return new TTTextBlock(data);
+                    result = new TTTextBlock(data);
+                    break;
+                //return new TTTextBlock(data);
                 case TType.Image:
-                    return new TTImage(data);
+                    result = new TTImage(data);
+                    break;
+                //return new TTImage(data);
                 case TType.Rectangle:
                     throw new NotImplementedException();
                 default:
                     throw new NotImplementedException();
             }
+            if (result != null)
+            {
+                result.WakuVisibleType = this.TTWakuVisibleType;
+                return result;
+            }
+            else { throw new NotImplementedException(); }
         }
         #endregion 追加
         #region 削除
@@ -1106,8 +1190,6 @@ namespace Pixtack3rd
                 ClickedThumb = null;//一旦null
                 ActiveThumb = group;//入れ替え
                 ClickedThumb = temp;//元に戻す
-
-
             }
         }
 
@@ -1133,6 +1215,7 @@ namespace Pixtack3rd
                 TTGrid = destGroup.TTGrid,
                 TTXShift = destGroup.TTXShift,
                 TTYShift = destGroup.TTYShift,
+                WakuVisibleType = this.WakuVisibleType,
             };
 
             //各要素のドラッグイベントを外す、新グループに追加
@@ -1161,49 +1244,6 @@ namespace Pixtack3rd
 
             return newGroup;
         }
-        //  private TTGroup? MakeAndAddGroup(IEnumerable<TThumb> thumbs, TTGroup destGroup)
-        //{
-        //    //選択要素群をActiveGroupを基準に並べ替え
-        //    List<TThumb> sortedList = MakeSortedList(thumbs, destGroup);
-
-        //    //新グループの挿入Index、[^1]は末尾から数えて1番目の要素って意味
-        //    int insertIndex = destGroup.Thumbs.IndexOf(sortedList[^1]) - (sortedList.Count - 1);
-
-        //    if (CheckAddGroup(sortedList, destGroup) == false) { return null; }
-        //    var (x, y, w, h) = GetRect(sortedList);
-        //    TTGroup newGroup = new()
-        //    {
-        //        TTLeft = x,
-        //        TTTop = y,
-        //        TTGrid = destGroup.TTGrid,
-        //        TTXShift = destGroup.TTXShift,
-        //        TTYShift = destGroup.TTYShift,
-        //    };
-        //    AddThumb(newGroup, destGroup, insertIndex);
-
-        //    //各要素のドラッグイベントを外す、新グループに追加
-        //    foreach (var item in sortedList)
-        //    {
-        //        destGroup.Thumbs.Remove(item);
-        //        destGroup.Data.Datas.Remove(item.Data);
-        //        item.DragDelta -= Thumb_DragDelta;
-        //        item.DragCompleted -= Thumb_DragCompleted;
-        //        item.DragStarted -= Thumb_DragStarted;
-
-        //        newGroup.Thumbs.Add(item);
-        //        newGroup.Data.Datas.Add(item.Data);
-        //        item.TTLeft -= x;
-        //        item.TTTop -= y;
-        //    }
-
-        //    newGroup.Arrange(new(0, 0, w, h));//再配置？このタイミングで必須、Actualサイズに値が入る
-        //    //↓はこのタイミングではいらないかも？RenderSizeChangeで実行するようにした
-        //    //→要る！！！ここじゃないと枠表示のサイズがなぜか0x0のままになる
-        //    newGroup.TTGroupUpdateLayout();//必須、サイズと位置の更新
-
-        //    return newGroup;
-        //}
-
 
         /// <summary>
         /// グループ化の条件が揃っているのかの判定
@@ -1556,7 +1596,7 @@ namespace Pixtack3rd
 
     public class TTImage : TThumb
     {
-
+        //画像ファイルのフルパス、変更時にコールバックでBitmapSourceを作成して表示する
         public string TTSourcePath
         {
             get { return (string)GetValue(TTSourcePathProperty); }
@@ -1565,12 +1605,12 @@ namespace Pixtack3rd
         public static readonly DependencyProperty TTSourcePathProperty =
             DependencyProperty.Register(nameof(TTSourcePath), typeof(string), typeof(TTImage),
                 new FrameworkPropertyMetadata("", new PropertyChangedCallback(OnTTUriChanged)));
-
+        //コールバック、BitmapSourceを作成して表示する
         private static void OnTTUriChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is TTImage obj)
+            if (d is TTImage thumb)
             {
-                obj.Data.BitmapSource = new BitmapImage(new Uri((string)e.NewValue));
+                thumb.Data.BitmapSource = TTRoot.GetBitmap((string)e.NewValue);
             }
         }
 
@@ -1598,11 +1638,23 @@ namespace Pixtack3rd
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             List<Brush> myBrushes = (List<Brush>)parameter;
+            if (values[3] is WakuVisibleType type)
+            {
+                if (type == WakuVisibleType.None || type == WakuVisibleType.OnlyActiveGroup)
+                {
+                    return Brushes.Transparent;
+                }
+                else
+                {
+                    if ((bool)values[2]) { return myBrushes[4]; }
+                    else if ((bool)values[1]) { return myBrushes[3]; }
+                    else if ((bool)values[0]) { return myBrushes[0]; }
+                    else return Brushes.Transparent;
+                }
 
-            if ((bool)values[2]) { return myBrushes[4]; }
-            else if ((bool)values[1]) { return myBrushes[3]; }
-            else if ((bool)values[0]) { return myBrushes[0]; }
+            }
             else return Brushes.Transparent;
+            //WakuVisibleType type = (WakuVisibleType)values[3];
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
@@ -1615,12 +1667,36 @@ namespace Pixtack3rd
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             List<Brush> myBrushes = (List<Brush>)parameter;
+            Brush result = Brushes.Transparent;
+            if (values[4] is WakuVisibleType type)
+            {
 
-            if ((bool)values[0]) { return myBrushes[4]; }
-            else if ((bool)values[1]) { return myBrushes[3]; }
-            else if ((bool)values[2]) { return myBrushes[2]; }
-            else if ((bool)values[3]) { return myBrushes[1]; }
-            else return Brushes.Transparent;
+
+
+                //WakuVisibleType type = (WakuVisibleType)values[4];
+                switch (type)
+                {
+                    case WakuVisibleType.None:
+                        break;
+                    case WakuVisibleType.All:
+                        if ((bool)values[0]) { result = myBrushes[4]; }
+                        else if ((bool)values[1]) { result = myBrushes[3]; }
+                        else if ((bool)values[2]) { result = myBrushes[2]; }
+                        else if ((bool)values[3]) { result = myBrushes[1]; }
+                        break;
+                    case WakuVisibleType.OnlyActiveGroup:
+                        if ((bool)values[2]) { result = myBrushes[2]; }
+                        break;
+                    case WakuVisibleType.NotGroup:
+                        if ((bool)values[0]) { result = myBrushes[4]; }
+                        else if ((bool)values[1]) { result = myBrushes[3]; }
+                        else if ((bool)values[2]) { result = myBrushes[2]; }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return result;
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
@@ -1629,6 +1705,31 @@ namespace Pixtack3rd
         }
     }
 
+    //列挙型の値をラジオボタンにバインドするには？［ユニバーサルWindowsアプリ開発］：WinRT／Metro TIPS - ＠IT
+    //    https://atmarkit.itmedia.co.jp/ait/articles/1507/29/news019.html
+    //wpf - How to bind RadioButtons to an enum? - Stack Overflow
+    //    https://stackoverflow.com/questions/397556/how-to-bind-radiobuttons-to-an-enum
+
+    public class ConverterEnumToBool : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value.Equals(true)) { return true; }
+            else
+            {
+                return DependencyProperty.UnsetValue;
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value.Equals(true)) { return parameter; }
+            else
+            {
+                return DependencyProperty.UnsetValue;
+            }
+        }
+    }
 
     public class ExObservableCollection : ObservableCollection<TThumb>
     {

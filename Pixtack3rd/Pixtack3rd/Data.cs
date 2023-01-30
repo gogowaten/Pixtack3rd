@@ -26,6 +26,7 @@ namespace Pixtack3rd
             field = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
+        public ExtensionDataObject? ExtensionData { get; set; }//Dataの互換性維持
 
         [DataMember] public ObservableCollection<Data> Datas { get; set; } = new();
 
@@ -42,8 +43,10 @@ namespace Pixtack3rd
 
 
         [DataMember] public TType Type { get; set; }
-        public ExtensionDataObject? ExtensionData { get; set; }
+        //[DataMember] public WakuVisibleType WakuVisibleType { get; set; }
 
+        //private WakuVisibleType _wakuVisibleType;
+        //[DataMember] public WakuVisibleType WakuVisibleType { get => _wakuVisibleType; set => SetProperty(ref _wakuVisibleType, value); }
 
 
         private double _x = 0.0;

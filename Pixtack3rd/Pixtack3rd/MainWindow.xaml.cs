@@ -31,10 +31,10 @@ namespace Pixtack3rd
     /// </summary>
     public partial class MainWindow : Window
     {
-        private AppConfig MyAppConfig;
+        public AppConfig MyAppConfig { get; set; }
         //アプリ情報
         private const string APP_NAME = "Pixtack3rd";
-        private const string APP_CONFIG_FILE_NAME = "config" + APP_EXTENSION_NAME;
+        private const string APP_CONFIG_FILE_NAME = "config" + ".xml";
 
         private const string APP_EXTENSION_NAME = ".p3rd";//Rootデータとアプリの設定を含んだ拡張子
         private const string DATA_EXTENSION_NAME = ".p3";//データだけの拡張子
@@ -54,6 +54,7 @@ namespace Pixtack3rd
             MyAppConfig = GetAppConfig(APP_CONFIG_FILE_NAME);
             //DataContext = MyAppConfig;
             MyStackPanel.DataContext = MyAppConfig;
+            MyWrap.DataContext = MyAppConfig;
 
             AppVersion = GetAppVersion();
             MyInitialize();
@@ -70,8 +71,8 @@ namespace Pixtack3rd
             //string imagePath3 = "D:\\ブログ用\\テスト用画像\\hueRect030.png";
 
 
-            Data dataImg1 = new(TType.Image) { BitmapSource = GetBitmap(imagePath) };
-            Data dataImg2 = new(TType.Image) { BitmapSource = GetBitmap(imagePath1), X = 100, Y = 100 };
+            Data dataImg1 = new(TType.Image) { BitmapSource = TTRoot.GetBitmap(imagePath) };
+            Data dataImg2 = new(TType.Image) { BitmapSource = TTRoot.GetBitmap(imagePath1), X = 100, Y = 100 };
 
             //TTGroup group = new(new Data(TType.Group) { X = 100, Y = 100 });
             //Data dataGroup = new(TType.Group);
@@ -88,15 +89,15 @@ namespace Pixtack3rd
             ////MyImage.Data.BitmapSource = GetBitmap("D:\\ブログ用\\テスト用画像\\collection1.png");
         }
 
-        private static BitmapImage GetBitmap(string filePath)
-        {
-            BitmapImage bmp = new();
-            FileStream stream = new(filePath, FileMode.Open, FileAccess.Read);
-            bmp.BeginInit();
-            bmp.StreamSource = stream;
-            bmp.EndInit();
-            return bmp;
-        }
+        //public static BitmapImage GetBitmap(string filePath)
+        //{
+        //    BitmapImage bmp = new();
+        //    FileStream stream = new(filePath, FileMode.Open, FileAccess.Read);
+        //    bmp.BeginInit();
+        //    bmp.StreamSource = stream;
+        //    bmp.EndInit();
+        //    return bmp;
+        //}
 
 
         #region 初期設定
@@ -135,7 +136,7 @@ namespace Pixtack3rd
                     MyRoot.SetRootData(data);
                 }
             }
-
+            MyRoot.SetBinding(TTRoot.TTWakuVisibleTypeProperty, new Binding(nameof(MyAppConfig.WakuVisibleType)) { Source = this.MyAppConfig });
         }
         private void MyInitializeComboBox()
         {
@@ -1596,6 +1597,8 @@ namespace Pixtack3rd
             //全削除
             MyRoot.RemoveAll();
         }
+
+        #region クリップボード
         private void ButtonAddFromClipboard_Click(object sender, RoutedEventArgs e)
         {//クリップボードから画像追加、"PNG"形式優先で取得
             AddImageFromClipboard();
@@ -1647,6 +1650,11 @@ namespace Pixtack3rd
                 }
             }
         }
+
+        #endregion クリップボード
+
+
+        #region 複製
         private void ButtonDuplicateImage_Click(object sender, RoutedEventArgs e)
         {
             //画像として複製、全体
@@ -1700,6 +1708,8 @@ namespace Pixtack3rd
             }
         }
 
+        #endregion 複製
+
         private void ButtonUp_Click(object sender, RoutedEventArgs e)
         {
             //前面へ移動
@@ -1751,6 +1761,10 @@ namespace Pixtack3rd
         //[DataMember] public int YShift { get => _yShift; set => SetProperty(ref _yShift, value); }
         //private int _grid;
         //[DataMember] public int Grid { get => _grid; set => SetProperty(ref _grid, value); }
+
+        //枠表示設定
+        private WakuVisibleType _wakuVisibleType = WakuVisibleType.All;
+        [DataMember] public WakuVisibleType WakuVisibleType { get => _wakuVisibleType; set => SetProperty(ref _wakuVisibleType, value); }
 
 
 
