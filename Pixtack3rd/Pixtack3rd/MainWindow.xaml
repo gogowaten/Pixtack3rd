@@ -45,8 +45,7 @@
                   x:Name="MyScrollViewer" HorizontalScrollBarVisibility="Auto"
                   VerticalScrollBarVisibility="Auto">
       <!--<local:TTTextBlock TTText="222"/>-->
-      <local:TTRoot x:Name="MyRoot" HorizontalAlignment="Left" VerticalAlignment="Top" TTGrid="8"
-                   TTVisibleBorder="Hidden">
+      <local:TTRoot x:Name="MyRoot" HorizontalAlignment="Left" VerticalAlignment="Top" TTGrid="8">
 
         <!--<local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
         <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
@@ -77,6 +76,49 @@
       </StackPanel.Resources>
       <StackPanel x:Name="MyStackPanel" d:DataContext="{d:DesignInstance Type=local:AppConfig}">
         <CheckBox Content="前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>
+        <GroupBox Header="waku">
+          <GroupBox.Resources>
+            <local:ConverterEnumToBool x:Key="waku"/>
+          </GroupBox.Resources>
+          <WrapPanel Name="MyWrap">
+            <RadioButton Content="None" IsChecked="{Binding
+              ConverterParameter={x:Static local:WakuVisibleType.None},
+              Path=WakuVisibleType,
+              Converter={StaticResource waku}}"/>
+            <RadioButton Content="All" IsChecked="{Binding
+              ConverterParameter={x:Static local:WakuVisibleType.All},
+              Path=WakuVisibleType,
+              Converter={StaticResource waku}}"/>
+            <RadioButton Content="NotGroup" IsChecked="{Binding
+              ConverterParameter={x:Static local:WakuVisibleType.NotGroup},
+              Path=WakuVisibleType,
+              Converter={StaticResource waku}}"/>
+            <RadioButton Content="OnlyActiveGroup" IsChecked="{Binding
+              ConverterParameter={x:Static local:WakuVisibleType.OnlyActiveGroup},
+              Path=WakuVisibleType,
+              Converter={StaticResource waku}}"/>
+            
+          </WrapPanel>
+          <!--<WrapPanel DataContext="{Binding ElementName=MyRoot}">
+            <RadioButton Content="None" IsChecked="{Binding
+              ConverterParameter={x:Static local:WakuVisibleType.None},
+              Path=TTWakuVisibleType,
+              Converter={StaticResource waku}}"/>
+            <RadioButton Content="All" IsChecked="{Binding
+              ConverterParameter={x:Static local:WakuVisibleType.All},
+              Path=TTWakuVisibleType,
+              Converter={StaticResource waku}}"/>
+            <RadioButton Content="NotGroup" IsChecked="{Binding
+              ConverterParameter={x:Static local:WakuVisibleType.NotGroup},
+              Path=TTWakuVisibleType,
+              Converter={StaticResource waku}}"/>
+            <RadioButton Content="OnlyActiveGroup" IsChecked="{Binding
+              ConverterParameter={x:Static local:WakuVisibleType.OnlyActiveGroup},
+              Path=TTWakuVisibleType,
+              Converter={StaticResource waku}}"/>            
+          </WrapPanel>-->
+          
+        </GroupBox>
         <ComboBox x:Name="ComboBoxSaveFileType" SelectedItem="{Binding ImageType}"/>
         <GroupBox Header="SaveImage">
           <WrapPanel>
@@ -156,6 +198,7 @@
           </Style>
         </StackPanel.Resources>
         <TextBlock Text="{Binding Thumbs.Count}"/>
+        <TextBlock Text="{Binding TTWakuVisibleType}"/>
         <TreeView ItemsSource="{Binding Data.Datas}">
           <TreeView.Resources>
             <Style TargetType="TreeViewItem">
@@ -178,7 +221,7 @@
             </HierarchicalDataTemplate>
           </TreeView.ItemTemplate>
         </TreeView>
-        
+
         <GroupBox Header="ActiveGroup" DataContext="{Binding ActiveGroup}">
           <StackPanel>
             <StackPanel Orientation="Horizontal">
@@ -261,7 +304,7 @@
             <TextBlock Text="{Binding Data.Text}"/>
           </StackPanel>
         </GroupBox>
-        
+
         <GroupBox Header="ClickedThumb" DataContext="{Binding ClickedThumb}">
           <StackPanel>
             <Grid Width="90" Height="70">
@@ -283,7 +326,7 @@
             </StackPanel>
           </StackPanel>
         </GroupBox>
-        
+
         <GroupBox Header="SelectedThumbs" DataContext="{Binding SelectedThumbs}">
           <ListBox ItemsSource="{Binding}">
             <ListBox.ItemTemplate>
