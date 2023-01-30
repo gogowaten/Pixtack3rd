@@ -38,6 +38,25 @@
             <VisualBrush Visual="{Binding ClickedThumb}" Stretch="Uniform"/>
           </Rectangle.Fill>
         </Rectangle>
+        <ListBox ItemsSource="{Binding SelectedThumbs}">
+          <ListBox.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal"/>
+            </ItemsPanelTemplate>
+          </ListBox.ItemsPanel>
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <StackPanel>
+              <Rectangle Height="20" Width="20">
+                <Rectangle.Fill>
+                  <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
+                </Rectangle.Fill>
+                </Rectangle>
+                <TextBlock Text="{Binding Data.Type}"/>
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
       </DockPanel>
     </StatusBar>
 
