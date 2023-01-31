@@ -10,7 +10,6 @@
         Title="MainWindow" Height="950" Width="800" ResizeMode="CanResizeWithGrip"
         Top="{Binding Path=Top, Mode=TwoWay}" Left="{Binding Left, Mode=TwoWay}"
         AllowDrop="True" Name="Main">
-
   <Grid Name="MyGrid" UseLayoutRounding="True" DataContext="{Binding ElementName=MyRoot}">
     <Grid.ColumnDefinitions>
       <ColumnDefinition/>
@@ -23,7 +22,16 @@
     </Grid.RowDefinitions>
     <StackPanel Grid.ColumnSpan="2">
       <Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
-        <MenuItem Header="ファイル(_F)"/>
+        <MenuItem Header="ファイル(_F)">
+          <MenuItem Header="名前をつけて すべて保存(_S)" InputGestureText="Ctro+S"/>
+          <MenuItem Header="名前をつけて 画像として保存"/>
+        </MenuItem>
+        <MenuItem Header="編集">
+          <MenuItem Header="選択Itemを全削除"/>
+        </MenuItem>
+        <MenuItem Header="">
+          
+        </MenuItem>
       </Menu>
     </StackPanel>
 
