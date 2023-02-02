@@ -113,8 +113,146 @@ namespace Pixtack3rd
             SetBinding(TTLeftProperty, nameof(data.X));
             SetBinding(TTTopProperty, nameof(data.Y));
 
+            
+            this.Focusable = true;//フォーカスできるようにする
+            //this.FocusVisualStyle = null;//フォーカス時の点線を表示しない
+
+            //カーソルキーで移動させているときに他のThumbに
+            //フォーカスを移動させないようにしたいけど
+            //これでは無理、
+            KeyboardNavigation.SetControlTabNavigation(this, KeyboardNavigationMode.None);
+            KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.None);
+            KeyboardNavigation.SetDirectionalNavigation(this, KeyboardNavigationMode.None);
+
         }
 
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+            switch (Keyboard.Modifiers)
+            {
+                case ModifierKeys.None:
+                    if (e.Source is TTRoot root)
+                    {
+                        if (e.Key == Key.Up) { root.ActiveThumbGoUpGrid(); }
+                        else if (e.Key == Key.Down) { root.ActiveThumbGoDownGrid(); }
+                        else if (e.Key == Key.Left) { root.ActiveThumbGoLeftGrid(); }
+                        else if (e.Key == Key.Right) { root.ActiveThumbGoRightGrid(); }
+
+                    }
+                    break;
+                case ModifierKeys.Alt:
+                    break;
+                case ModifierKeys.Control:
+                    break;
+                case ModifierKeys.Shift:
+                    if (e.Source is TTRoot root1)
+                    {
+                        if (e.Key == Key.Up) { root1.ActiveThumbGoUp1Pix(); }
+                        else if (e.Key == Key.Down) { root1.ActiveThumbGoDown1Pix(); }
+                        else if (e.Key == Key.Left) { root1.ActiveThumbGoLeft1Pix(); }
+                        else if (e.Key == Key.Right) { root1.ActiveThumbGoRight1Pix(); }
+                    }
+                    break;
+                case ModifierKeys.Windows:
+                    break;
+            }
+            
+        }
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            base.OnKeyUp(e);
+            switch (Keyboard.Modifiers)
+            {
+                case ModifierKeys.None:
+                    if (e.Key == Key.Up || e.Key == Key.Down || e.Key == Key.Left || e.Key == Key.Right)
+                    {
+                        if (TTParent is TTGroup parent)
+                        {
+                            parent.TTGroupUpdateLayout();
+                        }                        
+                    }
+                    break;
+                case ModifierKeys.Alt:
+                    break;
+                case ModifierKeys.Control:
+                    break;
+                case ModifierKeys.Shift:
+                    if (e.Key == Key.Up || e.Key == Key.Down || e.Key == Key.Left || e.Key == Key.Right)
+                    {
+                        if (TTParent is TTGroup parent)
+                        {
+                            parent.TTGroupUpdateLayout();
+                        }
+                    }
+                    break;
+                case ModifierKeys.Windows:
+                    break;
+            }
+        }
+        //#region XYZ移動
+        ///// <summary>
+        ///// ActiveThumbを1グリッド上へ移動
+        ///// </summary>
+        //public void ActiveThumbGoUpGrid()
+        //{
+        //    if (TTParent is TTGroup parent)
+        //    {
+        //        TTTop -= parent.TTGrid;
+        //    }
+        //}
+        //public void ActiveThumbGoDownGrid()
+        //{
+        //    if (TTParent is TTGroup parent)
+        //    {
+        //        TTTop += parent.TTGrid;
+        //    }
+        //}
+        //public void ActiveThumbGoLeftGrid()
+        //{
+        //    if (TTParent is TTGroup parent)
+        //    {
+        //        TTLeft -= parent.TTGrid;
+        //    }
+        //}
+        //public void ActiveThumbGoRightGrid()
+        //{
+        //    if (TTParent is TTGroup parent)
+        //    {
+        //        TTLeft += parent.TTGrid;
+        //    }
+        //}
+        //public void ActiveThumbGoUp1Pix()
+        //{
+        //    if (TTParent is TTGroup parent)
+        //    {
+        //        TTTop--;
+        //    }
+        //}
+        //public void ActiveThumbGoDown1Pix()
+        //{
+        //    if (TTParent is TTGroup parent)
+        //    {
+        //        TTTop++;
+        //    }
+        //}
+        //public void ActiveThumbGoLeft1Pix()
+        //{
+        //    if (TTParent is TTGroup parent)
+        //    {
+        //        TTLeft--;
+        //    }
+        //}
+        //public void ActiveThumbGoRight1Pix()
+        //{
+        //    if (TTParent is TTGroup parent)
+        //    {
+        //        TTLeft++;
+        //    }
+        //}
+
+
+        //#endregion XYZ移動
         //サイズ変更時には親要素の位置とサイズ更新
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
@@ -483,7 +621,7 @@ namespace Pixtack3rd
 
     public class TTRoot : TTGroup
     {
-        
+
         #region 通知プロパティ
         //最後にクリックしたThumb
         private TThumb? _clickedThumb;
@@ -539,7 +677,7 @@ namespace Pixtack3rd
         #endregion 通知プロパティ
 
         #region 枠表示プロパティ
-        
+
         //枠の表示設定、かなり煩雑
         //コールバックですべての要素のプロパティを変更＋自身のプロパティも変更する
         public WakuVisibleType TTWakuVisibleType
@@ -592,10 +730,10 @@ namespace Pixtack3rd
 
         public TTRoot() : base(new Data(TType.Root))
         {
-            
+
             _activeGroup ??= this;
             IsActiveGroup = true;
-            
+
             //SetBinding(TTWakuVisibleTypeProperty, new Binding(nameof(WakuVisibleType)) { Source = this });
             //起動直後に位置とサイズ更新
             //TTGroupUpdateLayout();//XAML上でThumb設置しても、この時点ではThumbsが0個
@@ -605,9 +743,12 @@ namespace Pixtack3rd
                 FixDataDatas();
             };
 
+            //Rootにはフォーカスを移動させない
+            this.Focusable = false;
+
         }
 
-    
+
         /// <summary>
         /// DataとThumbの整合性修正、XAMLに配置した場合はThumbがあるのにDataがない状態なので追加する
         /// ついでに枠表示設定も合わせる
@@ -1553,6 +1694,74 @@ namespace Pixtack3rd
         }
         #endregion 画像として取得
 
+        #region XYZ移動
+        /// <summary>
+        /// ActiveThumbを1グリッド上へ移動
+        /// </summary>
+        public void ActiveThumbGoUpGrid()
+        {
+            if (ActiveThumb is TThumb thumb && thumb.TTParent is TTGroup parent)
+            {
+                thumb.TTTop -= parent.TTGrid;
+            }
+        }
+        public void ActiveThumbGoDownGrid()
+        {
+            if (ActiveThumb is TThumb thumb && thumb.TTParent is TTGroup parent)
+            {
+                thumb.TTTop += parent.TTGrid;
+            }
+        }
+        public void ActiveThumbGoLeftGrid()
+        {
+            if (ActiveThumb is TThumb thumb && thumb.TTParent is TTGroup parent)
+            {
+                thumb.TTLeft -= parent.TTGrid;
+            }
+        }
+        public void ActiveThumbGoRightGrid()
+        {
+            if (ActiveThumb is TThumb thumb && thumb.TTParent is TTGroup parent)
+            {
+                thumb.TTLeft += parent.TTGrid;
+            }
+        }
+        public void ActiveThumbGoUp1Pix()
+        {
+            if (ActiveThumb is TThumb thumb && thumb.TTParent is TTGroup parent)
+            {
+                thumb.TTTop--;
+            }
+        }
+        public void ActiveThumbGoDown1Pix()
+        {
+            if (ActiveThumb is TThumb thumb && thumb.TTParent is TTGroup parent)
+            {
+                thumb.TTTop++;
+            }
+        }
+        public void ActiveThumbGoLeft1Pix()
+        {
+            if (ActiveThumb is TThumb thumb && thumb.TTParent is TTGroup parent)
+            {
+                thumb.TTLeft--;
+            }
+        }
+        public void ActiveThumbGoRight1Pix()
+        {
+            if (ActiveThumb is TThumb thumb && thumb.TTParent is TTGroup parent)
+            {
+                thumb.TTLeft++;
+            }
+        }
+
+
+        #endregion XYZ移動
+
+        #region ショートカットキー
+
+        #endregion ショートカットキー
+
     }
 
 
@@ -1762,6 +1971,6 @@ namespace Pixtack3rd
         }
     }
 
- 
+
 
 }

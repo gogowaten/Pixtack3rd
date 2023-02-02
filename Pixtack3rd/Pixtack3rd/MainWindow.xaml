@@ -10,10 +10,12 @@
         Title="MainWindow" Height="950" Width="800" ResizeMode="CanResizeWithGrip"
         Top="{Binding Path=Top, Mode=TwoWay}" Left="{Binding Left, Mode=TwoWay}"
         AllowDrop="True" Name="Main">
-  <Window.InputBindings>
-
-  </Window.InputBindings>
-
+  <!--<Window.Resources>
+    <Style x:Key="FocusDisable" TargetType="{x:Type Button}">
+      <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+    </Style>
+  </Window.Resources>-->
+  
   <Grid Name="MyGrid" UseLayoutRounding="True">
     <Grid.ColumnDefinitions>
       <ColumnDefinition/>
@@ -26,25 +28,94 @@
     </Grid.RowDefinitions>
 
     <StackPanel Grid.ColumnSpan="2">
-      <Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+      <!--Thumbをカーソルキーで移動中にメニューバーへフォーカスを移動させないためにTabNavigation設定
+      とくにカーソルキーで移動させないDirectionNavigationが重要-->
+      <!--WPFでのメニューとキーボード操作時のフォーカス移動の話 - プログラム系統備忘録ブログ
+https://tan.hatenadiary.jp/entry/20151115/1447574474-->
+
+      <Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+        KeyboardNavigation.TabNavigation="Cycle"
+        KeyboardNavigation.ControlTabNavigation="None"
+            KeyboardNavigation.DirectionalNavigation="None">
         <MenuItem Header="ファイル(_F)">
-          <MenuItem Header="画像として名前をつけて保存(_I)"/>
-          <MenuItem Header="画像として名前をつけて保存(_J)">
+          <MenuItem Header="画像として名前をつけて保存">
+            <MenuItem Header="Root"/>
             <MenuItem Header="ActiveThumb"/>
             <MenuItem Header="ClickedThumb"/>
           </MenuItem>
-          <MenuItem Header="名前をつけて すべて保存(_S)" Click="ButtonSaveAllData_Click"
-                    InputGestureText="Ctrl+S">
+          <MenuItem Header="Dataとして名前をつけて保存(_S)">
+            <MenuItem Header="編集状態保存(Root＆アプリ設定)" Click="ButtonSaveAllData_Click"/>
+            <MenuItem Header="編集状態保存(Root)"/>
+            <MenuItem Header="ActiveThumb"/>
+            <MenuItem Header="ClickedThumb"/>
           </MenuItem>
-          <MenuItem Header="名前をつけて 画像として保存"/>
+          <MenuItem Header="Dataファイルを開く">
+            <MenuItem Header="Root＆アプリ設定"/>
+            <MenuItem Header="Root"/>
+            <MenuItem Header="RootをGroupとして追加"/>
+            <MenuItem Header="ThumbData"/>
+          </MenuItem>
+          <MenuItem Header="編集状態保存(上書き)" InputGestureText="Ctrl+S"/>
+          <MenuItem Header="編集状態読み込み"/>
         </MenuItem>
+
         <MenuItem Header="編集">
-          <MenuItem Header="選択Itemを全削除"/>
+          <MenuItem Header="クリップボードから貼り付け" InputGestureText="Ctrl+V"/>
+          <MenuItem Header="クリップボードから貼り付け">
+            <MenuItem Header="Bgr32に変換して貼り付け" ToolTip="完全不透明(アルファ値255)"/>
+            <MenuItem Header="Png形式を優先して貼り付け" ToolTip="エクセルのグラフやテキストボックス用"/>
+          </MenuItem>
+          <MenuItem Header="画像としてコピー">
+            <MenuItem Header="Root" InputGestureText="Ctrl+Shift+C"/>
+            <MenuItem Header="ActiveThumb" InputGestureText="Ctrl+C"/>
+            <MenuItem Header="ClickedThumb" InputGestureText="Ctrl+Alt+C"/>
+          </MenuItem>
+          <MenuItem Header="画像としてコピペ(複製)">
+            <MenuItem Header="Root"/>
+            <MenuItem Header="ActiveThumb"/>
+            <MenuItem Header="ClickedThumb"/>
+          </MenuItem>
+          <MenuItem Header="Dataとしてコピペ(複製)">
+            <MenuItem Header="Root"/>
+            <MenuItem Header="ActiveThumb" InputGestureText="Ctrl+D"/>
+            <MenuItem Header="ClickedThumb"/>
+          </MenuItem>
+
+          <MenuItem Header="グループ化" ToolTip="選択Thumbsをグループ化"/>
+          <MenuItem Header="グループ解除" ToolTip="ActiveThumbをグループ解除"/>
+
+          <MenuItem Header="選択Thumbsを全削除" InputGestureText="F4"/>
+          <MenuItem Header="全Thumb削除"/>
         </MenuItem>
-        <MenuItem Header="">
+
+        <MenuItem Header="移動">
+          <MenuItem Header="ActiveGroup切り替え">
+            <MenuItem Header="In(ActiveThumbをActiveGroupにする)"/>
+            <MenuItem Header="Out(親GroupをActiveGroupにする)"/>
+          </MenuItem>
+          <MenuItem Header="Z軸">
+            <MenuItem Header="前面へ移動" Click="ButtonUp_Click"/>
+            <MenuItem Header="最前面へ移動" Click="ButtonMostUp_Click"/>
+            <MenuItem Header="背面へ移動" Click="ButtonDown_Click"/>
+            <MenuItem Header="最背面へ移動" Click="ButtonMostDown_Click"/>
+          </MenuItem>
+          <MenuItem Header="XY軸1ピクセル">
+            <MenuItem Header="上へ移動" Click="Button1Up_Click"/>
+            <MenuItem Header="下へ移動" Click="Button1Down_Click"/>
+            <MenuItem Header="左へ移動" Click="Button1Left_Click"/>
+            <MenuItem Header="右へ移動" Click="Button1Right_Click"/>
+          </MenuItem>
+          <MenuItem Header="XY軸1Grid">
+            <MenuItem Header="上へ移動" Click="ButtonGoUpGrid_Click"/>
+            <MenuItem Header="下へ移動" Click="ButtonGoDownGrid_Click"/>
+            <MenuItem Header="左へ移動" Click="ButtonGoLeftGrid_Click"/>
+            <MenuItem Header="右へ移動" Click="ButtonGoRightGrid_Click"/>
+          </MenuItem>
+        </MenuItem>
+
+        <MenuItem Header="その他">
 
         </MenuItem>
-
 
       </Menu>
     </StackPanel>
@@ -207,7 +278,7 @@
               <Button x:Name="ButtonRemove" Content="選択Thumb削除" Click="ButtonRemove_Click"/>
               <Button x:Name="ButtonRemoveAll" Content="全削除" Click="ButtonRemoveAll_Click"/>
             </UniformGrid>
-            <GroupBox Header="上下(Z軸)移動、対象はActiveThumb">
+            <GroupBox Header="奥行き(Z軸)移動、対象はActiveThumb">
               <UniformGrid Rows="1">
                 <Button x:Name="ButtonUp" Content="前面" Click="ButtonUp_Click"/>
                 <Button x:Name="ButtonDown" Content="背面" Click="ButtonDown_Click"/>
@@ -215,6 +286,23 @@
                 <Button x:Name="ButtonMostDown" Content="最背面" Click="ButtonMostDown_Click"/>
               </UniformGrid>
             </GroupBox>
+            <GroupBox Header="グリッドスナップ移動、対象はActiveThumb">
+              <UniformGrid Rows="1">
+                <Button x:Name="ButtonGoUpGrid" Content="上" Click="ButtonGoUpGrid_Click"/>
+                <Button x:Name="ButtonGoDownGrid" Content="下" Click="ButtonGoDownGrid_Click"/>
+                <Button x:Name="ButtonGoLeftGrid" Content="左" Click="ButtonGoLeftGrid_Click"/>
+                <Button x:Name="ButtonGoRightGrid" Content="右" Click="ButtonGoRightGrid_Click"/>
+              </UniformGrid>
+            </GroupBox>
+            <GroupBox Header="1ピクセル移動、対象はActiveThumb">
+              <UniformGrid Rows="1">
+                <RepeatButton x:Name="Button1Up" Content="上" Click="Button1Up_Click"/>
+                <RepeatButton x:Name="Button1Down" Content="下" Click="Button1Down_Click"/>
+                <RepeatButton x:Name="Button1Left" Content="左" Click="Button1Left_Click"/>
+                <RepeatButton x:Name="Button1Right" Content="右" Click="Button1Right_Click"/>
+              </UniformGrid>
+            </GroupBox>
+            
           </StackPanel>
         </StackPanel>
       </TabItem>
@@ -294,7 +382,7 @@
           <GroupBox Header="ActiveThumb" DataContext="{Binding ActiveThumb}">
             <StackPanel>
               <Canvas Width="250" Height="160" HorizontalAlignment="Left">
-                <Grid Width="90" Height="70" Canvas.Left="160" Canvas.Top="90">
+                <Grid Width="90" Height="70" Canvas.Left="0" Canvas.Top="90">
                   <Border Background="White" BorderBrush="Gray" BorderThickness="1">
                     <Rectangle Width="80" Height="60"
                          DataContext="{Binding ElementName=MyRoot}">
