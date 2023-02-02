@@ -31,6 +31,7 @@ namespace Pixtack3rd
     /// </summary>
     public partial class MainWindow : Window
     {
+
         public AppConfig MyAppConfig { get; set; }
         //アプリ情報
         private const string APP_NAME = "Pixtack3rd";
@@ -41,6 +42,8 @@ namespace Pixtack3rd
 
         private const string EXTENSION_FILTER_P3 = "Pixtace3 設定＆全Data|*" + APP_EXTENSION_NAME;
         private const string EXTENSION_FILTER_P3D = "Pixtack3 アイテムData|*" + DATA_EXTENSION_NAME;
+        private string CurrentFilePath = string.Empty;//読み込んでいるデータファイルのフルパス、上書き保存対象
+
         private string AppVersion;
         //datetime.tostringの書式、これを既定値にする
         private const string DATE_TIME_STRING_FORMAT = "yyyyMMdd'_'HHmmss'_'fff";
@@ -52,13 +55,13 @@ namespace Pixtack3rd
         {
             InitializeComponent();
             MyAppConfig = GetAppConfig(APP_CONFIG_FILE_NAME);
-            //DataContext = MyAppConfig;
-            MyStackPanel.DataContext = MyAppConfig;
-            MyWrap.DataContext = MyAppConfig;
+            DataContext = MyAppConfig;
+            //MyStackPanel.DataContext = MyAppConfig;
+            //MyWrap.DataContext = MyAppConfig;
+            //MyTab1App.DataContext = MyAppConfig;
 
             AppVersion = GetAppVersion();
             MyInitialize();
-
 
             MyInitializeComboBox();
 
@@ -127,17 +130,51 @@ namespace Pixtack3rd
             MyAppConfig = FixAppWindowLocate(MyAppConfig);
             //タイトルをアプリの名前 + バージョン
             this.Title = APP_NAME + AppVersion;
-            //前回終了時のData読み込み
             if (MyAppConfig.IsLoadPreviewData)
             {
-                var (data, appConfig) = LoadDataFromFile(System.IO.Path.Combine(Environment.CurrentDirectory, APP_ROOT_DATA_FILENAME));
-                if (data != null)
-                {
-                    MyRoot.SetRootData(data);
-                }
+                LoadPreviousData();//前回終了時のデータ読み込み
             }
             MyRoot.SetBinding(TTRoot.TTWakuVisibleTypeProperty, new Binding(nameof(MyAppConfig.WakuVisibleType)) { Source = this.MyAppConfig });
+
+            this.PreviewKeyDown += MainWindow_PreviewKeyDown;
         }
+        /// <summary>
+        /// 前回終了時のRootデータ読み込みしてセット
+        /// <paramref name="withAppconfigSet">AppConfigもセットするときはtrue</paramref>
+        /// </summary>
+        private void LoadPreviousData(bool withAppconfigSet=false)
+        {
+            var (data, appConfig) = LoadDataFromFile(System.IO.Path.Combine(Environment.CurrentDirectory, APP_ROOT_DATA_FILENAME));
+            if (data != null)
+            {
+                MyRoot.SetRootData(data);
+            }
+            if(appConfig!=null&& withAppconfigSet)
+            {
+                MyAppConfig = appConfig;
+                DataContext = MyAppConfig;
+            }
+        }
+
+        private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            switch (Keyboard.Modifiers)
+            {
+                case ModifierKeys.None:
+                    break;
+                case ModifierKeys.Alt:
+                    break;
+                case ModifierKeys.Control:
+                    if (e.Key == Key.S) { SaveAll(); }
+                    break;
+                case ModifierKeys.Shift:
+                    break;
+                case ModifierKeys.Windows:
+                    break;
+            }
+
+        }
+
         private void MyInitializeComboBox()
         {
             ComboBoxSaveFileType.ItemsSource = Enum.GetValues(typeof(ImageType));
@@ -1097,7 +1134,11 @@ namespace Pixtack3rd
                 }
             }
         }
-
+        //前回終了時のデータ読み込み
+        private void ButtonLoadDataPrevious_Click(object sender, RoutedEventArgs e)
+        {
+            LoadPreviousData(true);
+        }
         //dataファイルの読み込み
         //TTRootのDataとアプリの設定を取得して設定
         private void ButtonLoadData_Click(object sender, RoutedEventArgs e)
@@ -1528,13 +1569,16 @@ namespace Pixtack3rd
         }
         private void ButtonSaveAllData_Click(object sender, RoutedEventArgs e)
         {
+            SaveAll();
+        }
+        private void SaveAll()
+        {
             if (MyRoot.Thumbs.Count == 0) { return; }
             if (GetSaveDataFilePath(EXTENSION_FILTER_P3) is string path)
             {
                 SaveDataToAz3(path, MyRoot.Data, true);
             }
         }
-
         private void ButtonSaveRootThumb_Click(object sender, RoutedEventArgs e)
         {
             if (MyRoot.Thumbs.Count == 0) { return; }
@@ -1737,8 +1781,8 @@ namespace Pixtack3rd
 
 
 
-        #endregion ボタンクリックイベント
 
+        #endregion ボタンクリックイベント
 
     }
 
@@ -1894,13 +1938,13 @@ namespace Pixtack3rd
         [OnDeserialized]
         void OnDeserialized(System.Runtime.Serialization.StreamingContext c)
         {
-            if (DirList == null) DirList = new();
-            if (FileNameDateFormatList == null) FileNameDateFormatList = new();
-            if (FileNameText1List == null) FileNameText1List = new();
-            if (FileNameText2List == null) FileNameText2List = new();
-            if (FileNameText3List == null) FileNameText3List = new();
-            if (FileNameText4List == null) FileNameText4List = new();
-            if (SoundFilePathList == null) SoundFilePathList = new();
+            DirList ??= new();
+            FileNameDateFormatList ??= new();
+            FileNameText1List ??= new();
+            FileNameText2List ??= new();
+            FileNameText3List ??= new();
+            FileNameText4List ??= new();
+            SoundFilePathList ??= new();
         }
     }
 

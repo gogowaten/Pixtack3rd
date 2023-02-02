@@ -10,7 +10,11 @@
         Title="MainWindow" Height="950" Width="800" ResizeMode="CanResizeWithGrip"
         Top="{Binding Path=Top, Mode=TwoWay}" Left="{Binding Left, Mode=TwoWay}"
         AllowDrop="True" Name="Main">
-  <Grid Name="MyGrid" UseLayoutRounding="True" DataContext="{Binding ElementName=MyRoot}">
+  <Window.InputBindings>
+
+  </Window.InputBindings>
+
+  <Grid Name="MyGrid" UseLayoutRounding="True">
     <Grid.ColumnDefinitions>
       <ColumnDefinition/>
       <ColumnDefinition Width="260"/>
@@ -20,18 +24,28 @@
       <RowDefinition/>
       <RowDefinition Height="auto"/>
     </Grid.RowDefinitions>
+
     <StackPanel Grid.ColumnSpan="2">
       <Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
         <MenuItem Header="ファイル(_F)">
-          <MenuItem Header="名前をつけて すべて保存(_S)" InputGestureText="Ctro+S"/>
+          <MenuItem Header="画像として名前をつけて保存(_I)"/>
+          <MenuItem Header="画像として名前をつけて保存(_J)">
+            <MenuItem Header="ActiveThumb"/>
+            <MenuItem Header="ClickedThumb"/>
+          </MenuItem>
+          <MenuItem Header="名前をつけて すべて保存(_S)" Click="ButtonSaveAllData_Click"
+                    InputGestureText="Ctrl+S">
+          </MenuItem>
           <MenuItem Header="名前をつけて 画像として保存"/>
         </MenuItem>
         <MenuItem Header="編集">
           <MenuItem Header="選択Itemを全削除"/>
         </MenuItem>
         <MenuItem Header="">
-          
+
         </MenuItem>
+
+
       </Menu>
     </StackPanel>
 
@@ -55,10 +69,10 @@
           <ListBox.ItemTemplate>
             <DataTemplate>
               <StackPanel>
-              <Rectangle Height="20" Width="20">
-                <Rectangle.Fill>
-                  <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
-                </Rectangle.Fill>
+                <Rectangle Height="20" Width="20">
+                  <Rectangle.Fill>
+                    <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
+                  </Rectangle.Fill>
                 </Rectangle>
                 <TextBlock Text="{Binding Data.Type}"/>
               </StackPanel>
@@ -72,7 +86,8 @@
                   x:Name="MyScrollViewer" HorizontalScrollBarVisibility="Auto"
                   VerticalScrollBarVisibility="Auto">
       <!--<local:TTTextBlock TTText="222"/>-->
-      <local:TTRoot x:Name="MyRoot" HorizontalAlignment="Left" VerticalAlignment="Top" TTGrid="8">
+      <local:TTRoot x:Name="MyRoot"
+                    HorizontalAlignment="Left" VerticalAlignment="Top" TTGrid="8">
 
         <!--<local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
         <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
@@ -95,282 +110,274 @@
       </local:TTRoot>
     </ScrollViewer>
 
-    <StackPanel Grid.Row="1" Grid.Column="1">
-      <StackPanel.Resources>
-        <Style TargetType="Button">
-          <Setter Property="Margin" Value="4,0,4,0"/>
-        </Style>
-      </StackPanel.Resources>
-      <StackPanel x:Name="MyStackPanel" d:DataContext="{d:DesignInstance Type=local:AppConfig}">
-        <CheckBox Content="前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>
-        <GroupBox Header="waku">
-          <GroupBox.Resources>
-            <local:ConverterEnumToBool x:Key="waku"/>
-          </GroupBox.Resources>
-          <WrapPanel Name="MyWrap">
-            <RadioButton Content="None" IsChecked="{Binding
-              ConverterParameter={x:Static local:WakuVisibleType.None},
-              Path=WakuVisibleType,
-              Converter={StaticResource waku}}"/>
-            <RadioButton Content="All" IsChecked="{Binding
-              ConverterParameter={x:Static local:WakuVisibleType.All},
-              Path=WakuVisibleType,
-              Converter={StaticResource waku}}"/>
-            <RadioButton Content="NotGroup" IsChecked="{Binding
-              ConverterParameter={x:Static local:WakuVisibleType.NotGroup},
-              Path=WakuVisibleType,
-              Converter={StaticResource waku}}"/>
-            <RadioButton Content="OnlyActiveGroup" IsChecked="{Binding
-              ConverterParameter={x:Static local:WakuVisibleType.OnlyActiveGroup},
-              Path=WakuVisibleType,
-              Converter={StaticResource waku}}"/>
-            
-          </WrapPanel>
-          <!--<WrapPanel DataContext="{Binding ElementName=MyRoot}">
-            <RadioButton Content="None" IsChecked="{Binding
-              ConverterParameter={x:Static local:WakuVisibleType.None},
-              Path=TTWakuVisibleType,
-              Converter={StaticResource waku}}"/>
-            <RadioButton Content="All" IsChecked="{Binding
-              ConverterParameter={x:Static local:WakuVisibleType.All},
-              Path=TTWakuVisibleType,
-              Converter={StaticResource waku}}"/>
-            <RadioButton Content="NotGroup" IsChecked="{Binding
-              ConverterParameter={x:Static local:WakuVisibleType.NotGroup},
-              Path=TTWakuVisibleType,
-              Converter={StaticResource waku}}"/>
-            <RadioButton Content="OnlyActiveGroup" IsChecked="{Binding
-              ConverterParameter={x:Static local:WakuVisibleType.OnlyActiveGroup},
-              Path=TTWakuVisibleType,
-              Converter={StaticResource waku}}"/>            
-          </WrapPanel>-->
-          
-        </GroupBox>
-        <ComboBox x:Name="ComboBoxSaveFileType" SelectedItem="{Binding ImageType}"/>
-        <GroupBox Header="SaveImage">
-          <WrapPanel>
-            <Button x:Name="ButtonSaveToImage" Content="Root" Click="ButtonSaveToImage_Click"/>
-            <Button x:Name="ButtonSaveToImageActive" Content="ActiveThumb" Click="ButtonSaveToImageActive_Click"/>
-            <Button x:Name="ButtonSaveToImageClicked" Content="Clicked" Click="ButtonSaveToImageClicked_Click"/>
-          </WrapPanel>
-        </GroupBox>
-        <GroupBox Header="SaveData">
-          <WrapPanel>
-            <Button x:Name="ButtonSaveAllData" Content="アプリ設+Root" Click="ButtonSaveAllData_Click"/>
-            <Button x:Name="ButtonSaveRootThumb" Content="Root" Click="ButtonSaveRootThumb_Click"/>
-            <Button x:Name="ButtonSaveActiveThumb" Content="Active" Click="ButtonSaveActiveThumb_Click"/>
-            <Button x:Name="ButtonSaveCickedThumb" Content="Clicked" Click="ButtonSaveCickedThumb_Click"/>
-          </WrapPanel>
-        </GroupBox>
-        <GroupBox Header="LoadDataデータ読み込み">
-          <WrapPanel>
-            <Button x:Name="ButtonLoadData" Content="全体" Click="ButtonLoadData_Click"/>
-            <Button x:Name="ButtonLoadDataThumb" Content="個別" Click="ButtonLoadDataThumb_Click"/>
-            <Button x:Name="ButtonLoadDataRootToGroup" Content="Rootをグループとして追加" Click="ButtonLoadDataRootToGroup_Click"/>
-          </WrapPanel>
-        </GroupBox>
-        <GroupBox Header="クリップボードから画像貼り付け">
-          <UniformGrid Rows="1">
-            <Button x:Name="ButtonAddFromClipboard" Content="通常" Click="ButtonAddFromClipboard_Click"/>
-            <Button x:Name="ButtonAddFromClipboardBgr32" Content="Bgr32" Click="ButtonAddFromClipboardBgr32_Click"/>
-            <Button x:Name="ButtonAddFromClipboardPNG" Content="png" Click="ButtonAddFromClipboardPNG_Click"/>
-            <!--<Button x:Name="ButtonAddFromClipboardPNGBgr32" Content="pngBgr32" Click="ButtonAddFromClipboardPNGBgr32_Click"/>-->
-          </UniformGrid>
-        </GroupBox>
-        <GroupBox Header="画像としてコピー">
-          <UniformGrid Rows="1">
-            <Button x:Name="ButtonCopyImage" Content="全体" Click="ButtonCopyImage_Click"/>
-            <Button x:Name="ButtonCopyImageActiveThumb" Content="Active" Click="ButtonCopyImageActiveThumb_Click"/>
-            <Button x:Name="ButtonCopyImageClicedThumb" Content="Clicked" Click="ButtonCopyImageClicedThumb_Click"/>
-          </UniformGrid>
-        </GroupBox>
-        <GroupBox Header="画像としてコピペ(複製)">
-          <UniformGrid Rows="1">
-            <Button x:Name="ButtonDuplicateImage" Content="全体" Click="ButtonDuplicateImage_Click"/>
-            <Button x:Name="ButtpmDuplicateImageActiveThumb" Content="Active" Click="ButtpmDuplicateImageActiveThumb_Click"/>
-            <Button x:Name="ButtonDuplicateImageClickedThumb" Content="Clicked" Click="ButtonDuplicateImageClickedThumb_Click"/>
-          </UniformGrid>
-        </GroupBox>
-        <GroupBox Header="Dataとしてコピペ(複製)">
-          <UniformGrid Rows="1">
-            <Button x:Name="ButtonDuplicateData" Content="全体" Click="ButtonDuplicateData_Click"/>
-            <Button x:Name="ButtpmDuplicateDataActiveThumb" Content="Active" Click="ButtpmDuplicateDataActiveThumb_Click"/>
-            <Button x:Name="ButtonDuplicateDataClickedThumb" Content="Clicked" Click="ButtonDuplicateDataClickedThumb_Click"/>
-          </UniformGrid>
-        </GroupBox>
-        <UniformGrid Rows="3" Columns="2">
-          <Button x:Name="ButtonToGroup" Content="グループ化" Click="ButtonToGroup_Click"/>
-          <Button x:Name="ButtonUnGroup" Content="グループ解除" Click="ButtonUnGroup_Click"/>
-          <Button x:Name="ButtonIn" Content="In" Click="ButtonIn_Click"/>
-          <Button x:Name="ButtonOut" Content="Out" Click="ButtonOut_Click"/>
-          <Button x:Name="ButtonRemove" Content="選択Thumb削除" Click="ButtonRemove_Click"/>
-          <Button x:Name="ButtonRemoveAll" Content="全削除" Click="ButtonRemoveAll_Click"/>
-        </UniformGrid>
-        <GroupBox Header="上下(Z軸)移動、対象はActiveThumb">
-          <UniformGrid Rows="1">
-            <Button x:Name="ButtonUp" Content="前面" Click="ButtonUp_Click"/>
-            <Button x:Name="ButtonDown" Content="背面" Click="ButtonDown_Click"/>
-            <Button x:Name="ButtonMostUp" Content="最前面" Click="ButtonMostUp_Click"/>
-            <Button x:Name="ButtonMostDown" Content="最背面" Click="ButtonMostDown_Click"/>
-          </UniformGrid>
-        </GroupBox>
-      </StackPanel>
-      <StackPanel>
-        <StackPanel.Resources>
-          <Style TargetType="TextBlock">
-            <Setter Property="Margin" Value="2,1,4,1"/>
-          </Style>
-          <Style TargetType="tomato:NumericUpDown">
-            <Setter Property="Margin" Value="2,1,4,4"/>
-          </Style>
-        </StackPanel.Resources>
-        <TextBlock Text="{Binding Thumbs.Count}"/>
-        <TextBlock Text="{Binding TTWakuVisibleType}"/>
-        <TreeView ItemsSource="{Binding Data.Datas}">
-          <TreeView.Resources>
-            <Style TargetType="TreeViewItem">
-              <Setter Property="VerticalContentAlignment" Value="Center"/>
-              <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            </Style>
-          </TreeView.Resources>
-          <TreeView.ItemContainerStyle>
-            <Style TargetType="TreeViewItem">
-              <Setter Property="VerticalContentAlignment" Value="Center"/>
-              <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            </Style>
-          </TreeView.ItemContainerStyle>
-          <TreeView.ItemTemplate>
-            <HierarchicalDataTemplate DataType="{x:Type local:Data}" ItemsSource="{Binding Datas}">
-              <StackPanel Orientation="Horizontal">
-                <Image Source="{Binding BitmapSource}" Width="20" Height="20"/>
-                <TextBlock Text="{Binding Type}"/>
-              </StackPanel>
-            </HierarchicalDataTemplate>
-          </TreeView.ItemTemplate>
-        </TreeView>
+    <TabControl Grid.Row="1" Grid.Column="1" TabStripPlacement="Top">
 
-        <GroupBox Header="ActiveGroup" DataContext="{Binding ActiveGroup}">
-          <StackPanel>
-            <StackPanel Orientation="Horizontal">
-              <Grid Width="140" Height="110">
-                <Border Background="White" BorderBrush="Gray" BorderThickness="1">
-                  <Rectangle>
-                    <Rectangle.Fill>
-                      <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
-                    </Rectangle.Fill>
-                  </Rectangle>
-                </Border>
-              </Grid>
-              <WrapPanel Width="100">
-                <tomato:NumericUpDown BorderBrush="DodgerBlue"
+      <TabItem x:Name="MyTab1App" Header="test1">
+        <StackPanel>
+          <StackPanel.Resources>
+            <Style TargetType="Button">
+              <Setter Property="Margin" Value="4,0,4,0"/>
+            </Style>
+          </StackPanel.Resources>
+
+          <StackPanel x:Name="MyStackPanel">
+            <CheckBox Content="起動時に前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>
+            <GroupBox Header="waku">
+              <GroupBox.Resources>
+                <local:ConverterEnumToBool x:Key="waku"/>
+              </GroupBox.Resources>
+              <WrapPanel Name="MyWrap">
+                <RadioButton Content="None" IsChecked="{Binding
+              ConverterParameter={x:Static local:WakuVisibleType.None},
+              Path=WakuVisibleType,
+              Converter={StaticResource waku}}"/>
+                <RadioButton Content="All" IsChecked="{Binding
+              ConverterParameter={x:Static local:WakuVisibleType.All},
+              Path=WakuVisibleType,
+              Converter={StaticResource waku}}"/>
+                <RadioButton Content="NotGroup" IsChecked="{Binding
+              ConverterParameter={x:Static local:WakuVisibleType.NotGroup},
+              Path=WakuVisibleType,
+              Converter={StaticResource waku}}"/>
+                <RadioButton Content="OnlyActiveGroup" IsChecked="{Binding
+              ConverterParameter={x:Static local:WakuVisibleType.OnlyActiveGroup},
+              Path=WakuVisibleType,
+              Converter={StaticResource waku}}"/>
+
+              </WrapPanel>
+            </GroupBox>
+            <ComboBox x:Name="ComboBoxSaveFileType" SelectedItem="{Binding ImageType}"/>
+            <GroupBox Header="SaveImage">
+              <WrapPanel>
+                <Button x:Name="ButtonSaveToImage" Content="Root" Click="ButtonSaveToImage_Click"/>
+                <Button x:Name="ButtonSaveToImageActive" Content="ActiveThumb" Click="ButtonSaveToImageActive_Click"/>
+                <Button x:Name="ButtonSaveToImageClicked" Content="Clicked" Click="ButtonSaveToImageClicked_Click"/>
+              </WrapPanel>
+            </GroupBox>
+            <GroupBox Header="SaveData">
+              <WrapPanel>
+                <Button x:Name="ButtonSaveAllData" Content="アプリ設+Root" Click="ButtonSaveAllData_Click"/>
+                <Button x:Name="ButtonSaveRootThumb" Content="Root" Click="ButtonSaveRootThumb_Click"/>
+                <Button x:Name="ButtonSaveActiveThumb" Content="Active" Click="ButtonSaveActiveThumb_Click"/>
+                <Button x:Name="ButtonSaveCickedThumb" Content="Clicked" Click="ButtonSaveCickedThumb_Click"/>
+              </WrapPanel>
+            </GroupBox>
+            <GroupBox Header="LoadDataデータ読み込み">
+              <WrapPanel>
+                <Button x:Name="ButtonLoadDataPrevious" Content="前回" Click="ButtonLoadDataPrevious_Click"/>
+                <Button x:Name="ButtonLoadData" Content="全体" Click="ButtonLoadData_Click"/>
+                <Button x:Name="ButtonLoadDataThumb" Content="個別" Click="ButtonLoadDataThumb_Click"/>
+                <Button x:Name="ButtonLoadDataRootToGroup" Content="Rootをグループとして追加" Click="ButtonLoadDataRootToGroup_Click"/>
+              </WrapPanel>
+            </GroupBox>
+            <GroupBox Header="クリップボードから画像貼り付け">
+              <UniformGrid Rows="1">
+                <Button x:Name="ButtonAddFromClipboard" Content="通常" Click="ButtonAddFromClipboard_Click"/>
+                <Button x:Name="ButtonAddFromClipboardBgr32" Content="Bgr32" Click="ButtonAddFromClipboardBgr32_Click"/>
+                <Button x:Name="ButtonAddFromClipboardPNG" Content="png" Click="ButtonAddFromClipboardPNG_Click"/>
+                <!--<Button x:Name="ButtonAddFromClipboardPNGBgr32" Content="pngBgr32" Click="ButtonAddFromClipboardPNGBgr32_Click"/>-->
+              </UniformGrid>
+            </GroupBox>
+            <GroupBox Header="画像としてコピー">
+              <UniformGrid Rows="1">
+                <Button x:Name="ButtonCopyImage" Content="全体" Click="ButtonCopyImage_Click"/>
+                <Button x:Name="ButtonCopyImageActiveThumb" Content="Active" Click="ButtonCopyImageActiveThumb_Click"/>
+                <Button x:Name="ButtonCopyImageClicedThumb" Content="Clicked" Click="ButtonCopyImageClicedThumb_Click"/>
+              </UniformGrid>
+            </GroupBox>
+            <GroupBox Header="画像としてコピペ(複製)">
+              <UniformGrid Rows="1">
+                <Button x:Name="ButtonDuplicateImage" Content="全体" Click="ButtonDuplicateImage_Click"/>
+                <Button x:Name="ButtpmDuplicateImageActiveThumb" Content="Active" Click="ButtpmDuplicateImageActiveThumb_Click"/>
+                <Button x:Name="ButtonDuplicateImageClickedThumb" Content="Clicked" Click="ButtonDuplicateImageClickedThumb_Click"/>
+              </UniformGrid>
+            </GroupBox>
+            <GroupBox Header="Dataとしてコピペ(複製)">
+              <UniformGrid Rows="1">
+                <Button x:Name="ButtonDuplicateData" Content="全体" Click="ButtonDuplicateData_Click"/>
+                <Button x:Name="ButtpmDuplicateDataActiveThumb" Content="Active" Click="ButtpmDuplicateDataActiveThumb_Click"/>
+                <Button x:Name="ButtonDuplicateDataClickedThumb" Content="Clicked" Click="ButtonDuplicateDataClickedThumb_Click"/>
+              </UniformGrid>
+            </GroupBox>
+            <UniformGrid Rows="3" Columns="2">
+              <Button x:Name="ButtonToGroup" Content="グループ化" Click="ButtonToGroup_Click"/>
+              <Button x:Name="ButtonUnGroup" Content="グループ解除" Click="ButtonUnGroup_Click"/>
+              <Button x:Name="ButtonIn" Content="In" Click="ButtonIn_Click"/>
+              <Button x:Name="ButtonOut" Content="Out" Click="ButtonOut_Click"/>
+              <Button x:Name="ButtonRemove" Content="選択Thumb削除" Click="ButtonRemove_Click"/>
+              <Button x:Name="ButtonRemoveAll" Content="全削除" Click="ButtonRemoveAll_Click"/>
+            </UniformGrid>
+            <GroupBox Header="上下(Z軸)移動、対象はActiveThumb">
+              <UniformGrid Rows="1">
+                <Button x:Name="ButtonUp" Content="前面" Click="ButtonUp_Click"/>
+                <Button x:Name="ButtonDown" Content="背面" Click="ButtonDown_Click"/>
+                <Button x:Name="ButtonMostUp" Content="最前面" Click="ButtonMostUp_Click"/>
+                <Button x:Name="ButtonMostDown" Content="最背面" Click="ButtonMostDown_Click"/>
+              </UniformGrid>
+            </GroupBox>
+          </StackPanel>
+        </StackPanel>
+      </TabItem>
+
+      <TabItem Header="test2" DataContext="{Binding ElementName=MyRoot}">
+        <StackPanel>
+          <StackPanel.Resources>
+            <Style TargetType="TextBlock">
+              <Setter Property="Margin" Value="2,1,4,1"/>
+            </Style>
+            <Style TargetType="tomato:NumericUpDown">
+              <Setter Property="Margin" Value="2,1,4,4"/>
+            </Style>
+          </StackPanel.Resources>
+          <TextBlock Text="{Binding Thumbs.Count}"/>
+          <TextBlock Text="{Binding TTWakuVisibleType}"/>
+          <TreeView ItemsSource="{Binding Data.Datas}">
+            <TreeView.Resources>
+              <Style TargetType="TreeViewItem">
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+              </Style>
+            </TreeView.Resources>
+            <TreeView.ItemContainerStyle>
+              <Style TargetType="TreeViewItem">
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+              </Style>
+            </TreeView.ItemContainerStyle>
+            <TreeView.ItemTemplate>
+              <HierarchicalDataTemplate DataType="{x:Type local:Data}" ItemsSource="{Binding Datas}">
+                <StackPanel Orientation="Horizontal">
+                  <Image Source="{Binding BitmapSource}" Width="20" Height="20"/>
+                  <TextBlock Text="{Binding Type}"/>
+                </StackPanel>
+              </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+          </TreeView>
+
+          <GroupBox Header="ActiveGroup" DataContext="{Binding ActiveGroup}">
+            <StackPanel>
+              <StackPanel Orientation="Horizontal">
+                <Grid Width="140" Height="110">
+                  <Border Background="White" BorderBrush="Gray" BorderThickness="1">
+                    <Rectangle>
+                      <Rectangle.Fill>
+                        <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
+                      </Rectangle.Fill>
+                    </Rectangle>
+                  </Border>
+                </Grid>
+                <WrapPanel Width="100">
+                  <tomato:NumericUpDown BorderBrush="DodgerBlue"
                               MyValue="{Binding TTXShift}" MyStringFormat="シフトX 000;シフトX -000;シフトX 000"
                             MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
                             MyMinValue="-1024" MyMaxValue="1024"/>
-                <tomato:NumericUpDown BorderBrush="DodgerBlue"
+                  <tomato:NumericUpDown BorderBrush="DodgerBlue"
                               MyValue="{Binding TTYShift}" MyStringFormat="シフトY 000;シフトY -000;シフトY 000"
                             MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
                             MyMinValue="-1024" MyMaxValue="1024"/>
-                <tomato:NumericUpDown BorderBrush="DodgerBlue"
+                  <tomato:NumericUpDown BorderBrush="DodgerBlue"
                               MyValue="{Binding TTGrid}" MyStringFormat="Grid 000;Grid -000;Grid 000"
                             MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
                             MyMinValue="1" MyMaxValue="1024"/>
-              </WrapPanel>
+                </WrapPanel>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding Data.X, StringFormat=x\={0:000}}"/>
+                <TextBlock Text="{Binding Data.Y, StringFormat=y\={0:000}}"/>
+                <TextBlock Text="{Binding ActualWidth, StringFormat=幅\={0:000}}"/>
+                <TextBlock Text="{Binding ActualHeight, StringFormat=高さ\={0:000}}"/>
+                <TextBlock Text="{Binding Data.Datas.Count, StringFormat= datas 0}"/>
+                <TextBlock Text="{Binding Thumbs.Count, StringFormat= th 0}"/>
+              </StackPanel>
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
-              <TextBlock Text="{Binding Data.X, StringFormat=x\={0:000}}"/>
-              <TextBlock Text="{Binding Data.Y, StringFormat=y\={0:000}}"/>
-              <TextBlock Text="{Binding ActualWidth, StringFormat=幅\={0:000}}"/>
-              <TextBlock Text="{Binding ActualHeight, StringFormat=高さ\={0:000}}"/>
-              <TextBlock Text="{Binding Data.Datas.Count, StringFormat= datas 0}"/>
-              <TextBlock Text="{Binding Thumbs.Count, StringFormat= th 0}"/>
-            </StackPanel>
-          </StackPanel>
-        </GroupBox>
-        <GroupBox Header="ActiveThumb" DataContext="{Binding ActiveThumb}">
-          <StackPanel>
-            <Canvas Width="250" Height="160" HorizontalAlignment="Left">
-              <Grid Width="90" Height="70" Canvas.Left="160" Canvas.Top="90">
-                <Border Background="White" BorderBrush="Gray" BorderThickness="1">
-                  <Rectangle Width="80" Height="60"
+          </GroupBox>
+          <GroupBox Header="ActiveThumb" DataContext="{Binding ActiveThumb}">
+            <StackPanel>
+              <Canvas Width="250" Height="160" HorizontalAlignment="Left">
+                <Grid Width="90" Height="70" Canvas.Left="160" Canvas.Top="90">
+                  <Border Background="White" BorderBrush="Gray" BorderThickness="1">
+                    <Rectangle Width="80" Height="60"
                          DataContext="{Binding ElementName=MyRoot}">
-                    <Rectangle.Fill>
-                      <VisualBrush Visual="{Binding BackActiveThumb}" Stretch="Uniform"/>
-                    </Rectangle.Fill>
-                  </Rectangle>
-                </Border>
-              </Grid>
-              <Grid Canvas.Left="60" Canvas.Top="30" Width="130" Height="100">
-                <Border Background="White" BorderBrush="Gray" BorderThickness="1">
-                  <Rectangle Width="120" Height="90" Canvas.Left="60" Canvas.Top="35">
+                      <Rectangle.Fill>
+                        <VisualBrush Visual="{Binding BackActiveThumb}" Stretch="Uniform"/>
+                      </Rectangle.Fill>
+                    </Rectangle>
+                  </Border>
+                </Grid>
+                <Grid Canvas.Left="60" Canvas.Top="30" Width="130" Height="100">
+                  <Border Background="White" BorderBrush="Gray" BorderThickness="1">
+                    <Rectangle Width="120" Height="90" Canvas.Left="60" Canvas.Top="35">
+                      <Rectangle.Fill>
+                        <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
+                      </Rectangle.Fill>
+                    </Rectangle>
+                  </Border>
+                </Grid>
+                <Grid Width="90" Height="70">
+                  <Border  Background="White" BorderBrush="Gray" BorderThickness="1">
+                    <Rectangle Width="80" Height="60"
+                         DataContext="{Binding ElementName=MyRoot}"
+                       Canvas.Left="0" Canvas.Top="0">
+                      <Rectangle.Fill>
+                        <VisualBrush Visual="{Binding FrontActiveThumb}" Stretch="Uniform"/>
+                      </Rectangle.Fill>
+                    </Rectangle>
+                  </Border>
+                </Grid>
+              </Canvas>
+              <TextBlock Text="{Binding Data.Guid, StringFormat=Guid \= {0}}"/>
+              <TextBlock Text="{Binding Data.Type, StringFormat=Type \= {0}}"/>
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding Data.X, StringFormat=x\={0:000}}"/>
+                <TextBlock Text="{Binding Data.Y, StringFormat=y\={0:000}}"/>
+                <TextBlock Text="{Binding ActualWidth, StringFormat=幅\={0:000}}"/>
+                <TextBlock Text="{Binding ActualHeight, StringFormat=高さ\={0:000}}"/>
+              </StackPanel>
+              <TextBlock Text="{Binding Data.Text}"/>
+            </StackPanel>
+          </GroupBox>
+
+          <GroupBox Header="ClickedThumb" DataContext="{Binding ClickedThumb}">
+            <StackPanel>
+              <Grid Width="90" Height="70">
+                <Border  Background="White" BorderBrush="Gray" BorderThickness="1">
+                  <Rectangle Width="80" Height="60"
+                       Canvas.Left="0" Canvas.Top="0">
                     <Rectangle.Fill>
                       <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
                     </Rectangle.Fill>
                   </Rectangle>
                 </Border>
               </Grid>
-              <Grid Width="90" Height="70">
-                <Border  Background="White" BorderBrush="Gray" BorderThickness="1">
-                  <Rectangle Width="80" Height="60"
-                         DataContext="{Binding ElementName=MyRoot}"
-                       Canvas.Left="0" Canvas.Top="0">
-                    <Rectangle.Fill>
-                      <VisualBrush Visual="{Binding FrontActiveThumb}" Stretch="Uniform"/>
-                    </Rectangle.Fill>
-                  </Rectangle>
-                </Border>
-              </Grid>
-            </Canvas>
-            <TextBlock Text="{Binding Data.Guid, StringFormat=Guid \= {0}}"/>
-            <TextBlock Text="{Binding Data.Type, StringFormat=Type \= {0}}"/>
-            <StackPanel Orientation="Horizontal">
-              <TextBlock Text="{Binding Data.X, StringFormat=x\={0:000}}"/>
-              <TextBlock Text="{Binding Data.Y, StringFormat=y\={0:000}}"/>
-              <TextBlock Text="{Binding ActualWidth, StringFormat=幅\={0:000}}"/>
-              <TextBlock Text="{Binding ActualHeight, StringFormat=高さ\={0:000}}"/>
+              <TextBlock Text="{Binding Data.Type}"/>
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding Data.X, StringFormat=x\={0:000}}"/>
+                <TextBlock Text="{Binding Data.Y, StringFormat=y\={0:000}}"/>
+                <TextBlock Text="{Binding ActualWidth, StringFormat=幅\={0:000}}"/>
+                <TextBlock Text="{Binding ActualHeight, StringFormat=高さ\={0:000}}"/>
+              </StackPanel>
             </StackPanel>
-            <TextBlock Text="{Binding Data.Text}"/>
-          </StackPanel>
-        </GroupBox>
+          </GroupBox>
 
-        <GroupBox Header="ClickedThumb" DataContext="{Binding ClickedThumb}">
-          <StackPanel>
-            <Grid Width="90" Height="70">
-              <Border  Background="White" BorderBrush="Gray" BorderThickness="1">
-                <Rectangle Width="80" Height="60"
-                       Canvas.Left="0" Canvas.Top="0">
-                  <Rectangle.Fill>
-                    <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
-                  </Rectangle.Fill>
-                </Rectangle>
-              </Border>
-            </Grid>
-            <TextBlock Text="{Binding Data.Type}"/>
-            <StackPanel Orientation="Horizontal">
-              <TextBlock Text="{Binding Data.X, StringFormat=x\={0:000}}"/>
-              <TextBlock Text="{Binding Data.Y, StringFormat=y\={0:000}}"/>
-              <TextBlock Text="{Binding ActualWidth, StringFormat=幅\={0:000}}"/>
-              <TextBlock Text="{Binding ActualHeight, StringFormat=高さ\={0:000}}"/>
-            </StackPanel>
-          </StackPanel>
-        </GroupBox>
+          <GroupBox Header="SelectedThumbs" DataContext="{Binding SelectedThumbs}">
+            <ListBox ItemsSource="{Binding}">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <StackPanel Orientation="Horizontal">
+                    <Rectangle Width="20" Height="20">
+                      <Rectangle.Fill>
+                        <VisualBrush Visual="{Binding}"/>
+                      </Rectangle.Fill>
+                    </Rectangle>
+                    <TextBlock Text="{Binding Data.Type}"/>
+                  </StackPanel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </GroupBox>
+        </StackPanel>
+      </TabItem>
 
-        <GroupBox Header="SelectedThumbs" DataContext="{Binding SelectedThumbs}">
-          <ListBox ItemsSource="{Binding}">
-            <ListBox.ItemTemplate>
-              <DataTemplate>
-                <StackPanel Orientation="Horizontal">
-                  <Rectangle Width="20" Height="20">
-                    <Rectangle.Fill>
-                      <VisualBrush Visual="{Binding}"/>
-                    </Rectangle.Fill>
-                  </Rectangle>
-                  <TextBlock Text="{Binding Data.Type}"/>
-                </StackPanel>
-              </DataTemplate>
-            </ListBox.ItemTemplate>
-          </ListBox>
-        </GroupBox>
-      </StackPanel>
-    </StackPanel>
+    </TabControl>
   </Grid>
 </Window>
