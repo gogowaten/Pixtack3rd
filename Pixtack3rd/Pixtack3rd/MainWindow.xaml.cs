@@ -73,10 +73,11 @@ namespace Pixtack3rd
             //string imagePath2 = "D:\\ブログ用\\テスト用画像\\hueRect000.png";
             //string imagePath3 = "D:\\ブログ用\\テスト用画像\\hueRect030.png";
 
+            //KeyboardNavigation.SetTabNavigation(MyRoot, KeyboardNavigationMode.Contained);
 
             Data dataImg1 = new(TType.Image) { BitmapSource = TTRoot.GetBitmap(imagePath) };
             Data dataImg2 = new(TType.Image) { BitmapSource = TTRoot.GetBitmap(imagePath1), X = 100, Y = 100 };
-
+            
             //TTGroup group = new(new Data(TType.Group) { X = 100, Y = 100 });
             //Data dataGroup = new(TType.Group);
             //dataGroup.Datas.Add(dataImg1);
@@ -142,14 +143,14 @@ namespace Pixtack3rd
         /// 前回終了時のRootデータ読み込みしてセット
         /// <paramref name="withAppconfigSet">AppConfigもセットするときはtrue</paramref>
         /// </summary>
-        private void LoadPreviousData(bool withAppconfigSet=false)
+        private void LoadPreviousData(bool withAppconfigSet = false)
         {
             var (data, appConfig) = LoadDataFromFile(System.IO.Path.Combine(Environment.CurrentDirectory, APP_ROOT_DATA_FILENAME));
             if (data != null)
             {
                 MyRoot.SetRootData(data);
             }
-            if(appConfig!=null&& withAppconfigSet)
+            if (appConfig != null && withAppconfigSet)
             {
                 MyAppConfig = appConfig;
                 DataContext = MyAppConfig;
@@ -1753,6 +1754,8 @@ namespace Pixtack3rd
         }
 
         #endregion 複製
+      
+        #region 移動
 
         private void ButtonUp_Click(object sender, RoutedEventArgs e)
         {
@@ -1779,10 +1782,52 @@ namespace Pixtack3rd
         }
 
 
+        //グリッドスナップ移動
+        private void ButtonGoUpGrid_Click(object sender, RoutedEventArgs e)
+        {
+            MyRoot.ActiveThumbGoUpGrid();
+        }
+        private void ButtonGoDownGrid_Click(object sender, RoutedEventArgs e)
+        {
+            MyRoot.ActiveThumbGoDownGrid();
+        }
 
+        private void ButtonGoLeftGrid_Click(object sender, RoutedEventArgs e)
+        {
+            MyRoot.ActiveThumbGoLeftGrid();
+        }
+
+        private void ButtonGoRightGrid_Click(object sender, RoutedEventArgs e)
+        {
+            MyRoot.ActiveThumbGoRightGrid();
+        }
+
+        //1ピクセル移動
+        private void Button1Up_Click(object sender, RoutedEventArgs e)
+        {
+            MyRoot.ActiveThumbGoUp1Pix();
+        }
+
+        private void Button1Down_Click(object sender, RoutedEventArgs e)
+        {
+            MyRoot.ActiveThumbGoDown1Pix();
+        }
+
+        private void Button1Left_Click(object sender, RoutedEventArgs e)
+        {
+            MyRoot.ActiveThumbGoLeft1Pix();
+        }
+
+        private void Button1Right_Click(object sender, RoutedEventArgs e)
+        {
+            MyRoot.ActiveThumbGoRight1Pix();
+        }
+        #endregion 移動
 
 
         #endregion ボタンクリックイベント
+
+
 
     }
 
