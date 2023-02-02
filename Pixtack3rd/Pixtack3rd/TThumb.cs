@@ -483,7 +483,7 @@ namespace Pixtack3rd
 
     public class TTRoot : TTGroup
     {
-
+        
         #region 通知プロパティ
         //最後にクリックしたThumb
         private TThumb? _clickedThumb;
@@ -538,6 +538,8 @@ namespace Pixtack3rd
 
         #endregion 通知プロパティ
 
+        #region 枠表示プロパティ
+        
         //枠の表示設定、かなり煩雑
         //コールバックですべての要素のプロパティを変更＋自身のプロパティも変更する
         public WakuVisibleType TTWakuVisibleType
@@ -577,6 +579,7 @@ namespace Pixtack3rd
                 }
             }
         }
+        #endregion 枠表示プロパティ
 
         //選択状態の要素を保持
         public ExObservableCollection SelectedThumbs { get; private set; } = new();
@@ -589,6 +592,7 @@ namespace Pixtack3rd
 
         public TTRoot() : base(new Data(TType.Root))
         {
+            
             _activeGroup ??= this;
             IsActiveGroup = true;
             
@@ -603,7 +607,7 @@ namespace Pixtack3rd
 
         }
 
-
+    
         /// <summary>
         /// DataとThumbの整合性修正、XAMLに配置した場合はThumbがあるのにDataがない状態なので追加する
         /// ついでに枠表示設定も合わせる
@@ -1757,5 +1761,7 @@ namespace Pixtack3rd
             base.InsertItem(index, item);
         }
     }
+
+ 
 
 }
