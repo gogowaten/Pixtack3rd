@@ -37,30 +37,35 @@ namespace Pixtack3rd
         //アプリ情報
         private const string APP_NAME = "Pixtack3rd";
         private const string APP_CONFIG_FILE_NAME = "config" + ".xml";
-        //上書き保存の対象になるファイル。
-        //p3rsファイルを読み込んだら、それを対象にする、
-        //初期値は
-        private string DefaultOverwriteSaveFileName { get; set; }
+        private const string APP_LAST_END_TIME_FILE_NAME = "LastEndTimeData" + EXTENSION_NAME_DATA_AND_CONFIG;
+        //読み込んでいるデータファイルのフルパス、上書き保存対象、起動時は前回終了時を読み込み
+        private string CurrentFileFullPath = string.Empty;
+        //終了時に状態保存、起動時に読み込みするファイルのフルパス
+        private string AppLastEndTimeDataFilePath { get; } = string.Empty;
 
-        private const string APP_AND_DATA_EXTENSION_NAME = ".p3rd";//Rootデータとアプリの設定を含んだ拡張子
-        private const string DATA_EXTENSION_NAME = ".p3";//データだけの拡張子
+        private const string EXTENSION_NAME_DATA_AND_CONFIG = ".p3rd";//Rootデータとアプリの設定を含んだ拡張子
+        private const string EXTENSION_NAME_DATA = ".p3";//データだけの拡張子
 
-        private const string EXTENSION_FILTER_P3 = "Pixtace3 設定＆全Data|*" + APP_AND_DATA_EXTENSION_NAME;
-        private const string EXTENSION_FILTER_P3D = "Pixtack3 アイテムData|*" + DATA_EXTENSION_NAME;
-        private string CurrentFilePath = string.Empty;//読み込んでいるデータファイルのフルパス、上書き保存対象
+        private const string EXTENSION_FILTER_P3 = "Pixtack3 設定＆全Data|*" + EXTENSION_NAME_DATA_AND_CONFIG;
+        private const string EXTENSION_FILTER_P3D = "Pixtack3 アイテムData|*" + EXTENSION_NAME_DATA;
 
         private string AppVersion;
         //datetime.tostringの書式、これを既定値にする
         private const string DATE_TIME_STRING_FORMAT = "yyyyMMdd'_'HHmmss'_'fff";
         //データ保存時のxmlのファイル名
         private readonly string XML_FILE_NAME = "Data.xml";
-        private const string APP_ROOT_DATA_FILENAME = "TTRoot" + DATA_EXTENSION_NAME;
+        private const string APP_ROOT_DATA_FILENAME = "TTRoot" + EXTENSION_NAME_DATA;
 
         public MainWindow()
         {
             InitializeComponent();
             MyAppConfig = GetAppConfig(APP_CONFIG_FILE_NAME);
-            DataContext = MyAppConfig;
+
+            //前回終了時に保存したファイルのフルパスをセット
+            AppLastEndTimeDataFilePath = System.IO.Path.Combine(
+                Environment.CurrentDirectory, APP_LAST_END_TIME_FILE_NAME);
+
+            //DataContext = MyAppConfig;
             //MyStackPanel.DataContext = MyAppConfig;
             //MyWrap.DataContext = MyAppConfig;
             //MyTab1App.DataContext = MyAppConfig;
@@ -73,40 +78,13 @@ namespace Pixtack3rd
             Drop += MainWindow_Drop;
             Closed += MainWindow_Closed;
 
-            string imagePath = "D:\\ブログ用\\テスト用画像\\collection5.png";
-            string imagePath1 = "D:\\ブログ用\\テスト用画像\\collection4.png";
-            //string imagePath2 = "D:\\ブログ用\\テスト用画像\\hueRect000.png";
-            //string imagePath3 = "D:\\ブログ用\\テスト用画像\\hueRect030.png";
+            //string imagePath = "D:\\ブログ用\\テスト用画像\\collection5.png";
+            //string imagePath1 = "D:\\ブログ用\\テスト用画像\\collection4.png";
+            
+            //Data dataImg1 = new(TType.Image) { BitmapSource = TTRoot.GetBitmap(imagePath) };
+            //Data dataImg2 = new(TType.Image) { BitmapSource = TTRoot.GetBitmap(imagePath1), X = 100, Y = 100 };
 
-            //KeyboardNavigation.SetTabNavigation(MyRoot, KeyboardNavigationMode.Contained);
-
-            Data dataImg1 = new(TType.Image) { BitmapSource = TTRoot.GetBitmap(imagePath) };
-            Data dataImg2 = new(TType.Image) { BitmapSource = TTRoot.GetBitmap(imagePath1), X = 100, Y = 100 };
-
-            //TTGroup group = new(new Data(TType.Group) { X = 100, Y = 100 });
-            //Data dataGroup = new(TType.Group);
-            //dataGroup.Datas.Add(dataImg1);
-            //dataGroup.Datas.Add(dataImg2);
-            ////dataGroup.Datas.Add(new Data(TType.Image) { BitmapSource=GetBitmap(imagePath2), X = 120, Y = 120 });
-            //MyRoot.AddThumbDataToActiveGroup(dataGroup);
-
-
-            //MyRoot.AddItem(group, group.Data);
-            ////    dataImg1.BitmapSource = new BitmapImage(new Uri("D:\\ブログ用\\テスト用画像\\collection4.png"));
-            ////dataImg1.BitmapSource = GetBitmap("D:\\ブログ用\\テスト用画像\\collection4.png");
-
-            ////MyImage.Data.BitmapSource = GetBitmap("D:\\ブログ用\\テスト用画像\\collection1.png");
         }
-
-        //public static BitmapImage GetBitmap(string filePath)
-        //{
-        //    BitmapImage bmp = new();
-        //    FileStream stream = new(filePath, FileMode.Open, FileAccess.Read);
-        //    bmp.BeginInit();
-        //    bmp.StreamSource = stream;
-        //    bmp.EndInit();
-        //    return bmp;
-        //}
 
 
         #region 初期設定
@@ -133,17 +111,30 @@ namespace Pixtack3rd
         }
         private void MyInitialize()
         {
-            MyAppConfig = FixAppWindowLocate(MyAppConfig);
             //タイトルをアプリの名前 + バージョン
             this.Title = APP_NAME + AppVersion;
+
+            //前回終了時に保存したファイルのフルパスを上書き保存パスにセット
+            CurrentFileFullPath = AppLastEndTimeDataFilePath;
+
+            //前回終了時のデータを読み込み
             if (MyAppConfig.IsLoadPreviewData)
             {
-                LoadPreviousData();//前回終了時のデータ読み込み
+                //前回終了時のデータと設定を読み込んでセット
+                (Data? data, AppConfig? config) = LoadDataFromFile(CurrentFileFullPath);
+                if (data is not null) { MyRoot.SetRootData(data); }
             }
+
+            //枠表示の設定Binding、これはいまいちな処理
             MyRoot.SetBinding(TTRoot.TTWakuVisibleTypeProperty, new Binding(nameof(MyAppConfig.WakuVisibleType)) { Source = this.MyAppConfig });
 
+            //データコンテキストの設定、Bindingをした後じゃないと反映されない
+            DataContext = MyAppConfig;
+
+            //ショートカットキー
             this.PreviewKeyDown += MainWindow_PreviewKeyDown;
         }
+
         /// <summary>
         /// 前回終了時のRootデータ読み込みしてセット
         /// <paramref name="withAppconfigSet">AppConfigもセットするときはtrue</paramref>
@@ -162,6 +153,7 @@ namespace Pixtack3rd
             }
         }
 
+        //ショートカットキー
         private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             switch (Keyboard.Modifiers)
@@ -225,7 +217,7 @@ namespace Pixtack3rd
         /// </summary>
         /// <param name="config"></param>
         /// <returns></returns>
-        private AppConfig FixAppWindowLocate(AppConfig config)
+        private static AppConfig FixAppWindowLocate(AppConfig config)
         {
             if (config.Left < -10 ||
                 config.Left > SystemParameters.VirtualScreenWidth - 100)
@@ -1027,7 +1019,7 @@ namespace Pixtack3rd
                 {
                     //拡張子で判定、関連ファイルならDataで追加
                     var ext = System.IO.Path.GetExtension(item);
-                    if (ext == DATA_EXTENSION_NAME || ext == APP_AND_DATA_EXTENSION_NAME)
+                    if (ext == EXTENSION_NAME_DATA || ext == EXTENSION_NAME_DATA_AND_CONFIG)
                     {
                         var (data, appConfig) = LoadDataFromFile(item);
                         if (data == null)
@@ -1099,12 +1091,12 @@ namespace Pixtack3rd
         #region データ保存、アプリの設定保存
 
         /// <summary>
-        /// データをzipで保存
+        /// Rootデータをアプリの設定とともにファイルに保存
         /// </summary>
         /// <param name="filePath">拡張子も含めたフルパス</param>
         /// <param name="data"></param>
         /// <param name="isWithAppConfigSave">アプリの設定も保存するときはtrue</param>
-        private void SaveDataToAz3(string filePath, Data data, bool isWithAppConfigSave)
+        private void SaveRootDataWithConfig(string filePath, Data data, bool isWithAppConfigSave)
         {
             try
             {
@@ -1192,7 +1184,7 @@ namespace Pixtack3rd
         /// </summary>
         /// <param name="filePath">フルパス</param>
         /// <returns></returns>
-        private (Data? data, AppConfig? appConfig) LoadDataFromFile(string filePath)
+        private (Data? data, AppConfig? config) LoadDataFromFile(string filePath)
         {
             try
             {
@@ -1222,8 +1214,8 @@ namespace Pixtack3rd
                         serializer = new(typeof(AppConfig));
                         using (var appConfigReader = XmlReader.Create(entryAppConfig))
                         {
-                            AppConfig? appConfig = (AppConfig?)serializer.ReadObject(appConfigReader);
-                            return (data, appConfig);
+                            AppConfig? config = (AppConfig?)serializer.ReadObject(appConfigReader);
+                            return (data, config);
                         }
                     }
                     else
@@ -1281,6 +1273,8 @@ namespace Pixtack3rd
                     {
                         MyAppConfig = appConfig;
                         DataContext = MyAppConfig;
+
+                        CurrentFileFullPath = dialog.FileName;
                     }
                 }
             }
@@ -1603,6 +1597,25 @@ namespace Pixtack3rd
 
         #region ボタンクリックイベント
 
+        #region 上書き保存と読み込み
+
+        //上書き保存
+        private void ButtonSaveDefault_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+        //上書き保存を読み込み
+        private void ButtonLoadDefault_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+        //前回終了時を読み込み
+        private void ButtonLoadLastEndTime_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+        #endregion 上書き保存と読み込み
+
         #region 保存系
 
         //Rootを画像ファイルとして保存
@@ -1653,7 +1666,7 @@ namespace Pixtack3rd
             dialog.Filter = EXTENSION_FILTER_P3;
             if (dialog.ShowDialog() == true)
             {
-                SaveDataToAz3(dialog.FileName, MyRoot.Data, true);
+                SaveRootDataWithConfig(dialog.FileName, MyRoot.Data, true);
             }
         }
         //個別保存、ActiveThumbのDataを保存
@@ -1664,8 +1677,9 @@ namespace Pixtack3rd
             SaveConfig(System.IO.Path.Combine(
                 Environment.CurrentDirectory, APP_CONFIG_FILE_NAME), MyAppConfig);
             //RootData保存
-            SaveDataToAz3(System.IO.Path.Combine(
-                Environment.CurrentDirectory, APP_ROOT_DATA_FILENAME), MyRoot.Data, true);
+            //SaveRootDataWithConfig(System.IO.Path.Combine(
+            //    Environment.CurrentDirectory, APP_ROOT_DATA_FILENAME), MyRoot.Data, true);
+            SaveRootDataWithConfig(AppLastEndTimeDataFilePath, MyRoot.Data, true);
         }
 
         private void ButtonSaveDataThumb_Click(object sender, RoutedEventArgs e)
@@ -1677,7 +1691,7 @@ namespace Pixtack3rd
                 dialog.Filter = EXTENSION_FILTER_P3D;
                 if (dialog.ShowDialog() == true)
                 {
-                    SaveDataToAz3(dialog.FileName, data, false);
+                    SaveRootDataWithConfig(dialog.FileName, data, false);
                 }
             }
         }
@@ -1709,7 +1723,7 @@ namespace Pixtack3rd
             if (MyRoot.Thumbs.Count == 0) { return; }
             if (GetSaveDataFilePath(EXTENSION_FILTER_P3) is string path)
             {
-                SaveDataToAz3(path, MyRoot.Data, true);
+                SaveRootDataWithConfig(path, MyRoot.Data, true);
             }
         }
         private void ButtonSaveRootThumb_Click(object sender, RoutedEventArgs e)
@@ -1717,7 +1731,7 @@ namespace Pixtack3rd
             if (MyRoot.Thumbs.Count == 0) { return; }
             if (GetSaveDataFilePath(EXTENSION_FILTER_P3D) is string path)
             {
-                SaveDataToAz3(path, MyRoot.Data, false);
+                SaveRootDataWithConfig(path, MyRoot.Data, false);
             }
         }
 
@@ -1726,7 +1740,7 @@ namespace Pixtack3rd
             if (MyRoot.ClickedThumb?.Data == null) { return; }
             if (GetSaveDataFilePath(EXTENSION_FILTER_P3D) is string path)
             {
-                SaveDataToAz3(path, MyRoot.ClickedThumb.Data, false);
+                SaveRootDataWithConfig(path, MyRoot.ClickedThumb.Data, false);
             }
         }
 
@@ -1735,9 +1749,11 @@ namespace Pixtack3rd
             if (MyRoot.ActiveThumb?.Data == null) { return; }
             if (GetSaveDataFilePath(EXTENSION_FILTER_P3D) is string path)
             {
-                SaveDataToAz3(path, MyRoot.ActiveThumb.Data, false);
+                SaveRootDataWithConfig(path, MyRoot.ActiveThumb.Data, false);
             }
         }
+
+
         #endregion 保存系
 
         private void ButtonToGroup_Click(object sender, RoutedEventArgs e)
@@ -1955,15 +1971,6 @@ namespace Pixtack3rd
 
         #endregion ボタンクリックイベント
 
-        private void ButtonSaveDefault_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void ButtonLoadDefault_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
     }
 
 

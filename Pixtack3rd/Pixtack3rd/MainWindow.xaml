@@ -226,12 +226,13 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                 <Button x:Name="ButtonSaveToImageClicked" Content="Clicked" Click="ButtonSaveToImageClicked_Click"/>
               </WrapPanel>
             </GroupBox>
-            <GroupBox Header="上書き保存と読み込み">
-              <UniformGrid Rows="1">
+            <!--<GroupBox Header="上書き保存と読み込み">
+              <UniformGrid Rows="2">
                 <Button x:Name="ButtonSaveDefault" Content="上書き保存" Click="ButtonSaveDefault_Click"/>
-                <Button x:Name="ButtonLoadDefault" Content="読み込み" Click="ButtonLoadDefault_Click"/>
+                <Button x:Name="ButtonLoadDefault" Content="上書き保存を読み込み" Click="ButtonLoadDefault_Click"/>
+                <Button x:Name="ButtonLoadLastEndTime" Content="前回終了時を読み込み" Click="ButtonLoadLastEndTime_Click"/>
               </UniformGrid>
-            </GroupBox>
+            </GroupBox>-->
             <GroupBox Header="Dataファイルを保存">
               <WrapPanel>
                 <Button x:Name="ButtonSaveAllData" Content="アプリ設+Root" Click="ButtonSaveAllData_Click"/>
