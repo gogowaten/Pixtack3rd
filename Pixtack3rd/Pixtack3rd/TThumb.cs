@@ -113,7 +113,7 @@ namespace Pixtack3rd
             SetBinding(TTLeftProperty, nameof(data.X));
             SetBinding(TTTopProperty, nameof(data.Y));
 
-            
+
             this.Focusable = true;//フォーカスできるようにする
             //this.FocusVisualStyle = null;//フォーカス時の点線を表示しない
 
@@ -157,7 +157,7 @@ namespace Pixtack3rd
                 case ModifierKeys.Windows:
                     break;
             }
-            
+
         }
         protected override void OnKeyUp(KeyEventArgs e)
         {
@@ -170,7 +170,7 @@ namespace Pixtack3rd
                         if (TTParent is TTGroup parent)
                         {
                             parent.TTGroupUpdateLayout();
-                        }                        
+                        }
                     }
                     break;
                 case ModifierKeys.Alt:
@@ -1650,26 +1650,51 @@ namespace Pixtack3rd
         #endregion ZIndex
 
         #region 画像として取得
+        public BitmapSource? GetBitmapRoot()
+        {
+            return MakeBitmapFromThumb(this, this);
+        }
+        public BitmapSource? GetBitmapActiveThumb()
+        {
+            return MakeBitmapFromThumb(ActiveThumb, ActiveThumb?.TTParent);
+        }
+        public BitmapSource? GetBitmapClickedThumb()
+        {
+            return MakeBitmapFromThumb(ClickedThumb, ClickedThumb?.TTParent);
+        }
         /// <summary>
         /// 指定Thumbを画像として取得
         /// </summary>
         /// <param name="thumb">画像として取得したいThumb</param>
         /// <returns></returns>
-        public BitmapSource? GetBitmap(TThumb thumb)
-        {
-            if (thumb.ActualHeight == 0 || thumb.ActualWidth == 0) return null;
-            if (thumb.Type != TType.Root)
-            {
-                return SaveImage2(thumb, thumb.TTParent);
-            }
-            else
-            {
-                return SaveImage2(thumb, thumb);
-            }
-        }
-        private BitmapSource? SaveImage2(FrameworkElement? el, FrameworkElement? parentPanel)
+        //public BitmapSource? GetBitmap(TThumb thumb)
+        //{
+        //    if (thumb.Type != TType.Root)
+        //    {
+        //        return MakeBitmapFromThumb(thumb, thumb.TTParent);
+        //    }
+        //    else
+        //    {
+        //        return MakeBitmapFromThumb(thumb, thumb);
+        //    }
+        //}
+        /// <summary>
+        /// 要素をBitmapに変換したものを返す
+        /// </summary>
+        /// <param name="el">Bitmapにする要素</param>
+        /// <param name="parentPanel">Bitmapにする要素の親要素</param>
+        /// <returns></returns>
+        private BitmapSource? MakeBitmapFromThumb(FrameworkElement? el, FrameworkElement? parentPanel)
         {
             if (el == null || parentPanel == null) { return null; }
+            if (el.ActualHeight == 0 || el.ActualWidth == 0) { return null; }
+
+            //枠を一時的に非表示にする
+            WakuVisibleType waku = TTWakuVisibleType;
+            TTWakuVisibleType = WakuVisibleType.None;
+            UpdateLayout();//再描画？これで枠が消える
+
+
             GeneralTransform gt = el.TransformToVisual(parentPanel);
             Rect bounds = gt.TransformBounds(new Rect(0, 0, el.ActualWidth, el.ActualHeight));
             DrawingVisual dVisual = new();
@@ -1689,6 +1714,9 @@ namespace Pixtack3rd
             RenderTargetBitmap bitmap
                 = new((int)bounds.Width, (int)bounds.Height, 96, 96, PixelFormats.Pbgra32);
             bitmap.Render(dVisual);
+
+            //枠表示を元に戻す
+            TTWakuVisibleType = waku;
 
             return bitmap;
         }
@@ -1728,28 +1756,28 @@ namespace Pixtack3rd
         }
         public void ActiveThumbGoUp1Pix()
         {
-            if (ActiveThumb is TThumb thumb && thumb.TTParent is TTGroup parent)
+            if (ActiveThumb is TThumb thumb && thumb.TTParent is TTGroup)
             {
                 thumb.TTTop--;
             }
         }
         public void ActiveThumbGoDown1Pix()
         {
-            if (ActiveThumb is TThumb thumb && thumb.TTParent is TTGroup parent)
+            if (ActiveThumb is TThumb thumb && thumb.TTParent is TTGroup)
             {
                 thumb.TTTop++;
             }
         }
         public void ActiveThumbGoLeft1Pix()
         {
-            if (ActiveThumb is TThumb thumb && thumb.TTParent is TTGroup parent)
+            if (ActiveThumb is TThumb thumb && thumb.TTParent is TTGroup)
             {
                 thumb.TTLeft--;
             }
         }
         public void ActiveThumbGoRight1Pix()
         {
-            if (ActiveThumb is TThumb thumb && thumb.TTParent is TTGroup parent)
+            if (ActiveThumb is TThumb thumb && thumb.TTParent is TTGroup)
             {
                 thumb.TTLeft++;
             }

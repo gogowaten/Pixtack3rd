@@ -39,59 +39,59 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             KeyboardNavigation.DirectionalNavigation="None">
         <MenuItem Header="ファイル(_F)">
           <MenuItem Header="画像として名前をつけて保存">
-            <MenuItem Header="Root"/>
-            <MenuItem Header="ActiveThumb"/>
-            <MenuItem Header="ClickedThumb"/>
+            <MenuItem Header="Root" Click="ButtonSaveToImage_Click"/>
+            <MenuItem Header="ActiveThumb" Click="ButtonSaveToImageActive_Click"/>
+            <MenuItem Header="ClickedThumb" Click="ButtonSaveToImageClicked_Click"/>
           </MenuItem>
           <MenuItem Header="Dataとして名前をつけて保存(_S)">
             <MenuItem Header="編集状態保存(Root＆アプリ設定)" Click="ButtonSaveAllData_Click"/>
-            <MenuItem Header="編集状態保存(Root)"/>
-            <MenuItem Header="ActiveThumb"/>
-            <MenuItem Header="ClickedThumb"/>
+            <MenuItem Header="編集状態保存(Root)" Click="ButtonSaveRootThumb_Click"/>
+            <MenuItem Header="ActiveThumb" Click="ButtonSaveActiveThumb_Click"/>
+            <MenuItem Header="ClickedThumb" Click="ButtonSaveCickedThumb_Click"/>
           </MenuItem>
           <MenuItem Header="Dataファイルを開く">
-            <MenuItem Header="Root＆アプリ設定"/>
-            <MenuItem Header="Root"/>
-            <MenuItem Header="RootをGroupとして追加"/>
-            <MenuItem Header="ThumbData"/>
+            <MenuItem Header="Root＆アプリ設定" Click="ButtonLoadDataPrevious_Click"/>
+            <MenuItem Header="Root" Click="ButtonLoadData_Click"/>
+            <MenuItem Header="RootをGroupとして追加" Click="ButtonLoadDataRootToGroup_Click"/>
+            <MenuItem Header="ThumbData" Click="ButtonLoadDataThumb_Click"/>
           </MenuItem>
           <MenuItem Header="編集状態保存(上書き)" InputGestureText="Ctrl+S"/>
           <MenuItem Header="編集状態読み込み"/>
         </MenuItem>
 
         <MenuItem Header="編集">
-          <MenuItem Header="クリップボードから貼り付け" InputGestureText="Ctrl+V"/>
+          <MenuItem Header="クリップボードから貼り付け" Click="ButtonAddFromClipboard_Click" InputGestureText="Ctrl+V"/>
           <MenuItem Header="クリップボードから貼り付け">
-            <MenuItem Header="Bgr32に変換して貼り付け" ToolTip="完全不透明(アルファ値255)"/>
-            <MenuItem Header="Png形式を優先して貼り付け" ToolTip="エクセルのグラフやテキストボックス用"/>
+            <MenuItem Header="Bgr32に変換して貼り付け" Click="ButtonAddFromClipboardBgr32_Click" ToolTip="完全不透明(アルファ値255)"/>
+            <MenuItem Header="Png形式を優先して貼り付け" Click="ButtonAddFromClipboardPNG_Click" ToolTip="エクセルのグラフやテキストボックス用"/>
           </MenuItem>
           <MenuItem Header="画像としてコピー">
-            <MenuItem Header="Root" InputGestureText="Ctrl+Shift+C"/>
-            <MenuItem Header="ActiveThumb" InputGestureText="Ctrl+C"/>
-            <MenuItem Header="ClickedThumb" InputGestureText="Ctrl+Alt+C"/>
+            <MenuItem Header="Root" InputGestureText="Ctrl+Shift+C" Click="ButtonCopyImage_Click"/>
+            <MenuItem Header="ActiveThumb" InputGestureText="Ctrl+C" Click="ButtonCopyImageActiveThumb_Click"/>
+            <MenuItem Header="ClickedThumb" InputGestureText="Ctrl+Alt+C" Click="ButtonCopyImageClicedThumb_Click"/>
           </MenuItem>
           <MenuItem Header="画像としてコピペ(複製)">
-            <MenuItem Header="Root"/>
-            <MenuItem Header="ActiveThumb"/>
-            <MenuItem Header="ClickedThumb"/>
+            <MenuItem Header="Root" Click="ButtonDuplicateImage_Click"/>
+            <MenuItem Header="ActiveThumb" Click="ButtpmDuplicateImageActiveThumb_Click"/>
+            <MenuItem Header="ClickedThumb" Click="ButtonDuplicateImageClickedThumb_Click"/>
           </MenuItem>
           <MenuItem Header="Dataとしてコピペ(複製)">
-            <MenuItem Header="Root"/>
-            <MenuItem Header="ActiveThumb" InputGestureText="Ctrl+D"/>
-            <MenuItem Header="ClickedThumb"/>
+            <MenuItem Header="Root" Click="ButtonDuplicateData_Click"/>
+            <MenuItem Header="ActiveThumb" Click="ButtpmDuplicateDataActiveThumb_Click" InputGestureText="Ctrl+D"/>
+            <MenuItem Header="ClickedThumb" Click="ButtonDuplicateDataClickedThumb_Click"/>
           </MenuItem>
 
-          <MenuItem Header="グループ化" ToolTip="選択Thumbsをグループ化"/>
-          <MenuItem Header="グループ解除" ToolTip="ActiveThumbをグループ解除"/>
+          <MenuItem Header="グループ化" Click="ButtonToGroup_Click" ToolTip="選択Thumbsをグループ化"/>
+          <MenuItem Header="グループ解除" Click="ButtonUnGroup_Click" ToolTip="ActiveThumbをグループ解除"/>
 
-          <MenuItem Header="選択Thumbsを全削除" InputGestureText="F4"/>
-          <MenuItem Header="全Thumb削除"/>
+          <MenuItem Header="選択Thumbsを全削除" Click="ButtonRemove_Click" InputGestureText="F4"/>
+          <MenuItem Header="全Thumb削除" Click="ButtonRemoveAll_Click"/>
         </MenuItem>
 
         <MenuItem Header="移動">
           <MenuItem Header="ActiveGroup切り替え">
-            <MenuItem Header="In(ActiveThumbをActiveGroupにする)"/>
-            <MenuItem Header="Out(親GroupをActiveGroupにする)"/>
+            <MenuItem Header="In(ActiveThumbをActiveGroupにする)" Click="ButtonIn_Click"/>
+            <MenuItem Header="Out(親GroupをActiveGroupにする)" Click="ButtonOut_Click"/>
           </MenuItem>
           <MenuItem Header="Z軸">
             <MenuItem Header="前面へ移動" Click="ButtonUp_Click"/>
@@ -100,16 +100,16 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <MenuItem Header="最背面へ移動" Click="ButtonMostDown_Click"/>
           </MenuItem>
           <MenuItem Header="XY軸1ピクセル">
-            <MenuItem Header="上へ移動" Click="Button1Up_Click"/>
-            <MenuItem Header="下へ移動" Click="Button1Down_Click"/>
-            <MenuItem Header="左へ移動" Click="Button1Left_Click"/>
-            <MenuItem Header="右へ移動" Click="Button1Right_Click"/>
+            <MenuItem Header="上へ移動" Click="Button1Up_Click" InputGestureText="Up"/>
+            <MenuItem Header="下へ移動" Click="Button1Down_Click" InputGestureText="Down"/>
+            <MenuItem Header="左へ移動" Click="Button1Left_Click" InputGestureText="Left"/>
+            <MenuItem Header="右へ移動" Click="Button1Right_Click" InputGestureText="Right"/>
           </MenuItem>
           <MenuItem Header="XY軸1Grid">
-            <MenuItem Header="上へ移動" Click="ButtonGoUpGrid_Click"/>
-            <MenuItem Header="下へ移動" Click="ButtonGoDownGrid_Click"/>
-            <MenuItem Header="左へ移動" Click="ButtonGoLeftGrid_Click"/>
-            <MenuItem Header="右へ移動" Click="ButtonGoRightGrid_Click"/>
+            <MenuItem Header="上へ移動" Click="ButtonGoUpGrid_Click" InputGestureText="Shift+Up"/>
+            <MenuItem Header="下へ移動" Click="ButtonGoDownGrid_Click" InputGestureText="Shift+Down"/>
+            <MenuItem Header="左へ移動" Click="ButtonGoLeftGrid_Click" InputGestureText="Shift+Left"/>
+            <MenuItem Header="右へ移動" Click="ButtonGoRightGrid_Click" InputGestureText="Shift+Right"/>
           </MenuItem>
         </MenuItem>
 
@@ -158,7 +158,8 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                   VerticalScrollBarVisibility="Auto">
       <!--<local:TTTextBlock TTText="222"/>-->
       <local:TTRoot x:Name="MyRoot"
-                    HorizontalAlignment="Left" VerticalAlignment="Top" TTGrid="8">
+                    HorizontalAlignment="Left" VerticalAlignment="Top"
+                    TTGrid="8" TTXShift="32" TTYShift="32">
 
         <!--<local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
         <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
@@ -218,14 +219,21 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               </WrapPanel>
             </GroupBox>
             <ComboBox x:Name="ComboBoxSaveFileType" SelectedItem="{Binding ImageType}"/>
-            <GroupBox Header="SaveImage">
+            <GroupBox Header="画像ファイルとして保存">
               <WrapPanel>
                 <Button x:Name="ButtonSaveToImage" Content="Root" Click="ButtonSaveToImage_Click"/>
                 <Button x:Name="ButtonSaveToImageActive" Content="ActiveThumb" Click="ButtonSaveToImageActive_Click"/>
                 <Button x:Name="ButtonSaveToImageClicked" Content="Clicked" Click="ButtonSaveToImageClicked_Click"/>
               </WrapPanel>
             </GroupBox>
-            <GroupBox Header="SaveData">
+            <!--<GroupBox Header="上書き保存と読み込み">
+              <UniformGrid Rows="2">
+                <Button x:Name="ButtonSaveDefault" Content="上書き保存" Click="ButtonSaveDefault_Click"/>
+                <Button x:Name="ButtonLoadDefault" Content="上書き保存を読み込み" Click="ButtonLoadDefault_Click"/>
+                <Button x:Name="ButtonLoadLastEndTime" Content="前回終了時を読み込み" Click="ButtonLoadLastEndTime_Click"/>
+              </UniformGrid>
+            </GroupBox>-->
+            <GroupBox Header="Dataファイルを保存">
               <WrapPanel>
                 <Button x:Name="ButtonSaveAllData" Content="アプリ設+Root" Click="ButtonSaveAllData_Click"/>
                 <Button x:Name="ButtonSaveRootThumb" Content="Root" Click="ButtonSaveRootThumb_Click"/>
@@ -233,7 +241,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                 <Button x:Name="ButtonSaveCickedThumb" Content="Clicked" Click="ButtonSaveCickedThumb_Click"/>
               </WrapPanel>
             </GroupBox>
-            <GroupBox Header="LoadDataデータ読み込み">
+            <GroupBox Header="Dataファイルデータ読み込み">
               <WrapPanel>
                 <Button x:Name="ButtonLoadDataPrevious" Content="前回" Click="ButtonLoadDataPrevious_Click"/>
                 <Button x:Name="ButtonLoadData" Content="全体" Click="ButtonLoadData_Click"/>
