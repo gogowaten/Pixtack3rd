@@ -129,33 +129,36 @@ namespace Pixtack3rd
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
-            switch (Keyboard.Modifiers)
+            if (e.Source is TTRoot root)
             {
-                case ModifierKeys.None:
-                    if (e.Source is TTRoot root)
-                    {
-                        if (e.Key == Key.Up) { root.ActiveThumbGoUpGrid(); }
-                        else if (e.Key == Key.Down) { root.ActiveThumbGoDownGrid(); }
-                        else if (e.Key == Key.Left) { root.ActiveThumbGoLeftGrid(); }
-                        else if (e.Key == Key.Right) { root.ActiveThumbGoRightGrid(); }
+                switch (Keyboard.Modifiers)
+                {
+                    case ModifierKeys.None:
+                        {
+                            if (e.Key == Key.Up) { root.ActiveThumbGoUpGrid(); }
+                            else if (e.Key == Key.Down) { root.ActiveThumbGoDownGrid(); }
+                            else if (e.Key == Key.Left) { root.ActiveThumbGoLeftGrid(); }
+                            else if (e.Key == Key.Right) { root.ActiveThumbGoRightGrid(); }
 
-                    }
-                    break;
-                case ModifierKeys.Alt:
-                    break;
-                case ModifierKeys.Control:
-                    break;
-                case ModifierKeys.Shift:
-                    if (e.Source is TTRoot root1)
-                    {
-                        if (e.Key == Key.Up) { root1.ActiveThumbGoUp1Pix(); }
-                        else if (e.Key == Key.Down) { root1.ActiveThumbGoDown1Pix(); }
-                        else if (e.Key == Key.Left) { root1.ActiveThumbGoLeft1Pix(); }
-                        else if (e.Key == Key.Right) { root1.ActiveThumbGoRight1Pix(); }
-                    }
-                    break;
-                case ModifierKeys.Windows:
-                    break;
+                        }
+                        break;
+                    case ModifierKeys.Alt:
+                        break;
+                    case ModifierKeys.Control:
+                        //if (e.Key == Key.D) { root.DuplicateDataSelectedThumbs(); }
+                        break;
+                    case ModifierKeys.Shift:
+
+                        {
+                            if (e.Key == Key.Up) { root.ActiveThumbGoUp1Pix(); }
+                            else if (e.Key == Key.Down) { root.ActiveThumbGoDown1Pix(); }
+                            else if (e.Key == Key.Left) { root.ActiveThumbGoLeft1Pix(); }
+                            else if (e.Key == Key.Right) { root.ActiveThumbGoRight1Pix(); }
+                        }
+                        break;
+                    case ModifierKeys.Windows:
+                        break;
+                }
             }
 
         }
@@ -1127,23 +1130,28 @@ namespace Pixtack3rd
         /// ActiveThumbに要素をDataで追加
         /// </summary>
         /// <param name="data"></param>
-        public void AddThumbDataToActiveGroup(Data data)
+        /// <param name="locateFix">追加位置修正、通常はtrue。複製時にはfalse</param>
+        public TThumb? AddThumbDataToActiveGroup(Data data, bool locateFix = true)
         {
-            //data.Guid = Guid.NewGuid().ToString();
+
             if (BuildThumb(data) is TThumb thumb)
             {
                 AddThumb(thumb, ActiveGroup);//直下にはドラッグ移動イベント付加
                 //位置修正、追加先のActiveThumbに合わせる
-                if (ActiveThumb != null)
+                if (locateFix)
                 {
-                    data.X = ActiveThumb.Data.X + ActiveGroup.TTXShift;
-                    data.Y = ActiveThumb.Data.Y + ActiveGroup.TTYShift;
+                    if (ActiveThumb != null)
+                    {
+                        data.X = ActiveThumb.Data.X + ActiveGroup.TTXShift;
+                        data.Y = ActiveThumb.Data.Y + ActiveGroup.TTYShift;
+                    }
+                    else
+                    {
+                        data.X = 0;
+                        data.Y = 0;
+                    }
                 }
-                else
-                {
-                    data.X = 0;
-                    data.Y = 0;
-                }
+
                 //Groupだった場合は子要素も追加、子要素にドラッグ移動イベント追加しない
                 if (thumb is TTGroup group)
                 {
@@ -1153,7 +1161,9 @@ namespace Pixtack3rd
                 SelectedThumbs.Clear();
                 SelectedThumbs.Add(thumb);
                 ClickedThumb = thumb;
+                return thumb;
             }
+            return null;
         }
 
         /// <summary>
@@ -1662,6 +1672,10 @@ namespace Pixtack3rd
         {
             return MakeBitmapFromThumb(ClickedThumb, ClickedThumb?.TTParent);
         }
+        public BitmapSource? GetBitmapThumb(TThumb thumb)
+        {
+            return MakeBitmapFromThumb(thumb, thumb?.TTParent);
+        }
         /// <summary>
         /// 指定Thumbを画像として取得
         /// </summary>
@@ -1756,28 +1770,28 @@ namespace Pixtack3rd
         }
         public void ActiveThumbGoUp1Pix()
         {
-            if (ActiveThumb is TThumb thumb && thumb.TTParent is TTGroup)
+            if (ActiveThumb is TThumb thumb && thumb.TTParent is not null)
             {
                 thumb.TTTop--;
             }
         }
         public void ActiveThumbGoDown1Pix()
         {
-            if (ActiveThumb is TThumb thumb && thumb.TTParent is TTGroup)
+            if (ActiveThumb is TThumb thumb && thumb.TTParent is not null)
             {
                 thumb.TTTop++;
             }
         }
         public void ActiveThumbGoLeft1Pix()
         {
-            if (ActiveThumb is TThumb thumb && thumb.TTParent is TTGroup)
+            if (ActiveThumb is TThumb thumb && thumb.TTParent is not null)
             {
                 thumb.TTLeft--;
             }
         }
         public void ActiveThumbGoRight1Pix()
         {
-            if (ActiveThumb is TThumb thumb && thumb.TTParent is TTGroup)
+            if (ActiveThumb is TThumb thumb && thumb.TTParent is not null)
             {
                 thumb.TTLeft++;
             }
@@ -1785,6 +1799,113 @@ namespace Pixtack3rd
 
 
         #endregion XYZ移動
+
+        #region 複製
+        #region Data複製して追加
+
+        //Clickedの複製は中止。追加する座標や追加するGroupをどこにするか考え中
+
+        //public bool DuplicateClickedThumb()
+        //{
+        //    if (ClickedThumb?.Data.DeepCopy() is Data data)
+        //    {
+        //        //data.X += ActiveGroup.TTXShift;
+        //        //data.Y += ActiveGroup.TTYShift;
+        //        //AddThumbDataToActiveGroup(data, false);
+
+        //        AddThumbDataToActiveGroup(data);
+        //        return true;
+        //    }
+        //    return false;
+        //}
+
+        /// <summary>
+        /// 選択Thumbを複製する
+        /// </summary>
+        /// <returns>複製した個数</returns>
+        public int DuplicateDataSelectedThumbs()
+        {
+            //Dataとして複製、SelectedThumbs
+            int count = 0;
+            List<Data> datas = new();
+            var thumbs = MakeSortedList(SelectedThumbs, ActiveGroup);
+            //Data複製
+            foreach (var item in thumbs)
+            {
+                if (item.Data.DeepCopy() is Data data)
+                {
+                    //座標修正
+                    data.X += ActiveGroup.TTXShift;
+                    data.Y += ActiveGroup.TTYShift;
+                    datas.Add(data);
+                }
+            }
+
+            //DataからThumb作成して追加
+            List<TThumb> selection = new();
+            foreach (var item in datas)
+            {
+                if (AddThumbDataToActiveGroup(item, false) is TThumb thumb)
+                {
+                    selection.Add(thumb);
+                    count++;
+                }
+            }
+
+            //SelectedThumbsを複製したThumbに置き換える
+            SelectedThumbs.Clear();
+            foreach (var item in selection)
+            {
+                SelectedThumbs.Add(item);
+            }
+            return count;
+        }
+        #endregion Data複製して追加
+        #region 画像として複製
+        public int DuplicateImageSelectedThumbs()
+        {
+
+            //画像として複製、SelectedThumbs
+            int count = 0;
+            List<Data> datas = new();
+            var sortedThumbs = MakeSortedList(SelectedThumbs, ActiveGroup);
+            //Data複製
+            foreach (var item in sortedThumbs)
+            {
+                if (GetBitmapThumb(item) is BitmapSource bmp)
+                {
+                    //座標修正
+                    Data data = new(TType.Image)
+                    {
+                        BitmapSource = bmp,
+                        X = item.Data.X + ActiveGroup.TTXShift,
+                        Y = item.Data.Y + ActiveGroup.TTYShift,
+                    };
+                    datas.Add(data);
+                }
+            }
+
+            //DataからThumb作成して追加
+            List<TThumb> selection = new();
+            foreach (var item in datas)
+            {
+                if (AddThumbDataToActiveGroup(item, false) is TThumb thumb)
+                {
+                    selection.Add(thumb);
+                    count++;
+                }
+            }
+
+            //SelectedThumbsを複製したThumbに置き換える
+            SelectedThumbs.Clear();
+            foreach (var item in selection)
+            {
+                SelectedThumbs.Add(item);
+            }
+            return count;
+        }
+        #endregion 画像として複製
+        #endregion 複製
 
         #region ショートカットキー
 
