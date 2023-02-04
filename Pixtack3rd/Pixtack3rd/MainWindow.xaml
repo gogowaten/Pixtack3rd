@@ -16,7 +16,7 @@
     </Style>
   </Window.Resources>-->
   
-  <Grid Name="MyGrid" UseLayoutRounding="True">
+  <Grid Name="MyGrid">
     <Grid.ColumnDefinitions>
       <ColumnDefinition/>
       <ColumnDefinition Width="260"/>
@@ -50,7 +50,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <MenuItem Header="ClickedThumb" Click="ButtonSaveCickedThumb_Click"/>
           </MenuItem>
           <MenuItem Header="Dataファイルを開く">
-            <MenuItem Header="Root＆アプリ設定" Click="ButtonLoadDataPrevious_Click"/>
+            <!--<MenuItem Header="Root＆アプリ設定" Click="ButtonLoadDataPrevious_Click"/>-->
             <MenuItem Header="Root" Click="ButtonLoadData_Click"/>
             <MenuItem Header="RootをGroupとして追加" Click="ButtonLoadDataRootToGroup_Click"/>
             <MenuItem Header="ThumbData" Click="ButtonLoadDataThumb_Click"/>
@@ -72,13 +72,15 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
           </MenuItem>
           <MenuItem Header="画像としてコピペ(複製)">
             <MenuItem Header="Root" Click="ButtonDuplicateImage_Click"/>
-            <MenuItem Header="ActiveThumb" Click="ButtpmDuplicateImageActiveThumb_Click"/>
-            <MenuItem Header="ClickedThumb" Click="ButtonDuplicateImageClickedThumb_Click"/>
+            <!--<MenuItem Header="ActiveThumb" Click="ButtonDuplicateImageActiveThumb_Click"/>-->
+            <MenuItem Header="SelectedThumbs" Click="ButtonDuplicateImageSelectedT_Click"/>
+            <!--<MenuItem Header="ClickedThumb" Click="ButtonDuplicateImageClickedThumb_Click"/>-->
           </MenuItem>
           <MenuItem Header="Dataとしてコピペ(複製)">
             <MenuItem Header="Root" Click="ButtonDuplicateData_Click"/>
-            <MenuItem Header="ActiveThumb" Click="ButtpmDuplicateDataActiveThumb_Click" InputGestureText="Ctrl+D"/>
-            <MenuItem Header="ClickedThumb" Click="ButtonDuplicateDataClickedThumb_Click"/>
+            <!--<MenuItem Header="ActiveThumb" Click="ButtpmDuplicateDataActiveThumb_Click" InputGestureText="Ctrl+D"/>-->
+            <MenuItem Header="SelectedThumbs" Click="ButtonDuplicateDataSelectedT_Click" InputGestureText="Ctrl+D"/>
+            <!--<MenuItem Header="ClickedThumb" Click="ButtonDuplicateDataClickedThumb_Click"/>-->
           </MenuItem>
 
           <MenuItem Header="グループ化" Click="ButtonToGroup_Click" ToolTip="選択Thumbsをグループ化"/>
@@ -94,10 +96,10 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <MenuItem Header="Out(親GroupをActiveGroupにする)" Click="ButtonOut_Click"/>
           </MenuItem>
           <MenuItem Header="Z軸">
-            <MenuItem Header="前面へ移動" Click="ButtonUp_Click"/>
-            <MenuItem Header="最前面へ移動" Click="ButtonMostUp_Click"/>
-            <MenuItem Header="背面へ移動" Click="ButtonDown_Click"/>
-            <MenuItem Header="最背面へ移動" Click="ButtonMostDown_Click"/>
+            <MenuItem Header="前面へ移動" Click="ButtonZUp_Click" InputGestureText="PageUp"/>
+            <MenuItem Header="最前面へ移動" Click="ButtonZMostUp_Click" InputGestureText="PageDown"/>
+            <MenuItem Header="背面へ移動" Click="ButtonZDown_Click" InputGestureText="Ctrl+Shift+PageUp"/>
+            <MenuItem Header="最背面へ移動" Click="ButtonZMostDown_Click" InputGestureText="Ctrl+Shift+PageDown"/>
           </MenuItem>
           <MenuItem Header="XY軸1ピクセル">
             <MenuItem Header="上へ移動" Click="Button1Up_Click" InputGestureText="Up"/>
@@ -105,7 +107,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <MenuItem Header="左へ移動" Click="Button1Left_Click" InputGestureText="Left"/>
             <MenuItem Header="右へ移動" Click="Button1Right_Click" InputGestureText="Right"/>
           </MenuItem>
-          <MenuItem Header="XY軸1Grid">
+          <MenuItem Header="XY軸グリッドスナップ">
             <MenuItem Header="上へ移動" Click="ButtonGoUpGrid_Click" InputGestureText="Shift+Up"/>
             <MenuItem Header="下へ移動" Click="ButtonGoDownGrid_Click" InputGestureText="Shift+Down"/>
             <MenuItem Header="左へ移動" Click="ButtonGoLeftGrid_Click" InputGestureText="Shift+Left"/>
@@ -132,6 +134,20 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
           </Rectangle.Fill>
         </Rectangle>
         <ListBox ItemsSource="{Binding SelectedThumbs}">
+          <!--バインドエラー対策ここから-->
+          <ListBox.Resources>
+            <Style TargetType="ListBoxItem">
+              <Setter Property="HorizontalContentAlignment" Value="Center"/>
+              <Setter Property="VerticalContentAlignment" Value="Center"/>
+            </Style>
+          </ListBox.Resources>
+          <ListBox.ItemContainerStyle>
+            <Style TargetType="ListBoxItem">
+              <Setter Property="HorizontalContentAlignment" Value="Center"/>
+              <Setter Property="VerticalContentAlignment" Value="Center"/>
+            </Style>
+          </ListBox.ItemContainerStyle>
+          <!--バインドエラー対策ここまで-->
           <ListBox.ItemsPanel>
             <ItemsPanelTemplate>
               <StackPanel Orientation="Horizontal"/>
@@ -194,24 +210,24 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
 
           <StackPanel x:Name="MyStackPanel">
             <CheckBox Content="起動時に前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>
-            <GroupBox Header="waku">
+            <GroupBox Header="枠表示設定">
               <GroupBox.Resources>
                 <local:ConverterEnumToBool x:Key="waku"/>
               </GroupBox.Resources>
               <WrapPanel Name="MyWrap">
-                <RadioButton Content="None" IsChecked="{Binding
+                <RadioButton Content="表示しない" IsChecked="{Binding
               ConverterParameter={x:Static local:WakuVisibleType.None},
               Path=WakuVisibleType,
               Converter={StaticResource waku}}"/>
-                <RadioButton Content="All" IsChecked="{Binding
+                <RadioButton Content="全部表示" IsChecked="{Binding
               ConverterParameter={x:Static local:WakuVisibleType.All},
               Path=WakuVisibleType,
               Converter={StaticResource waku}}"/>
-                <RadioButton Content="NotGroup" IsChecked="{Binding
+                <RadioButton Content="Group以外表示" IsChecked="{Binding
               ConverterParameter={x:Static local:WakuVisibleType.NotGroup},
               Path=WakuVisibleType,
               Converter={StaticResource waku}}"/>
-                <RadioButton Content="OnlyActiveGroup" IsChecked="{Binding
+                <RadioButton Content="ActiveGroupだけ" IsChecked="{Binding
               ConverterParameter={x:Static local:WakuVisibleType.OnlyActiveGroup},
               Path=WakuVisibleType,
               Converter={StaticResource waku}}"/>
@@ -226,13 +242,13 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                 <Button x:Name="ButtonSaveToImageClicked" Content="Clicked" Click="ButtonSaveToImageClicked_Click"/>
               </WrapPanel>
             </GroupBox>
-            <!--<GroupBox Header="上書き保存と読み込み">
+            <GroupBox Header="上書き保存と読み込み">
               <UniformGrid Rows="2">
                 <Button x:Name="ButtonSaveDefault" Content="上書き保存" Click="ButtonSaveDefault_Click"/>
                 <Button x:Name="ButtonLoadDefault" Content="上書き保存を読み込み" Click="ButtonLoadDefault_Click"/>
-                <Button x:Name="ButtonLoadLastEndTime" Content="前回終了時を読み込み" Click="ButtonLoadLastEndTime_Click"/>
+                <!--<Button x:Name="ButtonLoadLastEndTime" Content="前回終了時を読み込み" Click="ButtonLoadLastEndTime_Click"/>-->
               </UniformGrid>
-            </GroupBox>-->
+            </GroupBox>
             <GroupBox Header="Dataファイルを保存">
               <WrapPanel>
                 <Button x:Name="ButtonSaveAllData" Content="アプリ設+Root" Click="ButtonSaveAllData_Click"/>
@@ -243,7 +259,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             </GroupBox>
             <GroupBox Header="Dataファイルデータ読み込み">
               <WrapPanel>
-                <Button x:Name="ButtonLoadDataPrevious" Content="前回" Click="ButtonLoadDataPrevious_Click"/>
+                <!--<Button x:Name="ButtonLoadDataPrevious" Content="前回" Click="ButtonLoadDataPrevious_Click"/>-->
                 <Button x:Name="ButtonLoadData" Content="全体" Click="ButtonLoadData_Click"/>
                 <Button x:Name="ButtonLoadDataThumb" Content="個別" Click="ButtonLoadDataThumb_Click"/>
                 <Button x:Name="ButtonLoadDataRootToGroup" Content="Rootをグループとして追加" Click="ButtonLoadDataRootToGroup_Click"/>
@@ -267,15 +283,17 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <GroupBox Header="画像としてコピペ(複製)">
               <UniformGrid Rows="1">
                 <Button x:Name="ButtonDuplicateImage" Content="全体" Click="ButtonDuplicateImage_Click"/>
-                <Button x:Name="ButtpmDuplicateImageActiveThumb" Content="Active" Click="ButtpmDuplicateImageActiveThumb_Click"/>
-                <Button x:Name="ButtonDuplicateImageClickedThumb" Content="Clicked" Click="ButtonDuplicateImageClickedThumb_Click"/>
+                <!--<Button x:Name="ButtpmDuplicateImageActiveThumb" Content="Active" Click="ButtonDuplicateImageActiveThumb_Click"/>-->
+                <Button x:Name="ButtonDuplicateImageSelectedT" Content="選択Thumb" Click="ButtonDuplicateImageSelectedT_Click"/>
+                <!--<Button x:Name="ButtonDuplicateImageClickedThumb" Content="Clicked" Click="ButtonDuplicateImageClickedThumb_Click"/>-->
               </UniformGrid>
             </GroupBox>
             <GroupBox Header="Dataとしてコピペ(複製)">
               <UniformGrid Rows="1">
                 <Button x:Name="ButtonDuplicateData" Content="全体" Click="ButtonDuplicateData_Click"/>
-                <Button x:Name="ButtpmDuplicateDataActiveThumb" Content="Active" Click="ButtpmDuplicateDataActiveThumb_Click"/>
-                <Button x:Name="ButtonDuplicateDataClickedThumb" Content="Clicked" Click="ButtonDuplicateDataClickedThumb_Click"/>
+                <!--<Button x:Name="ButtpmDuplicateDataActiveThumb" Content="Active" Click="ButtpmDuplicateDataActiveThumb_Click"/>-->
+                <Button x:Name="ButtonDuplicateDataSelectedT" Content="選択Thumb" Click="ButtonDuplicateDataSelectedT_Click"/>
+                <!--<Button x:Name="ButtonDuplicateDataClickedThumb" Content="Clicked" Click="ButtonDuplicateDataClickedThumb_Click"/>-->
               </UniformGrid>
             </GroupBox>
             <UniformGrid Rows="3" Columns="2">
@@ -288,10 +306,10 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             </UniformGrid>
             <GroupBox Header="奥行き(Z軸)移動、対象はActiveThumb">
               <UniformGrid Rows="1">
-                <Button x:Name="ButtonUp" Content="前面" Click="ButtonUp_Click"/>
-                <Button x:Name="ButtonDown" Content="背面" Click="ButtonDown_Click"/>
-                <Button x:Name="ButtonMostUp" Content="最前面" Click="ButtonMostUp_Click"/>
-                <Button x:Name="ButtonMostDown" Content="最背面" Click="ButtonMostDown_Click"/>
+                <Button x:Name="ButtonUp" Content="前面" Click="ButtonZUp_Click"/>
+                <Button x:Name="ButtonDown" Content="背面" Click="ButtonZDown_Click"/>
+                <Button x:Name="ButtonMostUp" Content="最前面" Click="ButtonZMostUp_Click"/>
+                <Button x:Name="ButtonMostDown" Content="最背面" Click="ButtonZMostDown_Click"/>
               </UniformGrid>
             </GroupBox>
             <GroupBox Header="グリッドスナップ移動、対象はActiveThumb">

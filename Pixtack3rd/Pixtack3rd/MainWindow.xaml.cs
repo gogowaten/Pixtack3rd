@@ -80,7 +80,7 @@ namespace Pixtack3rd
 
             //string imagePath = "D:\\ブログ用\\テスト用画像\\collection5.png";
             //string imagePath1 = "D:\\ブログ用\\テスト用画像\\collection4.png";
-            
+
             //Data dataImg1 = new(TType.Image) { BitmapSource = TTRoot.GetBitmap(imagePath) };
             //Data dataImg2 = new(TType.Image) { BitmapSource = TTRoot.GetBitmap(imagePath1), X = 100, Y = 100 };
 
@@ -135,23 +135,23 @@ namespace Pixtack3rd
             this.PreviewKeyDown += MainWindow_PreviewKeyDown;
         }
 
-        /// <summary>
-        /// 前回終了時のRootデータ読み込みしてセット
-        /// <paramref name="withAppconfigSet">AppConfigもセットするときはtrue</paramref>
-        /// </summary>
-        private void LoadPreviousData(bool withAppconfigSet = false)
-        {
-            var (data, appConfig) = LoadDataFromFile(System.IO.Path.Combine(Environment.CurrentDirectory, APP_ROOT_DATA_FILENAME));
-            if (data != null)
-            {
-                MyRoot.SetRootData(data);
-            }
-            if (appConfig != null && withAppconfigSet)
-            {
-                MyAppConfig = appConfig;
-                DataContext = MyAppConfig;
-            }
-        }
+        ///// <summary>
+        ///// 前回終了時のRootデータ読み込みしてセット
+        ///// <paramref name="withAppconfigSet">AppConfigもセットするときはtrue</paramref>
+        ///// </summary>
+        //private void LoadPreviousData(bool withAppconfigSet = false)
+        //{
+        //    var (data, appConfig) = LoadDataFromFile(System.IO.Path.Combine(Environment.CurrentDirectory, APP_ROOT_DATA_FILENAME));
+        //    if (data != null)
+        //    {
+        //        MyRoot.SetRootData(data);
+        //    }
+        //    if (appConfig != null && withAppconfigSet)
+        //    {
+        //        MyAppConfig = appConfig;
+        //        DataContext = MyAppConfig;
+        //    }
+        //}
 
         //ショートカットキー
         private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -159,15 +159,22 @@ namespace Pixtack3rd
             switch (Keyboard.Modifiers)
             {
                 case ModifierKeys.None:
+                    if (e.Key == Key.F4) { MyRoot.RemoveThumb(); }
                     break;
                 case ModifierKeys.Alt:
                     break;
                 case ModifierKeys.Control:
-                    if (e.Key == Key.S) { SaveAll(); }
+                    if (e.Key == Key.S) { SaveRootDataWithConfig(CurrentFileFullPath, MyRoot.Data, true); }
+                    else if (e.Key == Key.D) { DuplicateDataSelectedThumbs(); }
                     break;
                 case ModifierKeys.Shift:
                     break;
                 case ModifierKeys.Windows:
+                    break;
+                case (ModifierKeys.Control | ModifierKeys.Shift):
+                    if (e.Key == Key.S) { SaveAll(); }
+                    else if (e.Key == Key.D) { DuplicateDataRoot(); }
+                    else if (e.Key == Key.F4) { MyRoot.RemoveAll(); }
                     break;
             }
 
@@ -1252,64 +1259,86 @@ namespace Pixtack3rd
                 }
             }
         }
-        //前回終了時のデータ読み込み
-        private void ButtonLoadDataPrevious_Click(object sender, RoutedEventArgs e)
-        {
-            LoadPreviousData(true);
-        }
-        //dataファイルの読み込み
+        ////前回終了時のデータ読み込み
+        //private void ButtonLoadDataPrevious_Click(object sender, RoutedEventArgs e)
+        //{
+        //    LoadPreviousData(true);
+        //}
+
+        //ファイルの読み込み
         //TTRootのDataとアプリの設定を取得して設定
         private void ButtonLoadData_Click(object sender, RoutedEventArgs e)
         {
-            Microsoft.Win32.OpenFileDialog dialog = new();
-            dialog.Filter = EXTENSION_FILTER_P3;
-            if (dialog.ShowDialog() == true)
+            LoadData();
+        }
+        private bool LoadData()
+        {
+            if (GetLoadFilePathFromFileDialog(EXTENSION_FILTER_P3) is string filePath)
             {
-                (Data? data, AppConfig? appConfig) = LoadDataFromFile(dialog.FileName);
-                if (data != null)
+                (Data? data, AppConfig? appConfig) = LoadDataFromFile(filePath);
+                if (data is not null && appConfig is not null)
                 {
                     MyRoot.SetRootData(data);
-                    if (appConfig != null)
-                    {
-                        MyAppConfig = appConfig;
-                        DataContext = MyAppConfig;
+                    MyAppConfig = appConfig;
 
-                        CurrentFileFullPath = dialog.FileName;
-                    }
+                    //読み込んだファイルを上書き対象として指定
+                    CurrentFileFullPath = filePath;
+                    return true;
                 }
+                return false;
             }
+            return false;
+        }
+        private string? GetLoadFilePathFromFileDialog(string extFilter)
+        {
+            Microsoft.Win32.OpenFileDialog dialog = new();
+            dialog.Filter = extFilter;
+            if (dialog.ShowDialog() == true)
+            {
+                return dialog.FileName;
+            }
+            return null;
         }
 
         //RootDataであるaz3ファイルを読み込んで、TTGroupに変換して追加
         //変換部分が怪しい、項目が増えた場合はここも増やす必要があるのでバグ発生源になる？
         private void ButtonLoadDataRootToGroup_Click(object sender, RoutedEventArgs e)
         {
-            Microsoft.Win32.OpenFileDialog dialog = new();
-            dialog.Filter = EXTENSION_FILTER_P3;
-            if (dialog.ShowDialog() == true)
+            LoadDataRootToGroup();
+        }
+        private bool LoadDataRootToGroup()
+        {
+            if (GetLoadFilePathFromFileDialog(EXTENSION_FILTER_P3) is string filePath)
             {
-                (Data? data, AppConfig? appConfig) = LoadDataFromFile(dialog.FileName);
+                (Data? data, AppConfig? appConfig) = LoadDataFromFile(filePath);
                 if (ConvertDataRootToGroup(data) is Data groupData)
                 {
                     MyRoot.AddThumbDataToActiveGroup(groupData);
+                    return true;
                 }
+                return false;
             }
+            return false;
         }
 
         //個別Data読み込み
         private void ButtonLoadDataThumb_Click(object sender, RoutedEventArgs e)
         {
-            Microsoft.Win32.OpenFileDialog dialog = new();
-            dialog.Filter = EXTENSION_FILTER_P3D;
-            if (dialog.ShowDialog() == true)
+            LoadDataThumb();
+        }
+        private bool LoadDataThumb()
+        {
+            if (GetLoadFilePathFromFileDialog(EXTENSION_FILTER_P3D) is string filePath)
             {
-                (Data? data, AppConfig? appConfig) = LoadDataFromFile(dialog.FileName);
-                data = ConvertDataRootToGroup(data);
+                (Data? data, AppConfig? config) = LoadDataFromFile(filePath);
                 if (data is not null)
                 {
                     MyRoot.AddThumbDataToActiveGroup(data);
+                    return true;
                 }
+                return false;
             }
+            return false;
         }
 
         #endregion データ読み込み、アプリの設定読み込み
@@ -1602,18 +1631,31 @@ namespace Pixtack3rd
         //上書き保存
         private void ButtonSaveDefault_Click(object sender, RoutedEventArgs e)
         {
-
+            SaveRootDataWithConfig(CurrentFileFullPath, MyRoot.Data, true);
         }
         //上書き保存を読み込み
         private void ButtonLoadDefault_Click(object sender, RoutedEventArgs e)
         {
-
+            (Data? data, AppConfig? config) = LoadDataFromFile(CurrentFileFullPath);
+            if (data is not null)
+            {
+                MyRoot.SetRootData(data);
+            }
         }
-        //前回終了時を読み込み
-        private void ButtonLoadLastEndTime_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
+        ////前回終了時を読み込み
+        //private void ButtonLoadLastEndTime_Click(object sender, RoutedEventArgs e)
+        //{
+        //    (Data? data, AppConfig? config) = LoadDataFromFile(AppLastEndTimeDataFilePath);
+        //    if (data is not null)
+        //    {
+        //        MyRoot.SetRootData(data);
+        //    }
+        //    if (config is not null)
+        //    {
+        //        MyAppConfig = config;
+        //        DataContext = MyAppConfig;
+        //    }
+        //}
         #endregion 上書き保存と読み込み
 
         #region 保存系
@@ -1852,72 +1894,89 @@ namespace Pixtack3rd
         }
 
 
-        private void ButtpmDuplicateImageActiveThumb_Click(object sender, RoutedEventArgs e)
+       
+        //画像として複製、選択Thumb
+        private void ButtonDuplicateImageSelectedT_Click(object sender, RoutedEventArgs e)
         {
-            //画像として複製、ActiveThumb
-            if (MyRoot.GetBitmapActiveThumb() is BitmapSource bmp)
-            {
-                MyRoot.AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
-            }
+            DuplicateImageSelectedThumbs();
         }
-        private void ButtonDuplicateImageClickedThumb_Click(object sender, RoutedEventArgs e)
+        private int DuplicateImageSelectedThumbs()
         {
-            //画像として複製、ClickedThumb
-            if (MyRoot.GetBitmapClickedThumb() is BitmapSource bmp)
-            {
-                MyRoot.AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
-            }
+            return MyRoot.DuplicateImageSelectedThumbs();
         }
+        //private void ButtonDuplicateImageClickedThumb_Click(object sender, RoutedEventArgs e)
+        //{
+        //    //画像として複製、ClickedThumb
+        //    if (MyRoot.GetBitmapClickedThumb() is BitmapSource bmp)
+        //    {
+        //        MyRoot.AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
+        //    }
+        //}
         private void ButtonDuplicateData_Click(object sender, RoutedEventArgs e)
         {
-            //Dataとして複製、全体
+            DuplicateDataRoot();
+        }
+        private bool DuplicateDataRoot()
+        {
+            //Dataとして複製、全体Root
             if (ConvertDataRootToGroup(MyRoot.Data) is Data data && MyRoot.Thumbs.Count > 0)
             {
                 MyRoot.AddThumbDataToActiveGroup(data);
+                return true;
             }
+            return false;
         }
 
-        private void ButtpmDuplicateDataActiveThumb_Click(object sender, RoutedEventArgs e)
+        //private void ButtpmDuplicateDataActiveThumb_Click(object sender, RoutedEventArgs e)
+        //{
+        //    DuplicateDataActiveThumb();
+        //}
+        //private bool DuplicateDataActiveThumb()
+        //{
+        //    //Dataとして複製、ActiveThumb
+        //    return MyRoot.DuplicateDataActiveThumb();
+        //}
+
+        //private void ButtonDuplicateDataClickedThumb_Click(object sender, RoutedEventArgs e)
+        //{
+        //    //Dataとして複製、Clicked
+        //    DuplicateDataClickedThumb();
+        //}
+        //private bool DuplicateDataClickedThumb()
+        //{
+        //    return MyRoot.DuplicateClickedThumb();
+        //}
+        private void ButtonDuplicateDataSelectedT_Click(object sender, RoutedEventArgs e)
         {
-            //Dataとして複製、ActiveThumb
-            if (MyRoot.ActiveThumb?.Data.DeepCopy() is Data data)
-            {
-                MyRoot.AddThumbDataToActiveGroup(data);
-            }
+            DuplicateDataSelectedThumbs();
         }
-
-        private void ButtonDuplicateDataClickedThumb_Click(object sender, RoutedEventArgs e)
+        private int DuplicateDataSelectedThumbs()
         {
-            //Dataとして複製、Clicked
-            if (MyRoot.ClickedThumb?.Data.DeepCopy() is Data data)
-            {
-                MyRoot.AddThumbDataToActiveGroup(data);
-            }
+            return MyRoot.DuplicateDataSelectedThumbs();
         }
-
         #endregion 複製
 
         #region 移動
 
-        private void ButtonUp_Click(object sender, RoutedEventArgs e)
+        private void ButtonZUp_Click(object sender, RoutedEventArgs e)
         {
             //前面へ移動
             MyRoot.ZUp();
         }
 
-        private void ButtonDown_Click(object sender, RoutedEventArgs e)
+        private void ButtonZDown_Click(object sender, RoutedEventArgs e)
         {
             //背面へ移動
             MyRoot.ZDown();
         }
 
-        private void ButtonMostUp_Click(object sender, RoutedEventArgs e)
+        private void ButtonZMostUp_Click(object sender, RoutedEventArgs e)
         {
             //最前面へ
             MyRoot.ZUpFrontMost();
         }
 
-        private void ButtonMostDown_Click(object sender, RoutedEventArgs e)
+        private void ButtonZMostDown_Click(object sender, RoutedEventArgs e)
         {
             //最背面へ移動
             MyRoot.ZDownBackMost();
@@ -1927,7 +1986,7 @@ namespace Pixtack3rd
         //グリッドスナップ移動
         private void ButtonGoUpGrid_Click(object sender, RoutedEventArgs e)
         {
-            MyRoot.ActiveThumbGoUpGrid();
+            MyRoot.ActiveThumbGoUpGrid();            
         }
         private void ButtonGoDownGrid_Click(object sender, RoutedEventArgs e)
         {
@@ -1967,10 +2026,12 @@ namespace Pixtack3rd
 
 
 
+
         #endregion 移動
 
         #endregion ボタンクリックイベント
 
+        
     }
 
 
@@ -1999,7 +2060,7 @@ namespace Pixtack3rd
 
 
 
-        [DataMember] public int JpegQuality { get; set; } = 96;//jpeg画質
+        [DataMember] public int JpegQuality { get; set; } = 94;//jpeg画質
         [DataMember] public double Top { get; set; }//アプリ
         [DataMember] public double Left { get; set; }//アプリ
         //保存先リスト

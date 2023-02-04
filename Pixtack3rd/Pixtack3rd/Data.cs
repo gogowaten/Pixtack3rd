@@ -30,10 +30,10 @@ namespace Pixtack3rd
 
         [DataMember] public ObservableCollection<Data> Datas { get; set; } = new();
 
-        private int _xShift;
+        private int _xShift = 32;
         [DataMember] public int XShift { get => _xShift; set => SetProperty(ref _xShift, value); }
 
-        private int _yShift;
+        private int _yShift = 32;
         [DataMember] public int YShift { get => _yShift; set => SetProperty(ref _yShift, value); }
 
         private int _grid;
