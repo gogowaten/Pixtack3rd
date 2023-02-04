@@ -126,6 +126,7 @@ namespace Pixtack3rd
 
         }
 
+        //ショートカットキー
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
@@ -139,7 +140,8 @@ namespace Pixtack3rd
                             else if (e.Key == Key.Down) { root.ActiveThumbGoDownGrid(); }
                             else if (e.Key == Key.Left) { root.ActiveThumbGoLeftGrid(); }
                             else if (e.Key == Key.Right) { root.ActiveThumbGoRightGrid(); }
-
+                            else if (e.Key == Key.PageUp) { root.ZUp(); }
+                            else if (e.Key == Key.PageDown) { root.ZDown(); }
                         }
                         break;
                     case ModifierKeys.Alt:
@@ -157,6 +159,10 @@ namespace Pixtack3rd
                         }
                         break;
                     case ModifierKeys.Windows:
+                        break;
+                    case (ModifierKeys.Control | ModifierKeys.Shift):
+                        if (e.Key == Key.PageUp) { root.ZUpFrontMost(); }
+                        else if (e.Key == Key.PageDown) { root.ZDownBackMost(); }
                         break;
                 }
             }

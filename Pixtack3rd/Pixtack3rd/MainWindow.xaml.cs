@@ -1958,25 +1958,25 @@ namespace Pixtack3rd
 
         #region 移動
 
-        private void ButtonUp_Click(object sender, RoutedEventArgs e)
+        private void ButtonZUp_Click(object sender, RoutedEventArgs e)
         {
             //前面へ移動
             MyRoot.ZUp();
         }
 
-        private void ButtonDown_Click(object sender, RoutedEventArgs e)
+        private void ButtonZDown_Click(object sender, RoutedEventArgs e)
         {
             //背面へ移動
             MyRoot.ZDown();
         }
 
-        private void ButtonMostUp_Click(object sender, RoutedEventArgs e)
+        private void ButtonZMostUp_Click(object sender, RoutedEventArgs e)
         {
             //最前面へ
             MyRoot.ZUpFrontMost();
         }
 
-        private void ButtonMostDown_Click(object sender, RoutedEventArgs e)
+        private void ButtonZMostDown_Click(object sender, RoutedEventArgs e)
         {
             //最背面へ移動
             MyRoot.ZDownBackMost();

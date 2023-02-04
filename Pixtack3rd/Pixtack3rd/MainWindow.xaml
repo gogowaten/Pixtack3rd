@@ -96,10 +96,10 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <MenuItem Header="Out(親GroupをActiveGroupにする)" Click="ButtonOut_Click"/>
           </MenuItem>
           <MenuItem Header="Z軸">
-            <MenuItem Header="前面へ移動" Click="ButtonUp_Click"/>
-            <MenuItem Header="最前面へ移動" Click="ButtonMostUp_Click"/>
-            <MenuItem Header="背面へ移動" Click="ButtonDown_Click"/>
-            <MenuItem Header="最背面へ移動" Click="ButtonMostDown_Click"/>
+            <MenuItem Header="前面へ移動" Click="ButtonZUp_Click" InputGestureText="PageUp"/>
+            <MenuItem Header="最前面へ移動" Click="ButtonZMostUp_Click" InputGestureText="PageDown"/>
+            <MenuItem Header="背面へ移動" Click="ButtonZDown_Click" InputGestureText="Ctrl+Shift+PageUp"/>
+            <MenuItem Header="最背面へ移動" Click="ButtonZMostDown_Click" InputGestureText="Ctrl+Shift+PageDown"/>
           </MenuItem>
           <MenuItem Header="XY軸1ピクセル">
             <MenuItem Header="上へ移動" Click="Button1Up_Click" InputGestureText="Up"/>
@@ -107,7 +107,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <MenuItem Header="左へ移動" Click="Button1Left_Click" InputGestureText="Left"/>
             <MenuItem Header="右へ移動" Click="Button1Right_Click" InputGestureText="Right"/>
           </MenuItem>
-          <MenuItem Header="XY軸1Grid">
+          <MenuItem Header="XY軸グリッドスナップ">
             <MenuItem Header="上へ移動" Click="ButtonGoUpGrid_Click" InputGestureText="Shift+Up"/>
             <MenuItem Header="下へ移動" Click="ButtonGoDownGrid_Click" InputGestureText="Shift+Down"/>
             <MenuItem Header="左へ移動" Click="ButtonGoLeftGrid_Click" InputGestureText="Shift+Left"/>
@@ -306,10 +306,10 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             </UniformGrid>
             <GroupBox Header="奥行き(Z軸)移動、対象はActiveThumb">
               <UniformGrid Rows="1">
-                <Button x:Name="ButtonUp" Content="前面" Click="ButtonUp_Click"/>
-                <Button x:Name="ButtonDown" Content="背面" Click="ButtonDown_Click"/>
-                <Button x:Name="ButtonMostUp" Content="最前面" Click="ButtonMostUp_Click"/>
-                <Button x:Name="ButtonMostDown" Content="最背面" Click="ButtonMostDown_Click"/>
+                <Button x:Name="ButtonUp" Content="前面" Click="ButtonZUp_Click"/>
+                <Button x:Name="ButtonDown" Content="背面" Click="ButtonZDown_Click"/>
+                <Button x:Name="ButtonMostUp" Content="最前面" Click="ButtonZMostUp_Click"/>
+                <Button x:Name="ButtonMostDown" Content="最背面" Click="ButtonZMostDown_Click"/>
               </UniformGrid>
             </GroupBox>
             <GroupBox Header="グリッドスナップ移動、対象はActiveThumb">
