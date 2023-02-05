@@ -15,7 +15,7 @@
       <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
     </Style>
   </Window.Resources>-->
-  
+
   <Grid Name="MyGrid">
     <Grid.ColumnDefinitions>
       <ColumnDefinition/>
@@ -104,16 +104,16 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <MenuItem Header="最背面へ移動" Click="ButtonZMostDown_Click" InputGestureText="Ctrl+Shift+PageDown"/>
           </MenuItem>
           <MenuItem Header="XY軸1ピクセル">
-            <MenuItem Header="上へ移動" Click="Button1Up_Click" InputGestureText="Up"/>
-            <MenuItem Header="下へ移動" Click="Button1Down_Click" InputGestureText="Down"/>
-            <MenuItem Header="左へ移動" Click="Button1Left_Click" InputGestureText="Left"/>
-            <MenuItem Header="右へ移動" Click="Button1Right_Click" InputGestureText="Right"/>
+            <MenuItem Header="上へ移動" Click="Button1Up_Click" InputGestureText="Shift+Up"/>
+            <MenuItem Header="下へ移動" Click="Button1Down_Click" InputGestureText="Shift+Down"/>
+            <MenuItem Header="左へ移動" Click="Button1Left_Click" InputGestureText="Shift+Left"/>
+            <MenuItem Header="右へ移動" Click="Button1Right_Click" InputGestureText="Shift+Right"/>
           </MenuItem>
           <MenuItem Header="XY軸グリッドスナップ">
-            <MenuItem Header="上へ移動" Click="ButtonGoUpGrid_Click" InputGestureText="Shift+Up"/>
-            <MenuItem Header="下へ移動" Click="ButtonGoDownGrid_Click" InputGestureText="Shift+Down"/>
-            <MenuItem Header="左へ移動" Click="ButtonGoLeftGrid_Click" InputGestureText="Shift+Left"/>
-            <MenuItem Header="右へ移動" Click="ButtonGoRightGrid_Click" InputGestureText="Shift+Right"/>
+            <MenuItem Header="上へ移動" Click="ButtonGoUpGrid_Click" InputGestureText="Up"/>
+            <MenuItem Header="下へ移動" Click="ButtonGoDownGrid_Click" InputGestureText="Down"/>
+            <MenuItem Header="左へ移動" Click="ButtonGoLeftGrid_Click" InputGestureText="Left"/>
+            <MenuItem Header="右へ移動" Click="ButtonGoRightGrid_Click" InputGestureText="Right"/>
           </MenuItem>
         </MenuItem>
 
@@ -126,6 +126,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
 
     <StatusBar Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">
       <DockPanel DataContext="{Binding ElementName=MyRoot}">
+        <ToggleButton Content="toggle" IsChecked="True"/>
         <TextBlock Text="{Binding ActualWidth, StringFormat=size\(0x}"/>
         <TextBlock Text="{Binding ActualHeight, StringFormat=0\)}"/>
         <TextBlock Text="{Binding Thumbs.Count, StringFormat=thumbs 0}"/>
@@ -135,7 +136,9 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <VisualBrush Visual="{Binding ClickedThumb}" Stretch="Uniform"/>
           </Rectangle.Fill>
         </Rectangle>
-        <ListBox ItemsSource="{Binding SelectedThumbs}">
+        <ListBox ItemsSource="{Binding SelectedThumbs}" d:ItemsSource="{d:SampleData ItemCount=3}">
+          <!--#region バインドエラー対策-->
+
           <!--バインドエラー対策ここから-->
           <ListBox.Resources>
             <Style TargetType="ListBoxItem">
@@ -150,6 +153,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             </Style>
           </ListBox.ItemContainerStyle>
           <!--バインドエラー対策ここまで-->
+          <!--#endregion-->
           <ListBox.ItemsPanel>
             <ItemsPanelTemplate>
               <StackPanel Orientation="Horizontal"/>
@@ -168,6 +172,44 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>
+        
+        <ListBox ItemsSource="{Binding GroupsDirectlyBelow}" d:ItemsSource="{d:SampleData ItemCount=3}">
+          <!--#region バインドエラー対策-->
+
+          <!--バインドエラー対策ここから-->
+          <ListBox.Resources>
+            <Style TargetType="ListBoxItem">
+              <Setter Property="HorizontalContentAlignment" Value="Center"/>
+              <Setter Property="VerticalContentAlignment" Value="Center"/>
+            </Style>
+          </ListBox.Resources>
+          <ListBox.ItemContainerStyle>
+            <Style TargetType="ListBoxItem">
+              <Setter Property="HorizontalContentAlignment" Value="Center"/>
+              <Setter Property="VerticalContentAlignment" Value="Center"/>
+            </Style>
+          </ListBox.ItemContainerStyle>
+          <!--バインドエラー対策ここまで-->
+          <!--#endregion-->
+          <ListBox.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal"/>
+            </ItemsPanelTemplate>
+          </ListBox.ItemsPanel>
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <StackPanel>
+                <Rectangle Height="20" Width="20">
+                  <Rectangle.Fill>
+                    <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
+                  </Rectangle.Fill>
+                </Rectangle>
+                <CheckBox IsChecked="{Binding Data.IsNotVisiblle}"/>
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        
       </DockPanel>
     </StatusBar>
 
@@ -339,7 +381,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                 <RepeatButton x:Name="Button1Right" Content="右" Click="Button1Right_Click"/>
               </UniformGrid>
             </GroupBox>
-            
+
           </StackPanel>
         </StackPanel>
       </TabItem>
@@ -356,7 +398,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
           </StackPanel.Resources>
           <TextBlock Text="{Binding Thumbs.Count}"/>
           <TextBlock Text="{Binding TTWakuVisibleType}"/>
-          
+
           <!--<TreeView ItemsSource="{Binding Data.Datas}">
             <TreeView.Resources>
               <Style TargetType="TreeViewItem">
@@ -379,9 +421,9 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               </HierarchicalDataTemplate>
             </TreeView.ItemTemplate>
           </TreeView>-->
-          
-          
-          
+
+
+
           <GroupBox Header="ActiveGroup" DataContext="{Binding ActiveGroup}">
             <StackPanel>
               <StackPanel Orientation="Horizontal">
@@ -407,6 +449,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                               MyValue="{Binding TTGrid}" MyStringFormat="Grid 000;Grid -000;Grid 000"
                             MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
                             MyMinValue="1" MyMaxValue="1024"/>
+                  
                 </WrapPanel>
               </StackPanel>
               <StackPanel Orientation="Horizontal">

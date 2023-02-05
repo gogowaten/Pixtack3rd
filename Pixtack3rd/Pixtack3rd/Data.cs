@@ -19,6 +19,8 @@ namespace Pixtack3rd
     [DataContract]
     public class Data : IExtensibleDataObject, INotifyPropertyChanged
     {
+        #region 必要
+
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void SetProperty<T>(ref T field, T value, [System.Runtime.CompilerServices.CallerMemberName] string? name = null)
         {
@@ -27,6 +29,9 @@ namespace Pixtack3rd
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
         public ExtensionDataObject? ExtensionData { get; set; }//Dataの互換性維持
+        #endregion 必要
+
+        #region Group専用
 
         [DataMember] public ObservableCollection<Data> Datas { get; set; } = new();
 
@@ -39,7 +44,13 @@ namespace Pixtack3rd
         private int _grid;
         [DataMember] public int Grid { get => _grid; set => SetProperty(ref _grid, value); }
 
+        //グループの表示非表示
+        private bool _isVisibleThumb = false;
+        [DataMember] public bool IsNotVisiblle { get => _isVisibleThumb; set => SetProperty(ref _isVisibleThumb, value); }
 
+        #endregion Group専用
+
+        #region 共通
 
 
         [DataMember] public TType Type { get; set; }
@@ -55,6 +66,14 @@ namespace Pixtack3rd
         private double _y;
         [DataMember] public double Y { get => _y; set => SetProperty(ref _y, value); }
 
+        //シリアライズ時の画像ファイル名に使用、Guidで一意の名前作成している
+        [DataMember] public string Guid { get; set; } = System.Guid.NewGuid().ToString();
+        #endregion 共通
+
+
+        #region 固有
+
+
         private string _text = string.Empty;
         [DataMember] public string Text { get => _text; set => SetProperty(ref _text, value); }
 
@@ -65,9 +84,7 @@ namespace Pixtack3rd
         [IgnoreDataMember] private BitmapSource? _bitmapSource;
         [IgnoreDataMember] public BitmapSource? BitmapSource { get => _bitmapSource; set => SetProperty(ref _bitmapSource, value); }
 
-        //シリアライズ時の画像ファイル名に使用、Guidで一意の名前作成している
-        [DataMember] public string Guid { get; set; } = System.Guid.NewGuid().ToString();
-
+        #endregion 固有
 
         #region コンストラクタ
         public Data(TType type)
@@ -79,6 +96,7 @@ namespace Pixtack3rd
                     break;
                 case TType.Root:
                     Datas = new ObservableCollection<Data>();
+                    
                     break;
                 case TType.Group:
                     Datas = new ObservableCollection<Data>();
@@ -94,6 +112,8 @@ namespace Pixtack3rd
             }
         }
         #endregion コンストラクタ
+
+        #region ディープコピー
 
 
         /// <summary>
@@ -156,7 +176,7 @@ namespace Pixtack3rd
                 }
             }
         }
-
+        #endregion ディープコピー
     }
 
 }

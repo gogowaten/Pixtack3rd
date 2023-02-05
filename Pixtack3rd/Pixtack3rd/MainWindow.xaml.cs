@@ -2046,7 +2046,8 @@ namespace Pixtack3rd
 
         private void ButtonTest_Click(object sender, RoutedEventArgs e)
         {
-            
+            var neko = MyRoot.ActiveGroup.Data.IsNotVisiblle;
+            //MyRoot.ActiveGroup.Visibility = Visibility.Hidden;
         }
 
     }
@@ -2096,8 +2097,9 @@ namespace Pixtack3rd
         [DataMember] public bool HotkeyWin { get; set; }
         [DataMember] public Key HotKey { get; set; }//キャプチャーキー
 
-
-        //ファイルネーム        
+        #region ファイルネーム
+        
+        //
         //[DataMember] public FileNameBaseType FileNameBaseType { get; set; }
         [DataMember] public bool IsFileNameDate { get; set; }
         [DataMember] public double FileNameDateOrder { get; set; }
@@ -2125,7 +2127,7 @@ namespace Pixtack3rd
         [DataMember] public bool IsFileNameText4 { get; set; }
         [DataMember] public string? FileNameText4 { get; set; }
         [DataMember] public ObservableCollection<string> FileNameText4List { get; set; } = new();
-
+        #endregion ファイルネーム
 
         //音
         [DataMember] public bool IsSoundPlay { get; set; }

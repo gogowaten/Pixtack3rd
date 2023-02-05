@@ -463,6 +463,12 @@ namespace Pixtack3rd
             SetBinding(TTXShiftProperty, nameof(Data.XShift));
             SetBinding(TTYShiftProperty, nameof(Data.YShift));
             SetBinding(TTGridProperty, nameof(Data.Grid));
+            //SetBinding(IsVisibleProperty, nameof(data.IsVisiblleThumb));
+            Binding myB = new(nameof(data.IsNotVisiblle));
+            myB.Converter = new ConverterVisible();
+            myB.Mode = BindingMode.TwoWay;
+            SetBinding(VisibilityProperty, myB);
+
             IsGroup = true;
         }
 
@@ -733,7 +739,8 @@ namespace Pixtack3rd
 
         //選択状態の要素を保持
         public ExObservableCollection SelectedThumbs { get; private set; } = new();
-        //public ObservableCollection<TThumb> SelectedThumbs { get; private set; } = new();
+        //直属のグループ一覧、レイヤー
+        public ObservableCollection<TTGroup> GroupsDirectlyBelow { get; private set; } = new();
 
         //クリック前の選択状態、クリックUp時の選択Thumb削除に使う
         private bool IsSelectedPreviewMouseDown { get; set; }
@@ -789,6 +796,7 @@ namespace Pixtack3rd
             if (data.Type != TType.Root) return;
             Thumbs.Clear();
             SelectedThumbs.Clear();
+            GroupsDirectlyBelow.Clear();
             this.Data = data;
             DataContext = this.Data;
             ActiveGroup = this;
@@ -808,6 +816,8 @@ namespace Pixtack3rd
                 if (thumb is TTGroup group)
                 {
                     SetData(group);
+                    //直属のグループ
+                    GroupsDirectlyBelow.Add(group);
                 }
             }
         }
@@ -1121,6 +1131,12 @@ namespace Pixtack3rd
             thumb.DragDelta += Thumb_DragDelta;
             thumb.DragCompleted += Thumb_DragCompleted;
             thumb.DragStarted += Thumb_DragStarted;
+
+            //TTGroupの場合はGroupsDirectlyBelowに追加する
+            if (destGroup.Type == TType.Root && thumb is TTGroup group)
+            {
+                GroupsDirectlyBelow.Add(group);
+            }
         }
         protected void AddThumbWithoutDragEvent(TThumb thumb, TTGroup destGroup)
         {
@@ -1313,6 +1329,11 @@ namespace Pixtack3rd
                 thumb.DragDelta -= Thumb_DragDelta;
                 thumb.DragStarted -= Thumb_DragStarted;
                 group.TTGroupUpdateLayout();
+                //直属のグループならGroupsDirectlyBelowからも削除
+                if (group.Type==TType.Root && thumb is TTGroup isTTGroup)
+                {
+                    GroupsDirectlyBelow.Remove(isTTGroup);
+                }
                 return true;
             }
             else
@@ -1324,6 +1345,7 @@ namespace Pixtack3rd
         public void RemoveAll()
         {
             Thumbs.Clear();
+            GroupsDirectlyBelow.Clear();
             SelectedThumbs.Clear();
             Data.Datas.Clear();
             ActiveThumb = null;
@@ -2114,6 +2136,30 @@ namespace Pixtack3rd
             {
                 return DependencyProperty.UnsetValue;
             }
+        }
+    }
+
+    //表示非表示の切り替え用
+    public class ConverterVisible : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            bool bb = (bool)value;
+            if (bb)
+            {
+                return Visibility.Hidden;
+            }
+            else
+            {
+                return Visibility.Visible;
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            Visibility vi = (Visibility)value;
+            if (vi == Visibility.Visible) { return false; }
+            else { return true; }
         }
     }
 
