@@ -142,12 +142,15 @@ namespace Pixtack3rd
                             else if (e.Key == Key.Right) { root.ActiveThumbGoRightGrid(); }
                             else if (e.Key == Key.PageUp) { root.ZUp(); }
                             else if (e.Key == Key.PageDown) { root.ZDown(); }
+                            else if (e.Key == Key.Home) { root.ChangeActiveGroupOutside(); }
+                            else if (e.Key == Key.End) { root.ChangeActiveGroupInside(); }
                         }
                         break;
                     case ModifierKeys.Alt:
                         break;
                     case ModifierKeys.Control:
-                        //if (e.Key == Key.D) { root.DuplicateDataSelectedThumbs(); }
+                        if (e.Key == Key.Home) { root.ChangeActiveGroupToRoot(); }
+                        else if (e.Key == Key.End) { root.ChangeActiveGroupInsideClickedParent(); }
                         break;
                     case ModifierKeys.Shift:
 
@@ -1229,7 +1232,7 @@ namespace Pixtack3rd
                     RemoveThumb(ActiveGroup, ActiveGroup.TTParent);
                     SelectedThumbs.Clear();
                     ClickedThumb = null;
-                    ActiveGroupOutside();
+                    ChangeActiveGroupOutside();
                     return true;
                 }
                 else if (ActiveGroup.Type == TType.Root)
@@ -1290,7 +1293,7 @@ namespace Pixtack3rd
             {
                 //out
                 TTGroup temp = ActiveGroup;
-                ActiveGroupOutside();
+                ChangeActiveGroupOutside();
                 UnGroup(temp, ActiveGroup);
             }
             return flag;
@@ -1480,9 +1483,9 @@ namespace Pixtack3rd
         }
         #endregion グループ解除
 
-        #region InOut、ActiveThumbの切り替え
+        #region ActiveGroupの切り替え
         //ActiveThumbを内側(ActiveThumbの親)へ切り替える
-        public void ActiveGroupInside()
+        public void ChangeActiveGroupInside()
         {
             if (ActiveThumb is TTGroup group)
             {
@@ -1493,7 +1496,7 @@ namespace Pixtack3rd
         }
 
         //ActiveThumbを外側(親)へ切り替える
-        public void ActiveGroupOutside()
+        public void ChangeActiveGroupOutside()
         {
             if (ActiveGroup.TTParent is TTGroup parent)
             {
@@ -1502,8 +1505,23 @@ namespace Pixtack3rd
                 SelectedThumbs.Clear();
             }
         }
-        #endregion InOut、ActiveThumbの切り替え
-
+        //ClickedThumbの親GroupをActive
+        public void ChangeActiveGroupInsideClickedParent()
+        {
+            if (ClickedThumb?.TTParent is TTGroup parent)
+            {
+                ActiveGroup = parent;
+                ActiveThumb = GetActiveThumb(ClickedThumb);
+                SelectedThumbs.Clear();
+            }
+        }
+        public void ChangeActiveGroupToRoot()
+        {
+            ActiveGroup = this;
+            ActiveThumb = GetActiveThumb(ClickedThumb);
+            SelectedThumbs.Clear();
+        }
+        #endregion ActiveGroupの切り替え
         #region ZIndex
         //ZIndexが同じ場合はThumbsIndexが前後関係になるのを利用して
         //Thumbs要素の入れ替えによって前面、背面移動させる

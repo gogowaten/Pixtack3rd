@@ -92,8 +92,10 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
 
         <MenuItem Header="移動">
           <MenuItem Header="ActiveGroup切り替え">
-            <MenuItem Header="In(ActiveThumbをActiveGroupにする)" Click="ButtonIn_Click"/>
-            <MenuItem Header="Out(親GroupをActiveGroupにする)" Click="ButtonOut_Click"/>
+            <MenuItem Header="内側へ (ActiveThumb)" Click="ButtonIn_Click" InputGestureText="End"/>
+            <MenuItem Header="外側へ (今の親Group)" Click="ButtonOut_Click" InputGestureText="Home"/>
+            <MenuItem Header="最奥へ (ClickedThumbの親Group)" Click="ButtonInToClicked_Click" InputGestureText="Ctrl+End"/>
+            <MenuItem Header="最外へ (Root)" Click="ButtonDoRootActiveGroup_Click" InputGestureText="Ctrl+Home"/>
           </MenuItem>
           <MenuItem Header="Z軸">
             <MenuItem Header="前面へ移動" Click="ButtonZUp_Click" InputGestureText="PageUp"/>
@@ -170,8 +172,10 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
     </StatusBar>
 
     <ScrollViewer Grid.Row="1" Grid.Column="0"
-                  x:Name="MyScrollViewer" HorizontalScrollBarVisibility="Auto"
-                  VerticalScrollBarVisibility="Auto">
+                  x:Name="MyScrollViewer"
+                  HorizontalScrollBarVisibility="Auto"
+                  VerticalScrollBarVisibility="Auto"
+                  UseLayoutRounding="True">
       <!--<local:TTTextBlock TTText="222"/>-->
       <local:TTRoot x:Name="MyRoot"
                     HorizontalAlignment="Left" VerticalAlignment="Top"
@@ -235,6 +239,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               </WrapPanel>
             </GroupBox>
             <ComboBox x:Name="ComboBoxSaveFileType" SelectedItem="{Binding ImageType}"/>
+            <Button x:Name="ButtonTest" Content="test!!!!!!!!!!" Click="ButtonTest_Click"/>
             <GroupBox Header="画像ファイルとして保存">
               <WrapPanel>
                 <Button x:Name="ButtonSaveToImage" Content="Root" Click="ButtonSaveToImage_Click"/>
@@ -299,11 +304,17 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <UniformGrid Rows="3" Columns="2">
               <Button x:Name="ButtonToGroup" Content="グループ化" Click="ButtonToGroup_Click"/>
               <Button x:Name="ButtonUnGroup" Content="グループ解除" Click="ButtonUnGroup_Click"/>
-              <Button x:Name="ButtonIn" Content="In" Click="ButtonIn_Click"/>
-              <Button x:Name="ButtonOut" Content="Out" Click="ButtonOut_Click"/>
               <Button x:Name="ButtonRemove" Content="選択Thumb削除" Click="ButtonRemove_Click"/>
               <Button x:Name="ButtonRemoveAll" Content="全削除" Click="ButtonRemoveAll_Click"/>
             </UniformGrid>
+            <GroupBox Header="ActiveGroupの切り替え">
+              <UniformGrid>
+                <Button x:Name="ButtonIn" Content="In" Click="ButtonIn_Click"/>
+                <Button x:Name="ButtonOut" Content="Out" Click="ButtonOut_Click"/>
+                <Button x:Name="ButtonInToClicked" Content="InToClicked" Click="ButtonInToClicked_Click"/>
+                <Button x:Name="ButtonDoRootActiveGroup" Content="RootActiveGroup" Click="ButtonDoRootActiveGroup_Click"/>
+              </UniformGrid>
+            </GroupBox>
             <GroupBox Header="奥行き(Z軸)移動、対象はActiveThumb">
               <UniformGrid Rows="1">
                 <Button x:Name="ButtonUp" Content="前面" Click="ButtonZUp_Click"/>
@@ -345,7 +356,8 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
           </StackPanel.Resources>
           <TextBlock Text="{Binding Thumbs.Count}"/>
           <TextBlock Text="{Binding TTWakuVisibleType}"/>
-          <TreeView ItemsSource="{Binding Data.Datas}">
+          
+          <!--<TreeView ItemsSource="{Binding Data.Datas}">
             <TreeView.Resources>
               <Style TargetType="TreeViewItem">
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -366,8 +378,10 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                 </StackPanel>
               </HierarchicalDataTemplate>
             </TreeView.ItemTemplate>
-          </TreeView>
-
+          </TreeView>-->
+          
+          
+          
           <GroupBox Header="ActiveGroup" DataContext="{Binding ActiveGroup}">
             <StackPanel>
               <StackPanel Orientation="Horizontal">

@@ -1280,6 +1280,7 @@ namespace Pixtack3rd
                 {
                     MyRoot.SetRootData(data);
                     MyAppConfig = appConfig;
+                    DataContext = MyAppConfig;//必要？
 
                     //読み込んだファイルを上書き対象として指定
                     CurrentFileFullPath = filePath;
@@ -1810,17 +1811,6 @@ namespace Pixtack3rd
             MyRoot.UnGroup();
         }
 
-        private void ButtonIn_Click(object sender, RoutedEventArgs e)
-        {
-            //ActiveGroupの外へ
-            MyRoot.ActiveGroupInside();
-        }
-
-        private void ButtonOut_Click(object sender, RoutedEventArgs e)
-        {
-            //ActiveGroupの中へ
-            MyRoot.ActiveGroupOutside();
-        }
 
         private void ButtonRemove_Click(object sender, RoutedEventArgs e)
         {
@@ -1894,7 +1884,7 @@ namespace Pixtack3rd
         }
 
 
-       
+
         //画像として複製、選択Thumb
         private void ButtonDuplicateImageSelectedT_Click(object sender, RoutedEventArgs e)
         {
@@ -1958,6 +1948,28 @@ namespace Pixtack3rd
 
         #region 移動
 
+        //ActiveGroupの変更
+        private void ButtonIn_Click(object sender, RoutedEventArgs e)
+        {
+            //ActiveGroupの外へ
+            MyRoot.ChangeActiveGroupInside();
+        }
+
+        private void ButtonOut_Click(object sender, RoutedEventArgs e)
+        {
+            //ActiveGroupの中へ
+            MyRoot.ChangeActiveGroupOutside();
+        }
+        //ClickedThumbの親GroupをActiveGroupにする
+        private void ButtonInToClicked_Click(object sender, RoutedEventArgs e)
+        {
+            MyRoot.ChangeActiveGroupInsideClickedParent();
+        }
+        //RootをActiveGroupにする
+        private void ButtonDoRootActiveGroup_Click(object sender, RoutedEventArgs e)
+        {
+            MyRoot.ChangeActiveGroupToRoot();
+        }
         private void ButtonZUp_Click(object sender, RoutedEventArgs e)
         {
             //前面へ移動
@@ -1986,7 +1998,7 @@ namespace Pixtack3rd
         //グリッドスナップ移動
         private void ButtonGoUpGrid_Click(object sender, RoutedEventArgs e)
         {
-            MyRoot.ActiveThumbGoUpGrid();            
+            MyRoot.ActiveThumbGoUpGrid();
         }
         private void ButtonGoDownGrid_Click(object sender, RoutedEventArgs e)
         {
@@ -2027,11 +2039,16 @@ namespace Pixtack3rd
 
 
 
+
         #endregion 移動
 
         #endregion ボタンクリックイベント
 
-        
+        private void ButtonTest_Click(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
     }
 
 
