@@ -113,9 +113,10 @@ namespace Pixtack3rd
             SetBinding(TTLeftProperty, nameof(data.X));
             SetBinding(TTTopProperty, nameof(data.Y));
 
-
-            this.Focusable = true;//フォーカスできるようにする
-            //this.FocusVisualStyle = null;//フォーカス時の点線を表示しない
+            //フォーカスできるようにする
+            this.Focusable = true;
+            //フォーカス時の点線を表示しない
+            this.FocusVisualStyle = null;
 
             //カーソルキーで移動させているときに他のThumbに
             //フォーカスを移動させないようにしたいけど
@@ -1330,7 +1331,7 @@ namespace Pixtack3rd
                 thumb.DragStarted -= Thumb_DragStarted;
                 group.TTGroupUpdateLayout();
                 //直属のグループならGroupsDirectlyBelowからも削除
-                if (group.Type==TType.Root && thumb is TTGroup isTTGroup)
+                if (group.Type == TType.Root && thumb is TTGroup isTTGroup)
                 {
                     GroupsDirectlyBelow.Remove(isTTGroup);
                 }
@@ -1414,6 +1415,11 @@ namespace Pixtack3rd
                     item.DragDelta -= Thumb_DragDelta;
                     item.DragCompleted -= Thumb_DragCompleted;
                     item.DragStarted -= Thumb_DragStarted;
+                    //要素が直属のグループだったなら外す
+                    if(destGroup.Type==TType.Root && item is TTGroup group)
+                    {
+                        this.GroupsDirectlyBelow.Remove(group);
+                    }
 
                     newGroup.Thumbs.Add(item);
                     newGroup.Data.Datas.Add(item.Data);
@@ -1497,11 +1503,17 @@ namespace Pixtack3rd
                 item.TTTop += group.TTTop;
             }
             //抜け殻になった元のグループ要素削除
-            destGroup.Thumbs.Remove(group);
+            destGroup.Thumbs.Remove(group);            
             destGroup.Data.Datas.Remove(group.Data);
             group.DragCompleted -= Thumb_DragCompleted;//いる？
             group.DragDelta -= Thumb_DragDelta;
             group.DragStarted -= Thumb_DragStarted;
+
+            //直属のグループから外す
+            if (destGroup.Type == TType.Root)
+            {
+                this.GroupsDirectlyBelow.Remove(group);
+            }
         }
         #endregion グループ解除
 

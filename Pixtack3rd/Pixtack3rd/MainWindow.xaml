@@ -10,6 +10,7 @@
         Title="MainWindow" Height="950" Width="800" ResizeMode="CanResizeWithGrip"
         Top="{Binding Path=Top, Mode=TwoWay}" Left="{Binding Left, Mode=TwoWay}"
         AllowDrop="True" Name="Main">
+  <!--フォーカス時の点線を表示しない-->
   <!--<Window.Resources>
     <Style x:Key="FocusDisable" TargetType="{x:Type Button}">
       <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
