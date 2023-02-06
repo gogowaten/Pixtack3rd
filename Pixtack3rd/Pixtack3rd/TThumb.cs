@@ -113,14 +113,15 @@ namespace Pixtack3rd
             SetBinding(TTLeftProperty, nameof(data.X));
             SetBinding(TTTopProperty, nameof(data.Y));
 
-            //フォーカスできるようにする
-            this.Focusable = true;
+            //フォーカスできるようにする→ActiveThumbだけにしたのでRootで制御
+            //this.Focusable = true;
             //フォーカス時の点線を表示しない
             this.FocusVisualStyle = null;
 
             //カーソルキーで移動させているときに他のThumbに
-            //フォーカスを移動させないようにしたいけど
-            //これでは無理、
+            //フォーカスを移動させないようにする、とくにSetDirectionalNavigationが重要、カーソルキーで移動しなくなる
+            //      WPFでのメニューとキーボード操作時のフォーカス移動の話 - プログラム系統備忘録ブログ
+            //        https://tan.hatenadiary.jp/entry/20151115/1447574474
             KeyboardNavigation.SetControlTabNavigation(this, KeyboardNavigationMode.None);
             KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.None);
             KeyboardNavigation.SetDirectionalNavigation(this, KeyboardNavigationMode.None);
@@ -145,13 +146,16 @@ namespace Pixtack3rd
                             else if (e.Key == Key.PageDown) { root.ZDown(); }
                             else if (e.Key == Key.Home) { root.ChangeActiveGroupOutside(); }
                             else if (e.Key == Key.End) { root.ChangeActiveGroupInside(); }
+                            else if (e.Key == Key.C) { root.CopyImageActiveThumb(); }
                         }
                         break;
                     case ModifierKeys.Alt:
                         break;
                     case ModifierKeys.Control:
-                        if (e.Key == Key.Home) { root.ChangeActiveGroupToRoot(); }
-                        else if (e.Key == Key.End) { root.ChangeActiveGroupInsideClickedParent(); }
+                        if (e.Key == Key.Home) { root.ChangeActiveGroupToRoot(); }//最外
+                        else if (e.Key == Key.End) { root.ChangeActiveGroupInsideClickedParent(); }//最奥
+                        else if (e.Key == Key.V) { root.AddImageThumbFromClipboard(); }//画像貼り付け
+                        else if (e.Key == Key.D) { root.DuplicateDataSelectedThumbs(); }//複製
                         break;
                     case ModifierKeys.Shift:
 
@@ -167,6 +171,10 @@ namespace Pixtack3rd
                     case (ModifierKeys.Control | ModifierKeys.Shift):
                         if (e.Key == Key.PageUp) { root.ZUpFrontMost(); }
                         else if (e.Key == Key.PageDown) { root.ZDownBackMost(); }
+                        else if (e.Key == Key.C) { root.CopyImageRoot(); }
+                        break;
+                    case (ModifierKeys.Control | ModifierKeys.Alt):
+                        if (e.Key == Key.C) { root.CopyImageClickedThumb(); }
                         break;
                 }
             }
@@ -662,9 +670,18 @@ namespace Pixtack3rd
             get => _activeThumb;
             set
             {
-                if (_activeThumb != null) { _activeThumb.IsActiveThumb = false; }
+                if (_activeThumb != null)
+                {
+                    _activeThumb.IsActiveThumb = false;
+                    _activeThumb.Focusable = false;
+                }
                 SetProperty(ref _activeThumb, value);
-                if (_activeThumb != null) { _activeThumb.IsActiveThumb = true; }
+                if (_activeThumb != null)
+                {
+                    _activeThumb.IsActiveThumb = true;
+                    _activeThumb.Focusable = true;
+                    _activeThumb.Focus();
+                }
                 //FrontActiveThumbとBackActiveThumbを更新する
                 ChangedActiveThumb(value);
             }
@@ -988,6 +1005,8 @@ namespace Pixtack3rd
         #endregion オーバーライド関連
 
         #region その他関数
+
+
         /// <summary>
         /// 画像ファイルからBitmapImageを作成、ファイルロックなし
         /// </summary>
@@ -1156,13 +1175,22 @@ namespace Pixtack3rd
         /// ActiveThumbに要素をDataで追加
         /// </summary>
         /// <param name="data"></param>
+        /// <param name="addUpper">trueで上層に追加、falseで下層に追加</param>
         /// <param name="locateFix">追加位置修正、通常はtrue。複製時にはfalse</param>
-        public TThumb? AddThumbDataToActiveGroup(Data data, bool locateFix = true)
+        public TThumb? AddThumbDataToActiveGroup(Data data, bool addUpper, bool locateFix = true)
         {
 
             if (BuildThumb(data) is TThumb thumb)
             {
-                AddThumb(thumb, ActiveGroup);//直下にはドラッグ移動イベント付加
+                if (addUpper)
+                {
+                    AddThumb(thumb, ActiveGroup);//直下にはドラッグ移動イベント付加
+                }
+                else
+                {
+
+                    AddThumb(thumb, ActiveGroup, 0);
+                }
                 //位置修正、追加先のActiveThumbに合わせる
                 if (locateFix)
                 {
@@ -1416,7 +1444,7 @@ namespace Pixtack3rd
                     item.DragCompleted -= Thumb_DragCompleted;
                     item.DragStarted -= Thumb_DragStarted;
                     //要素が直属のグループだったなら外す
-                    if(destGroup.Type==TType.Root && item is TTGroup group)
+                    if (destGroup.Type == TType.Root && item is TTGroup group)
                     {
                         this.GroupsDirectlyBelow.Remove(group);
                     }
@@ -1503,7 +1531,7 @@ namespace Pixtack3rd
                 item.TTTop += group.TTTop;
             }
             //抜け殻になった元のグループ要素削除
-            destGroup.Thumbs.Remove(group);            
+            destGroup.Thumbs.Remove(group);
             destGroup.Data.Datas.Remove(group.Data);
             group.DragCompleted -= Thumb_DragCompleted;//いる？
             group.DragDelta -= Thumb_DragDelta;
@@ -1794,6 +1822,86 @@ namespace Pixtack3rd
         }
         #endregion 画像として取得
 
+        #region クリップボード系
+
+        //アルファ値を失わずに画像のコピペできた、.NET WPFのClipboard - 午後わてんのブログ
+        //        https://gogowaten.hatenablog.com/entry/2021/02/10/134406
+
+        /// <summary>
+        /// クリップボードに画像をコピーする。BitmapSourceとそれをPNG形式に変換したもの両方
+        /// </summary>
+        /// <param name="source"></param>
+        private static void ClipboardSetBitmapWithPng(BitmapSource source)
+        {
+            //DataObjectに入れたいデータを入れて、それをクリップボードにセットする
+            DataObject data = new();
+
+            //BitmapSource形式そのままでセット
+            data.SetData(typeof(BitmapSource), source);
+
+            //PNG形式にエンコードしたものをMemoryStreamして、それをセット
+            //画像をPNGにエンコード
+            PngBitmapEncoder pngEnc = new();
+            pngEnc.Frames.Add(BitmapFrame.Create(source));
+            //エンコードした画像をMemoryStreamにSava
+            using var ms = new System.IO.MemoryStream();
+            pngEnc.Save(ms);
+            data.SetData("PNG", ms);
+
+            //クリップボードにセット
+            Clipboard.SetDataObject(data, true);
+        }
+        /// <summary>
+        /// Rootを画像としてクリップボードにコピー
+        /// </summary>
+        public void CopyImageRoot()
+        {
+            if (GetBitmapRoot() is BitmapSource bmp) { ClipboardSetBitmapWithPng(bmp); }
+        }
+        public void CopyImageActiveThumb()
+        {
+            if (GetBitmapActiveThumb() is BitmapSource bmp) { ClipboardSetBitmapWithPng(bmp); }
+        }
+        public void CopyImageClickedThumb()
+        {
+            if (GetBitmapClickedThumb() is BitmapSource bmp) { ClipboardSetBitmapWithPng(bmp); }
+        }
+
+        //クリップボードの画像をImageThumbとして追加
+        /// <summary>
+        /// クリップボードから画像を取得してActiveGroupに追加
+        /// "PNG"形式優先で取得、できなければGetImageで取得
+        /// </summary>
+        public void AddImageThumbFromClipboard()
+        {
+            if (MyClipboard.GetImageFromClipboardPreferPNG() is BitmapSource bmp)
+            {
+                AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp }, true);
+            }
+            else { MessageBox.Show("画像は得られなかった"); }
+        }
+        //クリップボードから画像追加、"PNG"形式で取得
+        public void AddImageThumbFromClipboardPng()
+        {
+            if (MyClipboard.GetClipboardImagePngWithAlphaFix() is BitmapSource bmp)
+            {
+                AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp }, true);
+            }
+            else { MessageBox.Show("画像は得られなかった"); }
+        }
+        //クリップボードから画像追加、"PNG"形式で取得＋強制Bgr32変換
+        public void AddImageThumbFromClipboardBgr32()
+        {
+            if (MyClipboard.GetClipboardImageBgr32() is BitmapSource bmp)
+            {
+                AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp }, true);
+            }
+            else { MessageBox.Show("画像は得られなかった"); }
+        }
+
+
+        #endregion クリップボード系
+
         #region XYZ移動
         /// <summary>
         /// ActiveThumbを1グリッド上へ移動
@@ -1887,7 +1995,7 @@ namespace Pixtack3rd
             int count = 0;
             List<Data> datas = new();
             var thumbs = MakeSortedList(SelectedThumbs, ActiveGroup);
-            //Data複製
+            //Data複製、ディープコピー
             foreach (var item in thumbs)
             {
                 if (item.Data.DeepCopy() is Data data)
@@ -1903,7 +2011,7 @@ namespace Pixtack3rd
             List<TThumb> selection = new();
             foreach (var item in datas)
             {
-                if (AddThumbDataToActiveGroup(item, false) is TThumb thumb)
+                if (AddThumbDataToActiveGroup(item, true,false) is TThumb thumb)
                 {
                     selection.Add(thumb);
                     count++;
@@ -1919,6 +2027,7 @@ namespace Pixtack3rd
             return count;
         }
         #endregion Data複製して追加
+
         #region 画像として複製
         public int DuplicateImageSelectedThumbs()
         {
@@ -1947,7 +2056,7 @@ namespace Pixtack3rd
             List<TThumb> selection = new();
             foreach (var item in datas)
             {
-                if (AddThumbDataToActiveGroup(item, false) is TThumb thumb)
+                if (AddThumbDataToActiveGroup(item,true, false) is TThumb thumb)
                 {
                     selection.Add(thumb);
                     count++;
@@ -2171,6 +2280,23 @@ namespace Pixtack3rd
         {
             Visibility vi = (Visibility)value;
             if (vi == Visibility.Visible) { return false; }
+            else { return true; }
+        }
+    }
+
+    public class ConverterBoolInverse : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            bool bb = (bool)value;
+            if (bb is true) { return false; }
+            else { return true; }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            bool? bb = (bool?)value;
+            if (bb is null or true) { return false; }
             else { return true; }
         }
     }

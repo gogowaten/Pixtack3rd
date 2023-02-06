@@ -1,29 +1,20 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Runtime.Loader;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Xml;
-using ControlLibraryCore20200620;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Windows.Automation.Provider;
-using System.Windows.Markup;
 
 namespace Pixtack3rd
 {
@@ -37,16 +28,16 @@ namespace Pixtack3rd
         //アプリ情報
         private const string APP_NAME = "Pixtack3rd";
         private const string APP_CONFIG_FILE_NAME = "config" + ".xml";
-        private const string APP_LAST_END_TIME_FILE_NAME = "LastEndTimeData" + EXTENSION_NAME_DATA_AND_CONFIG;
+        private const string APP_LAST_END_TIME_FILE_NAME = "LastEndTimeData" + EXTENSION_NAME_APP;
         //読み込んでいるデータファイルのフルパス、上書き保存対象、起動時は前回終了時を読み込み
         private string CurrentFileFullPath = string.Empty;
         //終了時に状態保存、起動時に読み込みするファイルのフルパス
         private string AppLastEndTimeDataFilePath { get; } = string.Empty;
 
-        private const string EXTENSION_NAME_DATA_AND_CONFIG = ".p3rd";//Rootデータとアプリの設定を含んだ拡張子
+        private const string EXTENSION_NAME_APP = ".p3rd";//Rootデータとアプリの設定を含んだ拡張子
         private const string EXTENSION_NAME_DATA = ".p3";//データだけの拡張子
 
-        private const string EXTENSION_FILTER_P3 = "Pixtack3 設定＆全Data|*" + EXTENSION_NAME_DATA_AND_CONFIG;
+        private const string EXTENSION_FILTER_P3 = "Pixtack3 設定＆全Data|*" + EXTENSION_NAME_APP;
         private const string EXTENSION_FILTER_P3D = "Pixtack3 アイテムData|*" + EXTENSION_NAME_DATA;
 
         private string AppVersion;
@@ -371,57 +362,57 @@ namespace Pixtack3rd
             return directory;
         }
 
-        /// <summary>
-        /// クリップボードから画像を取得してActiveGroupに追加
-        /// <paramref name="isPreferPNG">取得時に"PNG"形式を優先するときはtrue</paramref>
-        /// <paramref name="isBgr32">ピクセルフォーマットをBgr32に変換(アルファ値を255に)するときはtrue</paramref>
-        /// </summary>
-        private void AddImageFromClipboard(bool isPreferPNG, bool isBgr32)
-        {
-            BitmapSource? bmp;
-            if (isPreferPNG)
-            {
-                if (isBgr32)
-                {
-                    bmp = GetPngImageFromClipboard();
-                }
-                else
-                {
-                    bmp = GetPngImageFromClipboardWithAlphaFix();
-                }
-            }
-            else
-            {
-                if (isBgr32)
-                {
-                    bmp = GetImageFromClipboardConvertBgr32();
-                }
-                else
-                {
-                    bmp = GetImageFromClipboardWithAlphaFix();
-                }
-            }
-            if (bmp != null)
-            {//追加
-                MyRoot.AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
-            }
-            else
-            {
-                MessageBox.Show("画像は得られなかった");
-            }
-        }
-        /// <summary>
-        /// クリップボードから画像を取得してActiveGroupに追加
-        /// "PNG"形式優先で取得、できなければGetImageで取得
-        /// </summary>
-        private void AddImageFromClipboard()
-        {
-            if (GetImageFromClipboardPreferPNG() is BitmapSource bmp)
-            {
-                MyRoot.AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
-            }
-            else { MessageBox.Show("画像は得られなかった"); }
-        }
+        ///// <summary>
+        ///// クリップボードから画像を取得してActiveGroupに追加
+        ///// <paramref name="isPreferPNG">取得時に"PNG"形式を優先するときはtrue</paramref>
+        ///// <paramref name="isBgr32">ピクセルフォーマットをBgr32に変換(アルファ値を255に)するときはtrue</paramref>
+        ///// </summary>
+        //private void AddImageFromClipboard(bool isPreferPNG, bool isBgr32)
+        //{
+        //    BitmapSource? bmp;
+        //    if (isPreferPNG)
+        //    {
+        //        if (isBgr32)
+        //        {
+        //            bmp = MyClipboard.GetBgr32FromPng();
+        //        }
+        //        else
+        //        {
+        //            bmp = MyClipboard.GetClipboardImagePngWithAlphaFix();
+        //        }
+        //    }
+        //    else
+        //    {
+        //        if (isBgr32)
+        //        {
+        //            bmp = MyClipboard.GetClipboardImageBgr32();
+        //        }
+        //        else
+        //        {
+        //            bmp = MyClipboard.GetImageFromClipboardWithAlphaFix();
+        //        }
+        //    }
+        //    if (bmp != null)
+        //    {//追加
+        //        MyRoot.AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
+        //    }
+        //    else
+        //    {
+        //        MessageBox.Show("画像は得られなかった");
+        //    }
+        //}
+        ///// <summary>
+        ///// クリップボードから画像を取得してActiveGroupに追加
+        ///// "PNG"形式優先で取得、できなければGetImageで取得
+        ///// </summary>
+        //private void AddImageFromClipboard()
+        //{
+        //    if (MyClipboard.GetImageFromClipboardPreferPNG() is BitmapSource bmp)
+        //    {
+        //        MyRoot.AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
+        //    }
+        //    else { MessageBox.Show("画像は得られなかった"); }
+        //}
 
         #endregion その他関数
 
@@ -1013,83 +1004,99 @@ namespace Pixtack3rd
 
         #region ファイルドロップで開く
 
+        private void AddThumbFromFiles(string[] fileList2)
+        {
+            List<string> errorFiles = new();
+
+            foreach (var item in fileList2)
+            {
+                //拡張子で判定、関連ファイルならDataで追加
+                var ext = System.IO.Path.GetExtension(item);
+                if (ext == EXTENSION_NAME_DATA || ext == EXTENSION_NAME_APP)
+                {
+                    var (data, appConfig) = LoadDataFromFile(item);
+                    if (data == null)
+                    {
+                        errorFiles.Add(item); continue;
+                    }
+                    //DataがRootならGroupに変換して追加
+                    if (data.Type == TType.Root)
+                    {
+                        //2
+                        //MyRoot.SetRootData(data);
+
+                        //3
+                        //MyRoot.AddThumbDataToActiveGroup(data);
+
+                        //1
+                        data = ConvertDataRootToGroup(data);
+                        if (data != null && appConfig is not null)
+                        {
+                            MyRoot.AddThumbDataToActiveGroup(data, appConfig.IsAddUpper);
+                        }
+                        else { errorFiles.Add(item); continue; }
+                    }
+                    else if (MyAppConfig is not null)
+                    {
+                        MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
+                    }
+
+
+                }
+                //それ以外の拡張子ファイルは画像として読み込む
+                else
+                {
+                    //試みてエラーだったらファイル名を表示
+                    try
+                    {
+                        FileStream stream = new(item, FileMode.Open, FileAccess.Read);
+                        BitmapImage img = new();
+                        img.BeginInit();
+                        img.StreamSource = stream;
+                        img.EndInit();
+                        Data data = new(TType.Image)
+                        {
+                            BitmapSource = img
+                        };
+                        if (MyAppConfig is not null)
+                        {
+                            MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        errorFiles.Add(item);
+                        continue;
+                    }
+                }
+            }
+            if (errorFiles.Count > 0)
+            {
+                string ms = "";
+                foreach (var name in errorFiles)
+                {
+                    ms += $"{name}\n";
+                }
+                MessageBox.Show(ms, "開くことができなかったファイル一覧",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
         private void MainWindow_Drop(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 //ファイル名一覧取得
                 var fileList2 = ((string[])e.Data.GetData(DataFormats.FileDrop)).ToArray();
-                Array.Sort(fileList2);//昇順ソート
-                List<string> errorFiles = new();
-
-                foreach (var item in fileList2)
+                if (MyAppConfig.IsAscendingSort)
                 {
-                    //拡張子で判定、関連ファイルならDataで追加
-                    var ext = System.IO.Path.GetExtension(item);
-                    if (ext == EXTENSION_NAME_DATA || ext == EXTENSION_NAME_DATA_AND_CONFIG)
-                    {
-                        var (data, appConfig) = LoadDataFromFile(item);
-                        if (data == null)
-                        {
-                            errorFiles.Add(item); continue;
-                        }
-                        //DataがRootならGroupに変換して追加
-                        if (data.Type == TType.Root)
-                        {
-                            //2
-                            //MyRoot.SetRootData(data);
-
-                            //3
-                            //MyRoot.AddThumbDataToActiveGroup(data);
-
-                            //1
-                            data = ConvertDataRootToGroup(data);
-                            if (data != null)
-                            {
-                                MyRoot.AddThumbDataToActiveGroup(data);
-                            }
-                            else { errorFiles.Add(item); continue; }
-                        }
-                        else
-                        {
-                            MyRoot.AddThumbDataToActiveGroup(data);
-                        }
-
-
-                    }
-                    //それ以外の拡張子ファイルは画像として読み込む
-                    else
-                    {
-                        //試みてエラーだったらファイル名を表示
-                        try
-                        {
-                            FileStream stream = new(item, FileMode.Open, FileAccess.Read);
-                            BitmapImage img = new();
-                            img.BeginInit();
-                            img.StreamSource = stream;
-                            img.EndInit();
-                            Data data = new(TType.Image)
-                            {
-                                BitmapSource = img
-                            };
-                            MyRoot.AddThumbDataToActiveGroup(data);
-                        }
-                        catch (Exception)
-                        {
-                            errorFiles.Add(item);
-                            continue;
-                        }
-                    }
+                    Array.Sort(fileList2);//昇順ソート
                 }
-                if (errorFiles.Count > 0)
+                else
                 {
-                    string ms = "";
-                    foreach (var name in errorFiles)
-                    {
-                        ms += $"{name}\n";
-                    }
-                    MessageBox.Show(ms, "開くことができなかったファイル一覧", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Array.Sort(fileList2);
+                    Array.Reverse(fileList2);
                 }
+                AddThumbFromFiles(fileList2);
             }
         }
         #endregion ファイルドロップで開く
@@ -1312,9 +1319,9 @@ namespace Pixtack3rd
             if (GetLoadFilePathFromFileDialog(EXTENSION_FILTER_P3) is string filePath)
             {
                 (Data? data, AppConfig? appConfig) = LoadDataFromFile(filePath);
-                if (ConvertDataRootToGroup(data) is Data groupData)
+                if (ConvertDataRootToGroup(data) is Data groupData && appConfig != null)
                 {
-                    MyRoot.AddThumbDataToActiveGroup(groupData);
+                    MyRoot.AddThumbDataToActiveGroup(groupData, appConfig.IsAddUpper);
                     return true;
                 }
                 return false;
@@ -1332,9 +1339,9 @@ namespace Pixtack3rd
             if (GetLoadFilePathFromFileDialog(EXTENSION_FILTER_P3D) is string filePath)
             {
                 (Data? data, AppConfig? config) = LoadDataFromFile(filePath);
-                if (data is not null)
+                if (data is not null && config is not null)
                 {
-                    MyRoot.AddThumbDataToActiveGroup(data);
+                    MyRoot.AddThumbDataToActiveGroup(data, config.IsAddUpper);
                     return true;
                 }
                 return false;
@@ -1342,286 +1349,28 @@ namespace Pixtack3rd
             return false;
         }
 
+        //複数ファイル
+        private void ButtonLoadFiles_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog dialog = new();
+            dialog.Multiselect = true;
+            dialog.Filter = "対応ファイル|*.bmp;*.jpg;*.png;*.gif;*.tiff;*.p3d;*.p3|すべて|*.*";
+            if (dialog.ShowDialog() == true)
+            {
+                string[] names = dialog.FileNames;
+                Array.Sort(names);
+                if (MyAppConfig.IsAscendingSort == false)
+                {
+                    Array.Reverse(names);
+                }
+                AddThumbFromFiles(names);
+            }
+        }
+
         #endregion データ読み込み、アプリの設定読み込み
 
 
 
-        #region クリップボード監視、画像取得、画像保存
-        //       クリップボードの中にある画像をWPFで取得してみた、Clipboard.GetImage() だけだと透明になる - 午後わてんのブログ
-        //https://gogowaten.hatenablog.com/entry/2019/11/12/201852
-
-        //        アルファ値を失わずに画像のコピペできた、.NET WPFのClipboard - 午後わてんのブログ
-        //https://gogowaten.hatenablog.com/entry/2021/02/10/134406
-
-
-        //四角形の場合は"PNG"で取得してBgr32に変換
-        //テキストボックスはGetImage()で取得してBgr32に変換
-
-        /// <summary>
-        /// クリップボードから画像を取得する、なかった場合はnullを返す
-        /// </summary>
-        /// <returns>BitmapSource</returns>
-        private BitmapSource? GetImageFromClipboard()
-        {
-
-            BitmapSource? source = null;
-            int count = 1;
-            int limit = 5;
-            do
-            {
-                try { source = Clipboard.GetImage(); }
-                catch (Exception) { }
-                finally { count++; }
-            } while (limit >= count && source == null);
-
-            if (source == null) { return null; }
-
-            //エクセル系のデータだった場合はGetImageで取得、このままだとアルファ値が0になっているので
-            //Bgr32に変換することでファルファ値を255にする
-            if (IsExcelCell())
-            {
-                source = new FormatConvertedBitmap(source, PixelFormats.Bgr32, null, 0);
-            }
-            //エクセル系以外はPNG形式で取得を試みて、得られなければGetImageで取得
-            else
-            {
-                BitmapSource? png = GetPngImageFromCripboard();
-                if (png != null)
-                {
-                    source = png;
-                }
-            }
-
-            if (source == null) { return null; }
-
-            //アルファ値が異常な画像ならピクセルフォーマットをBgr32に変換(アルファ値を255にする)
-            if (IsExceptionTransparent(source))
-            //if (IsExceptionTransparent(source))
-            {
-                source = new FormatConvertedBitmap(source, PixelFormats.Bgr32, null, 0);
-            }
-
-            return source;
-        }
-
-        /// <summary>
-        /// クリップボードから画像取得、
-        /// アルファ値をチェックして異常だった場合は修正する
-        /// </summary>
-        /// <returns></returns>
-        private BitmapSource? GetImageFromClipboardWithAlphaFix()
-        {
-            BitmapSource? source = null;
-            int count = 1;
-            int limit = 5;
-            do
-            {
-                try { source = Clipboard.GetImage(); }
-                catch (Exception) { }
-                finally { count++; }
-            } while (limit >= count && source == null);
-
-            if (source == null) { return null; }
-
-            //アルファ値が異常な画像ならピクセルフォーマットをBgr32に変換(アルファ値を255にする)
-            if (IsExceptionTransparent(source))
-            //if (IsExceptionTransparent(source))
-            {
-                source = new FormatConvertedBitmap(source, PixelFormats.Bgr32, null, 0);
-            }
-            return source;
-        }
-        /// <summary>
-        /// "PNG"形式優先でクリップボードから画像取得
-        /// </summary>
-        /// <returns></returns>
-        private BitmapSource? GetImageFromClipboardPreferPNG()
-        {
-            //"PNG"形式で取得できたら返す
-            if (GetPngImageFromClipboardWithAlphaFix() is BitmapSource png)
-            {
-                if (IsExceptionTransparent(png) == false)
-                {
-                    return png;
-                }
-            }
-
-            //取得できなかった場合はGetImageで取得
-            int count = 1;
-            int limit = 5;
-            BitmapSource? source = null;
-            do
-            {
-                try { source = Clipboard.GetImage(); }
-                catch (Exception) { }
-                finally { count++; }
-            } while (limit >= count && source == null);
-
-            if (source == null) { return null; }
-
-            //アルファ値が異常な画像ならピクセルフォーマットをBgr32に変換(アルファ値を255にする)
-            if (IsExceptionTransparent(source))
-            //if (IsExceptionTransparent(source))
-            {
-                source = new FormatConvertedBitmap(source, PixelFormats.Bgr32, null, 0);
-            }
-            return source;
-        }
-
-        private BitmapSource? GetImageFromClipboardConvertBgr32()
-        {
-            BitmapSource? source = null;
-            int count = 1;
-            int limit = 5;
-            do
-            {
-                try { source = Clipboard.GetImage(); }
-                catch (Exception) { }
-                finally { count++; }
-            } while (limit >= count && source == null);
-
-            if (source == null) { return null; }
-
-            //ピクセルフォーマットをBgr32に変換(アルファ値を255にする)
-            source = new FormatConvertedBitmap(source, PixelFormats.Bgr32, null, 0);
-
-            return source;
-        }
-
-        /// <summary>
-        /// クリップボードから"PNG"形式で画像取得、
-        /// アルファ値をチェックして異常だった場合は修正する
-        /// </summary>
-        /// <returns></returns>
-        private BitmapSource? GetPngImageFromClipboardWithAlphaFix()
-        {
-            if (GetPngImageFromCripboard() is BitmapSource source)
-            {
-                if (IsExceptionTransparent(source))
-                {
-                    //アルファ値が異常な画像ならピクセルフォーマットをBgr32に変換(アルファ値を255にする)
-                    return source = new FormatConvertedBitmap(source, PixelFormats.Bgr32, null, 0);
-                }
-                else { return source; }
-            }
-            else { return null; }
-        }
-        private BitmapSource? GetPngImageFromClipboard()
-        {
-            if (GetPngImageFromCripboard() is BitmapSource source)
-            {
-                //ピクセルフォーマットをBgr32に変換(アルファ値を255にする)
-                return new FormatConvertedBitmap(source, PixelFormats.Bgr32, null, 0);
-            }
-            else { return null; }
-        }
-
-
-        /// <summary>
-        /// BitmapSourceの全ピクセルのアルファ値を検査、一つでも1以上があれば正常なのでfalseを返す
-        /// すべて0だった場合はtrueを返す、Bgra32専用
-        /// </summary>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        private bool IsExceptionTransparent(BitmapSource source)
-        {
-            if (source.Format != PixelFormats.Bgra32) return false;
-            int stride = source.PixelWidth * 4;
-            byte[] pixels = new byte[stride * source.PixelHeight];
-            source.CopyPixels(pixels, stride, 0);
-            for (int i = 3; i < pixels.Length; i += 4)
-            {
-                if (pixels[i] > 0) return false;
-            }
-            return true;
-        }
-
-
-        /// <summary>
-        /// クリップボードのPNG形式の画像を取得する、ない場合はnullを返す
-        /// </summary>
-        /// <returns></returns>
-        private static BitmapFrame? GetPngImageFromCripboard()
-        {
-            try
-            {
-                using MemoryStream stream = (MemoryStream)Clipboard.GetData("PNG");
-                //source = BitmapFrame.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
-                return BitmapFrame.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
-            }
-            catch (Exception)
-            {
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// クリップボードのデータ判定、エクセル判定、
-        /// データの中にEnhancedMetafile形式があればエクセルと判定してtrueを返す
-        /// </summary>
-        /// <returns></returns>
-        private static bool IsExcelCell()
-        {
-
-            IDataObject? obj = null;
-            int count = 1;
-            int limit = 5;
-            do
-            {
-                try { obj = Clipboard.GetDataObject(); }
-                catch (Exception) { }
-                finally
-                {
-                    count++;
-                    Task.Delay(10);
-                }
-            } while (obj == null && limit >= count);
-
-            if (obj == null) { return false; }
-
-            string[] formats = obj.GetFormats();
-            foreach (var item in formats)
-            {
-                if (item == "EnhancedMetafile")
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-
-        //アルファ値を失わずに画像のコピペできた、.NET WPFのClipboard - 午後わてんのブログ
-        //        https://gogowaten.hatenablog.com/entry/2021/02/10/134406
-
-        /// <summary>
-        /// BitmapSourceをPNG形式に変換したものと、そのままの形式の両方をクリップボードにコピーする
-        /// </summary>
-        /// <param name="source"></param>
-        private static void ClipboardSetBitmapWithPng(BitmapSource source)
-        {
-            //DataObjectに入れたいデータを入れて、それをクリップボードにセットする
-            DataObject data = new();
-
-            //BitmapSource形式そのままでセット
-            data.SetData(typeof(BitmapSource), source);
-
-            //PNG形式にエンコードしたものをMemoryStreamして、それをセット
-            //画像をPNGにエンコード
-            PngBitmapEncoder pngEnc = new();
-            pngEnc.Frames.Add(BitmapFrame.Create(source));
-            //エンコードした画像をMemoryStreamにSava
-            using var ms = new System.IO.MemoryStream();
-            pngEnc.Save(ms);
-            data.SetData("PNG", ms);
-
-            //クリップボードにセット
-            Clipboard.SetDataObject(data, true);
-        }
-
-
-        #endregion クリップボード監視、画像取得
 
 
 
@@ -1799,6 +1548,10 @@ namespace Pixtack3rd
 
         #endregion 保存系
 
+        #region その他
+
+
+
         private void ButtonToGroup_Click(object sender, RoutedEventArgs e)
         {
             //グループ化
@@ -1822,52 +1575,52 @@ namespace Pixtack3rd
             //全削除
             MyRoot.RemoveAll();
         }
+        //グリッドの値を指定
+        private void ButtonGrid1_Click(object sender, RoutedEventArgs e)
+        {
+            NumeGrid.MyValue = 1;
+        }
+
+        private void ButtonGrid8_Click(object sender, RoutedEventArgs e)
+        {
+            NumeGrid.MyValue = 8;
+        }
+        #endregion その他
 
         #region クリップボード
         private void ButtonAddFromClipboard_Click(object sender, RoutedEventArgs e)
         {//クリップボードから画像追加、"PNG"形式優先で取得
-            AddImageFromClipboard();
+            MyRoot.AddImageThumbFromClipboard();
+            //AddImageFromClipboard();
         }
 
         private void ButtonAddFromClipboardPNG_Click(object sender, RoutedEventArgs e)
         {//クリップボードから画像追加、"PNG"形式で取得
-            AddImageFromClipboard(true, false);
+            MyRoot.AddImageThumbFromClipboardPng();
+            //AddImageFromClipboard(true, false);
         }
         private void ButtonAddFromClipboardBgr32_Click(object sender, RoutedEventArgs e)
         {//クリップボードから画像追加、"PNG"形式で取得＋強制Bgr32
-            AddImageFromClipboard(false, true); ;
+            MyRoot.AddImageThumbFromClipboardBgr32();
+            //AddImageFromClipboard(false, true); ;
         }
-
-        //private void ButtonAddFromClipboardPNGBgr32_Click(object sender, RoutedEventArgs e)
-        //{
-        //    AddImageFromClipboard(true, true);
-        //}
 
 
         private void ButtonCopyImage_Click(object sender, RoutedEventArgs e)
         {//画像として全体をコピー、クリップボードにセット
-            if (MyRoot.GetBitmapRoot() is BitmapSource bmp)
-            {
-                ClipboardSetBitmapWithPng(bmp);
-            }
+            MyRoot.CopyImageRoot();
         }
 
         private void ButtonCopyImageActiveThumb_Click(object sender, RoutedEventArgs e)
         {
             //画像としてActiveThumbをコピー、クリップボードにセット
-            if (MyRoot.GetBitmapActiveThumb() is BitmapSource bmp)
-            {
-                ClipboardSetBitmapWithPng(bmp);
-            }
+            MyRoot.CopyImageActiveThumb();
         }
 
         private void ButtonCopyImageClicedThumb_Click(object sender, RoutedEventArgs e)
         {
             //画像としてClickedThumbをコピー、クリップボードにセット
-            if (MyRoot.GetBitmapClickedThumb() is BitmapSource bmp)
-            {
-                ClipboardSetBitmapWithPng(bmp);
-            }
+            MyRoot.CopyImageClickedThumb();
         }
 
         #endregion クリップボード
@@ -1879,7 +1632,7 @@ namespace Pixtack3rd
             //画像として複製、全体
             if (MyRoot.GetBitmapRoot() is BitmapSource bmp)
             {
-                MyRoot.AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
+                MyRoot.AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp }, true);
             }
         }
 
@@ -1911,31 +1664,12 @@ namespace Pixtack3rd
             //Dataとして複製、全体Root
             if (ConvertDataRootToGroup(MyRoot.Data) is Data data && MyRoot.Thumbs.Count > 0)
             {
-                MyRoot.AddThumbDataToActiveGroup(data);
+                MyRoot.AddThumbDataToActiveGroup(data, true);
                 return true;
             }
             return false;
         }
 
-        //private void ButtpmDuplicateDataActiveThumb_Click(object sender, RoutedEventArgs e)
-        //{
-        //    DuplicateDataActiveThumb();
-        //}
-        //private bool DuplicateDataActiveThumb()
-        //{
-        //    //Dataとして複製、ActiveThumb
-        //    return MyRoot.DuplicateDataActiveThumb();
-        //}
-
-        //private void ButtonDuplicateDataClickedThumb_Click(object sender, RoutedEventArgs e)
-        //{
-        //    //Dataとして複製、Clicked
-        //    DuplicateDataClickedThumb();
-        //}
-        //private bool DuplicateDataClickedThumb()
-        //{
-        //    return MyRoot.DuplicateClickedThumb();
-        //}
         private void ButtonDuplicateDataSelectedT_Click(object sender, RoutedEventArgs e)
         {
             DuplicateDataSelectedThumbs();
@@ -2046,9 +1780,11 @@ namespace Pixtack3rd
 
         private void ButtonTest_Click(object sender, RoutedEventArgs e)
         {
-            var neko = MyRoot.ActiveGroup.Data.IsNotVisiblle;
+            var neko = MyAppConfig.IsAddUpper;
+            var config = MyAppConfig.IsAscendingSort;
             //MyRoot.ActiveGroup.Visibility = Visibility.Hidden;
         }
+
 
     }
 
@@ -2074,7 +1810,21 @@ namespace Pixtack3rd
 
         //枠表示設定
         private WakuVisibleType _wakuVisibleType = WakuVisibleType.All;
-        [DataMember] public WakuVisibleType WakuVisibleType { get => _wakuVisibleType; set => SetProperty(ref _wakuVisibleType, value); }
+        [DataMember]
+        public WakuVisibleType WakuVisibleType
+        {
+            get => _wakuVisibleType;
+            set => SetProperty(ref _wakuVisibleType, value);
+        }
+        //複数ファイル追加時の順番、昇順ソート、falseなら降順ソートになる
+        private bool _isAscendingSort = true;
+        public bool IsAscendingSort { get => _isAscendingSort; set => SetProperty(ref _isAscendingSort, value); }
+        //Thumbは上側に追加する、falseなら下側に追加
+
+        private bool _isAddUpper = true;
+        public bool IsAddUpper { get => _isAddUpper; set => SetProperty(ref _isAddUpper, value); }
+
+
 
 
 
@@ -2098,7 +1848,7 @@ namespace Pixtack3rd
         [DataMember] public Key HotKey { get; set; }//キャプチャーキー
 
         #region ファイルネーム
-        
+
         //
         //[DataMember] public FileNameBaseType FileNameBaseType { get; set; }
         [DataMember] public bool IsFileNameDate { get; set; }
