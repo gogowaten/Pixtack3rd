@@ -383,18 +383,18 @@ namespace Pixtack3rd
             {
                 if (isBgr32)
                 {
-                    bmp = GetPngImageFromClipboard();
+                    bmp = GetClipboardImageBgr32FromPng();
                 }
                 else
                 {
-                    bmp = GetPngImageFromClipboardWithAlphaFix();
+                    bmp = GetClipboardImagePngWithAlphaFix();
                 }
             }
             else
             {
                 if (isBgr32)
                 {
-                    bmp = GetImageFromClipboardConvertBgr32();
+                    bmp = GetClipboardImageBgr32();
                 }
                 else
                 {
@@ -1361,7 +1361,7 @@ namespace Pixtack3rd
         /// クリップボードから画像を取得する、なかった場合はnullを返す
         /// </summary>
         /// <returns>BitmapSource</returns>
-        private BitmapSource? GetImageFromClipboard()
+        private static BitmapSource? GetImageFromClipboard()
         {
 
             BitmapSource? source = null;
@@ -1409,7 +1409,7 @@ namespace Pixtack3rd
         /// アルファ値をチェックして異常だった場合は修正する
         /// </summary>
         /// <returns></returns>
-        private BitmapSource? GetImageFromClipboardWithAlphaFix()
+        private static BitmapSource? GetImageFromClipboardWithAlphaFix()
         {
             BitmapSource? source = null;
             int count = 1;
@@ -1432,13 +1432,13 @@ namespace Pixtack3rd
             return source;
         }
         /// <summary>
-        /// "PNG"形式優先でクリップボードから画像取得
+        /// クリップボードの画像取得、"PNG"形式で取得、できなければGetImage、アルファ値をチェックして異常ならBgr32変換
         /// </summary>
         /// <returns></returns>
-        private BitmapSource? GetImageFromClipboardPreferPNG()
+        private static BitmapSource? GetImageFromClipboardPreferPNG()
         {
             //"PNG"形式で取得できたら返す
-            if (GetPngImageFromClipboardWithAlphaFix() is BitmapSource png)
+            if (GetClipboardImagePngWithAlphaFix() is BitmapSource png)
             {
                 if (IsExceptionTransparent(png) == false)
                 {
@@ -1468,7 +1468,7 @@ namespace Pixtack3rd
             return source;
         }
 
-        private BitmapSource? GetImageFromClipboardConvertBgr32()
+        private static BitmapSource? GetClipboardImageBgr32()
         {
             BitmapSource? source = null;
             int count = 1;
@@ -1493,7 +1493,7 @@ namespace Pixtack3rd
         /// アルファ値をチェックして異常だった場合は修正する
         /// </summary>
         /// <returns></returns>
-        private BitmapSource? GetPngImageFromClipboardWithAlphaFix()
+        private static BitmapSource? GetClipboardImagePngWithAlphaFix()
         {
             if (GetPngImageFromCripboard() is BitmapSource source)
             {
@@ -1506,7 +1506,7 @@ namespace Pixtack3rd
             }
             else { return null; }
         }
-        private BitmapSource? GetPngImageFromClipboard()
+        private static BitmapSource? GetClipboardImageBgr32FromPng()
         {
             if (GetPngImageFromCripboard() is BitmapSource source)
             {
@@ -1523,7 +1523,7 @@ namespace Pixtack3rd
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        private bool IsExceptionTransparent(BitmapSource source)
+        private static bool IsExceptionTransparent(BitmapSource source)
         {
             if (source.Format != PixelFormats.Bgra32) return false;
             int stride = source.PixelWidth * 4;
@@ -1591,34 +1591,6 @@ namespace Pixtack3rd
             return false;
         }
 
-
-        //アルファ値を失わずに画像のコピペできた、.NET WPFのClipboard - 午後わてんのブログ
-        //        https://gogowaten.hatenablog.com/entry/2021/02/10/134406
-
-        /// <summary>
-        /// BitmapSourceをPNG形式に変換したものと、そのままの形式の両方をクリップボードにコピーする
-        /// </summary>
-        /// <param name="source"></param>
-        private static void ClipboardSetBitmapWithPng(BitmapSource source)
-        {
-            //DataObjectに入れたいデータを入れて、それをクリップボードにセットする
-            DataObject data = new();
-
-            //BitmapSource形式そのままでセット
-            data.SetData(typeof(BitmapSource), source);
-
-            //PNG形式にエンコードしたものをMemoryStreamして、それをセット
-            //画像をPNGにエンコード
-            PngBitmapEncoder pngEnc = new();
-            pngEnc.Frames.Add(BitmapFrame.Create(source));
-            //エンコードした画像をMemoryStreamにSava
-            using var ms = new System.IO.MemoryStream();
-            pngEnc.Save(ms);
-            data.SetData("PNG", ms);
-
-            //クリップボードにセット
-            Clipboard.SetDataObject(data, true);
-        }
 
 
         #endregion クリップボード監視、画像取得
@@ -1846,28 +1818,19 @@ namespace Pixtack3rd
 
         private void ButtonCopyImage_Click(object sender, RoutedEventArgs e)
         {//画像として全体をコピー、クリップボードにセット
-            if (MyRoot.GetBitmapRoot() is BitmapSource bmp)
-            {
-                ClipboardSetBitmapWithPng(bmp);
-            }
+            MyRoot.CopyImageRoot();
         }
 
         private void ButtonCopyImageActiveThumb_Click(object sender, RoutedEventArgs e)
         {
             //画像としてActiveThumbをコピー、クリップボードにセット
-            if (MyRoot.GetBitmapActiveThumb() is BitmapSource bmp)
-            {
-                ClipboardSetBitmapWithPng(bmp);
-            }
+            MyRoot.CopyImageActiveThumb();
         }
 
         private void ButtonCopyImageClicedThumb_Click(object sender, RoutedEventArgs e)
         {
             //画像としてClickedThumbをコピー、クリップボードにセット
-            if (MyRoot.GetBitmapClickedThumb() is BitmapSource bmp)
-            {
-                ClipboardSetBitmapWithPng(bmp);
-            }
+            MyRoot.CopyImageClickedThumb();
         }
 
         #endregion クリップボード
@@ -2098,7 +2061,7 @@ namespace Pixtack3rd
         [DataMember] public Key HotKey { get; set; }//キャプチャーキー
 
         #region ファイルネーム
-        
+
         //
         //[DataMember] public FileNameBaseType FileNameBaseType { get; set; }
         [DataMember] public bool IsFileNameDate { get; set; }

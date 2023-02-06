@@ -366,7 +366,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                 <Button x:Name="ButtonMostDown" Content="最背面" Click="ButtonZMostDown_Click"/>
               </UniformGrid>
             </GroupBox>
-            <GroupBox Header="グリッドスナップ移動、対象はActiveThumb">
+            <!--<GroupBox Header="グリッドスナップ移動、対象はActiveThumb">
               <UniformGrid Rows="1">
                 <Button x:Name="ButtonGoUpGrid" Content="上" Click="ButtonGoUpGrid_Click"/>
                 <Button x:Name="ButtonGoDownGrid" Content="下" Click="ButtonGoDownGrid_Click"/>
@@ -381,7 +381,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                 <RepeatButton x:Name="Button1Left" Content="左" Click="Button1Left_Click"/>
                 <RepeatButton x:Name="Button1Right" Content="右" Click="Button1Right_Click"/>
               </UniformGrid>
-            </GroupBox>
+            </GroupBox>-->
 
           </StackPanel>
         </StackPanel>

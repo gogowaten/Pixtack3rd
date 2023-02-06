@@ -119,8 +119,9 @@ namespace Pixtack3rd
             this.FocusVisualStyle = null;
 
             //カーソルキーで移動させているときに他のThumbに
-            //フォーカスを移動させないようにしたいけど
-            //これでは無理、
+            //フォーカスを移動させないようにする、とくにSetDirectionalNavigationが重要、カーソルキーで移動しなくなる
+            //      WPFでのメニューとキーボード操作時のフォーカス移動の話 - プログラム系統備忘録ブログ
+            //        https://tan.hatenadiary.jp/entry/20151115/1447574474
             KeyboardNavigation.SetControlTabNavigation(this, KeyboardNavigationMode.None);
             KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.None);
             KeyboardNavigation.SetDirectionalNavigation(this, KeyboardNavigationMode.None);
@@ -145,6 +146,7 @@ namespace Pixtack3rd
                             else if (e.Key == Key.PageDown) { root.ZDown(); }
                             else if (e.Key == Key.Home) { root.ChangeActiveGroupOutside(); }
                             else if (e.Key == Key.End) { root.ChangeActiveGroupInside(); }
+                            else if (e.Key == Key.C) { root.CopyImageActiveThumb(); }
                         }
                         break;
                     case ModifierKeys.Alt:
@@ -167,6 +169,10 @@ namespace Pixtack3rd
                     case (ModifierKeys.Control | ModifierKeys.Shift):
                         if (e.Key == Key.PageUp) { root.ZUpFrontMost(); }
                         else if (e.Key == Key.PageDown) { root.ZDownBackMost(); }
+                        else if (e.Key == Key.C) { root.CopyImageRoot(); }
+                        break;
+                    case (ModifierKeys.Control | ModifierKeys.Alt):
+                        if (e.Key == Key.C) { root.CopyImageClickedThumb(); }
                         break;
                 }
             }
@@ -988,6 +994,8 @@ namespace Pixtack3rd
         #endregion オーバーライド関連
 
         #region その他関数
+
+
         /// <summary>
         /// 画像ファイルからBitmapImageを作成、ファイルロックなし
         /// </summary>
@@ -1416,7 +1424,7 @@ namespace Pixtack3rd
                     item.DragCompleted -= Thumb_DragCompleted;
                     item.DragStarted -= Thumb_DragStarted;
                     //要素が直属のグループだったなら外す
-                    if(destGroup.Type==TType.Root && item is TTGroup group)
+                    if (destGroup.Type == TType.Root && item is TTGroup group)
                     {
                         this.GroupsDirectlyBelow.Remove(group);
                     }
@@ -1503,7 +1511,7 @@ namespace Pixtack3rd
                 item.TTTop += group.TTTop;
             }
             //抜け殻になった元のグループ要素削除
-            destGroup.Thumbs.Remove(group);            
+            destGroup.Thumbs.Remove(group);
             destGroup.Data.Datas.Remove(group.Data);
             group.DragCompleted -= Thumb_DragCompleted;//いる？
             group.DragDelta -= Thumb_DragDelta;
@@ -1793,6 +1801,53 @@ namespace Pixtack3rd
             return bitmap;
         }
         #endregion 画像として取得
+
+        #region クリップボード系
+
+        //アルファ値を失わずに画像のコピペできた、.NET WPFのClipboard - 午後わてんのブログ
+        //        https://gogowaten.hatenablog.com/entry/2021/02/10/134406
+
+        /// <summary>
+        /// クリップボードに画像をコピーする。BitmapSourceとそれをPNG形式に変換したもの両方
+        /// </summary>
+        /// <param name="source"></param>
+        private static void ClipboardSetBitmapWithPng(BitmapSource source)
+        {
+            //DataObjectに入れたいデータを入れて、それをクリップボードにセットする
+            DataObject data = new();
+
+            //BitmapSource形式そのままでセット
+            data.SetData(typeof(BitmapSource), source);
+
+            //PNG形式にエンコードしたものをMemoryStreamして、それをセット
+            //画像をPNGにエンコード
+            PngBitmapEncoder pngEnc = new();
+            pngEnc.Frames.Add(BitmapFrame.Create(source));
+            //エンコードした画像をMemoryStreamにSava
+            using var ms = new System.IO.MemoryStream();
+            pngEnc.Save(ms);
+            data.SetData("PNG", ms);
+
+            //クリップボードにセット
+            Clipboard.SetDataObject(data, true);
+        }
+        /// <summary>
+        /// Rootを画像としてクリップボードにコピー
+        /// </summary>
+        public void CopyImageRoot()
+        {
+            if (GetBitmapRoot() is BitmapSource bmp) { ClipboardSetBitmapWithPng(bmp); }
+        }
+        public void CopyImageActiveThumb()
+        {
+            if (GetBitmapActiveThumb() is BitmapSource bmp) { ClipboardSetBitmapWithPng(bmp); }
+        }
+        public void CopyImageClickedThumb()
+        {
+            if (GetBitmapClickedThumb() is BitmapSource bmp) { ClipboardSetBitmapWithPng(bmp); }
+        }
+
+        #endregion クリップボード系
 
         #region XYZ移動
         /// <summary>
