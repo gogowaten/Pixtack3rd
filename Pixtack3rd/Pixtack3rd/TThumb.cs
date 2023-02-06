@@ -113,8 +113,8 @@ namespace Pixtack3rd
             SetBinding(TTLeftProperty, nameof(data.X));
             SetBinding(TTTopProperty, nameof(data.Y));
 
-            //フォーカスできるようにする
-            this.Focusable = true;
+            //フォーカスできるようにする→ActiveThumbだけにしたのでRootで制御
+            //this.Focusable = true;
             //フォーカス時の点線を表示しない
             this.FocusVisualStyle = null;
 
@@ -152,8 +152,10 @@ namespace Pixtack3rd
                     case ModifierKeys.Alt:
                         break;
                     case ModifierKeys.Control:
-                        if (e.Key == Key.Home) { root.ChangeActiveGroupToRoot(); }
-                        else if (e.Key == Key.End) { root.ChangeActiveGroupInsideClickedParent(); }
+                        if (e.Key == Key.Home) { root.ChangeActiveGroupToRoot(); }//最外
+                        else if (e.Key == Key.End) { root.ChangeActiveGroupInsideClickedParent(); }//最奥
+                        else if (e.Key == Key.V) { root.AddImageThumbFromClipboard(); }//画像貼り付け
+                        else if (e.Key == Key.D) { root.DuplicateDataSelectedThumbs(); }//複製
                         break;
                     case ModifierKeys.Shift:
 
@@ -668,9 +670,18 @@ namespace Pixtack3rd
             get => _activeThumb;
             set
             {
-                if (_activeThumb != null) { _activeThumb.IsActiveThumb = false; }
+                if (_activeThumb != null)
+                {
+                    _activeThumb.IsActiveThumb = false;
+                    _activeThumb.Focusable = false;
+                }
                 SetProperty(ref _activeThumb, value);
-                if (_activeThumb != null) { _activeThumb.IsActiveThumb = true; }
+                if (_activeThumb != null)
+                {
+                    _activeThumb.IsActiveThumb = true;
+                    _activeThumb.Focusable = true;
+                    _activeThumb.Focus();
+                }
                 //FrontActiveThumbとBackActiveThumbを更新する
                 ChangedActiveThumb(value);
             }
@@ -1847,6 +1858,39 @@ namespace Pixtack3rd
             if (GetBitmapClickedThumb() is BitmapSource bmp) { ClipboardSetBitmapWithPng(bmp); }
         }
 
+        //クリップボードの画像をImageThumbとして追加
+        /// <summary>
+        /// クリップボードから画像を取得してActiveGroupに追加
+        /// "PNG"形式優先で取得、できなければGetImageで取得
+        /// </summary>
+        public void AddImageThumbFromClipboard()
+        {
+            if (MyClipboard.GetImageFromClipboardPreferPNG() is BitmapSource bmp)
+            {
+                AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
+            }
+            else { MessageBox.Show("画像は得られなかった"); }
+        }
+        //クリップボードから画像追加、"PNG"形式で取得
+        public void AddImageThumbFromClipboardPng()
+        {
+            if (MyClipboard.GetClipboardImagePngWithAlphaFix() is BitmapSource bmp)
+            {
+                AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
+            }
+            else { MessageBox.Show("画像は得られなかった"); }
+        }
+        //クリップボードから画像追加、"PNG"形式で取得＋強制Bgr32変換
+        public void AddImageThumbFromClipboardBgr32()
+        {
+            if (MyClipboard.GetClipboardImageBgr32() is BitmapSource bmp)
+            {
+                AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
+            }
+            else { MessageBox.Show("画像は得られなかった"); }
+        }
+
+
         #endregion クリップボード系
 
         #region XYZ移動
@@ -1942,7 +1986,7 @@ namespace Pixtack3rd
             int count = 0;
             List<Data> datas = new();
             var thumbs = MakeSortedList(SelectedThumbs, ActiveGroup);
-            //Data複製
+            //Data複製、ディープコピー
             foreach (var item in thumbs)
             {
                 if (item.Data.DeepCopy() is Data data)
@@ -1974,6 +2018,7 @@ namespace Pixtack3rd
             return count;
         }
         #endregion Data複製して追加
+
         #region 画像として複製
         public int DuplicateImageSelectedThumbs()
         {
@@ -2226,6 +2271,23 @@ namespace Pixtack3rd
         {
             Visibility vi = (Visibility)value;
             if (vi == Visibility.Visible) { return false; }
+            else { return true; }
+        }
+    }
+
+    public class ConverterBoolInverse : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            bool bb = (bool)value;
+            if (bb is true) { return false; }
+            else { return true; }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            bool? bb = (bool?)value;
+            if (bb is null or true) { return false; }
             else { return true; }
         }
     }

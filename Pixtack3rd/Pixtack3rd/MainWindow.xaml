@@ -35,7 +35,7 @@
 https://tan.hatenadiary.jp/entry/20151115/1447574474-->
 
       <Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
-        KeyboardNavigation.TabNavigation="Cycle"
+        KeyboardNavigation.TabNavigation="Local"
         KeyboardNavigation.ControlTabNavigation="None"
             KeyboardNavigation.DirectionalNavigation="None">
         <MenuItem Header="ファイル(_F)">
@@ -93,14 +93,14 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
 
         <MenuItem Header="移動">
           <MenuItem Header="ActiveGroup切り替え">
-            <MenuItem Header="内側へ (ActiveThumb)" Click="ButtonIn_Click" InputGestureText="End"/>
-            <MenuItem Header="外側へ (今の親Group)" Click="ButtonOut_Click" InputGestureText="Home"/>
-            <MenuItem Header="最奥へ (ClickedThumbの親Group)" Click="ButtonInToClicked_Click" InputGestureText="Ctrl+End"/>
             <MenuItem Header="最外へ (Root)" Click="ButtonDoRootActiveGroup_Click" InputGestureText="Ctrl+Home"/>
+            <MenuItem Header="外側へ (今の親Group)" Click="ButtonOut_Click" InputGestureText="Home"/>
+            <MenuItem Header="内側へ (ActiveThumb)" Click="ButtonIn_Click" InputGestureText="End"/>
+            <MenuItem Header="最奥へ (ClickedThumbの親Group)" Click="ButtonInToClicked_Click" InputGestureText="Ctrl+End"/>
           </MenuItem>
           <MenuItem Header="Z軸">
-            <MenuItem Header="前面へ移動" Click="ButtonZUp_Click" InputGestureText="PageUp"/>
             <MenuItem Header="最前面へ移動" Click="ButtonZMostUp_Click" InputGestureText="PageDown"/>
+            <MenuItem Header="前面へ移動" Click="ButtonZUp_Click" InputGestureText="PageUp"/>
             <MenuItem Header="背面へ移動" Click="ButtonZDown_Click" InputGestureText="Ctrl+Shift+PageUp"/>
             <MenuItem Header="最背面へ移動" Click="ButtonZMostDown_Click" InputGestureText="Ctrl+Shift+PageDown"/>
           </MenuItem>
@@ -173,7 +173,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>
-        
+
         <ListBox ItemsSource="{Binding GroupsDirectlyBelow}" d:ItemsSource="{d:SampleData ItemCount=3}">
           <!--#region バインドエラー対策-->
 
@@ -210,7 +210,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>
-        
+
       </DockPanel>
     </StatusBar>
 
@@ -256,31 +256,6 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
           </StackPanel.Resources>
 
           <StackPanel x:Name="MyStackPanel">
-            <CheckBox Content="起動時に前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>
-            <GroupBox Header="枠表示設定">
-              <GroupBox.Resources>
-                <local:ConverterEnumToBool x:Key="waku"/>
-              </GroupBox.Resources>
-              <WrapPanel Name="MyWrap">
-                <RadioButton Content="表示しない" IsChecked="{Binding
-              ConverterParameter={x:Static local:WakuVisibleType.None},
-              Path=WakuVisibleType,
-              Converter={StaticResource waku}}"/>
-                <RadioButton Content="全部表示" IsChecked="{Binding
-              ConverterParameter={x:Static local:WakuVisibleType.All},
-              Path=WakuVisibleType,
-              Converter={StaticResource waku}}"/>
-                <RadioButton Content="Group以外表示" IsChecked="{Binding
-              ConverterParameter={x:Static local:WakuVisibleType.NotGroup},
-              Path=WakuVisibleType,
-              Converter={StaticResource waku}}"/>
-                <RadioButton Content="ActiveGroupだけ" IsChecked="{Binding
-              ConverterParameter={x:Static local:WakuVisibleType.OnlyActiveGroup},
-              Path=WakuVisibleType,
-              Converter={StaticResource waku}}"/>
-
-              </WrapPanel>
-            </GroupBox>
             <ComboBox x:Name="ComboBoxSaveFileType" SelectedItem="{Binding ImageType}"/>
             <Button x:Name="ButtonTest" Content="test!!!!!!!!!!" Click="ButtonTest_Click"/>
             <GroupBox Header="画像ファイルとして保存">
@@ -360,12 +335,11 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             </GroupBox>
             <GroupBox Header="奥行き(Z軸)移動、対象はActiveThumb">
               <UniformGrid Rows="1">
-                <Button x:Name="ButtonUp" Content="前面" Click="ButtonZUp_Click"/>
-                <Button x:Name="ButtonDown" Content="背面" Click="ButtonZDown_Click"/>
                 <Button x:Name="ButtonMostUp" Content="最前面" Click="ButtonZMostUp_Click"/>
                 <Button x:Name="ButtonMostDown" Content="最背面" Click="ButtonZMostDown_Click"/>
               </UniformGrid>
             </GroupBox>
+
             <!--<GroupBox Header="グリッドスナップ移動、対象はActiveThumb">
               <UniformGrid Rows="1">
                 <Button x:Name="ButtonGoUpGrid" Content="上" Click="ButtonGoUpGrid_Click"/>
@@ -388,6 +362,11 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
       </TabItem>
 
       <TabItem Header="test2" DataContext="{Binding ElementName=MyRoot}">
+        <TabItem.Resources>
+          <Style TargetType="Button">
+            <Setter Property="Margin" Value="4,1,4,0"/>
+          </Style>
+        </TabItem.Resources>
         <StackPanel>
           <StackPanel.Resources>
             <Style TargetType="TextBlock">
@@ -397,7 +376,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               <Setter Property="Margin" Value="2,1,4,4"/>
             </Style>
           </StackPanel.Resources>
-          <TextBlock Text="{Binding Thumbs.Count}"/>
+          <TextBlock Text="{Binding Thumbs.Count, StringFormat=RootItem数 \= {0}}"/>
           <TextBlock Text="{Binding TTWakuVisibleType}"/>
 
           <!--<TreeView ItemsSource="{Binding Data.Datas}">
@@ -428,29 +407,44 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
           <GroupBox Header="ActiveGroup" DataContext="{Binding ActiveGroup}">
             <StackPanel>
               <StackPanel Orientation="Horizontal">
-                <Grid Width="140" Height="110">
-                  <Border Background="White" BorderBrush="Gray" BorderThickness="1">
-                    <Rectangle>
-                      <Rectangle.Fill>
-                        <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
-                      </Rectangle.Fill>
-                    </Rectangle>
-                  </Border>
-                </Grid>
+                <StackPanel>
+                  <GroupBox Header="切り替え">
+                    <UniformGrid Rows="1">
+                      <Button Content="外側へ" Click="ButtonOut_Click"/>
+                      <Button Content="内側へ" Click="ButtonIn_Click"/>
+                    </UniformGrid>
+                  </GroupBox>
+                  <Grid Width="140" Height="110">
+                    <Border Background="White" BorderBrush="Gray" BorderThickness="1">
+                      <Rectangle>
+                        <Rectangle.Fill>
+                          <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
+                        </Rectangle.Fill>
+                      </Rectangle>
+                    </Border>
+                  </Grid>
+                </StackPanel>
                 <WrapPanel Width="100">
                   <tomato:NumericUpDown BorderBrush="DodgerBlue"
                               MyValue="{Binding TTXShift}" MyStringFormat="シフトX 000;シフトX -000;シフトX 000"
                             MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
-                            MyMinValue="-1024" MyMaxValue="1024"/>
+                            MyMinValue="-1024" MyMaxValue="1024" MyLargeChange="8"/>
                   <tomato:NumericUpDown BorderBrush="DodgerBlue"
                               MyValue="{Binding TTYShift}" MyStringFormat="シフトY 000;シフトY -000;シフトY 000"
                             MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
-                            MyMinValue="-1024" MyMaxValue="1024"/>
-                  <tomato:NumericUpDown BorderBrush="DodgerBlue"
+                            MyMinValue="-1024" MyMaxValue="1024" MyLargeChange="8"/>
+                  <GroupBox Header="GridSize">
+                    <StackPanel>
+                      <tomato:NumericUpDown x:Name="NumeGrid"
+                        BorderBrush="DodgerBlue" MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
                               MyValue="{Binding TTGrid}" MyStringFormat="Grid 000;Grid -000;Grid 000"
-                            MyButtonMarkColor="DodgerBlue" Foreground="DodgerBlue"
-                            MyMinValue="1" MyMaxValue="1024"/>
-                  
+                            MyMinValue="1" MyMaxValue="1024" MyLargeChange="8"/>
+                      <UniformGrid>
+                        <Button Content="1" Click="ButtonGrid1_Click"/>
+                        <Button Content="8" Click="ButtonGrid8_Click"/>
+                      </UniformGrid>
+                    </StackPanel>
+                  </GroupBox>
                 </WrapPanel>
               </StackPanel>
               <StackPanel Orientation="Horizontal">
@@ -458,9 +452,23 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                 <TextBlock Text="{Binding Data.Y, StringFormat=y\={0:000}}"/>
                 <TextBlock Text="{Binding ActualWidth, StringFormat=幅\={0:000}}"/>
                 <TextBlock Text="{Binding ActualHeight, StringFormat=高さ\={0:000}}"/>
-                <TextBlock Text="{Binding Data.Datas.Count, StringFormat= datas 0}"/>
-                <TextBlock Text="{Binding Thumbs.Count, StringFormat= th 0}"/>
               </StackPanel>
+              <GroupBox Header="クリップボードから画像貼り付け">
+                <UniformGrid Rows="1">
+                  <Button Content="通常" Click="ButtonAddFromClipboard_Click"/>
+                  <Button Content="Bgr32" Click="ButtonAddFromClipboardBgr32_Click"/>
+                  <Button  Content="png" Click="ButtonAddFromClipboardPNG_Click"/>
+                </UniformGrid>
+              </GroupBox>
+              <GroupBox Header="追加位置">
+                <GroupBox.Resources>
+                  <local:ConverterBoolInverse x:Key="boolInverse"/>
+                </GroupBox.Resources>
+                <UniformGrid Rows="1">
+                  <RadioButton Content="上層" IsChecked="{Binding Data.IsAddUpper, Mode=TwoWay}"/>
+                  <RadioButton Content="下層" IsChecked="{Binding Data.IsAddUpper, Mode=TwoWay, Converter={StaticResource boolInverse}}"/>
+                </UniformGrid>
+              </GroupBox>
             </StackPanel>
           </GroupBox>
           <GroupBox Header="ActiveThumb" DataContext="{Binding ActiveThumb}">
@@ -496,7 +504,15 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                     </Rectangle>
                   </Border>
                 </Grid>
+                <GroupBox Header="Z移動" Canvas.Left="190">
+                  <StackPanel>
+                    <Button x:Name="ButtonUp" Content="前面" Click="ButtonZUp_Click"/>
+                    <Button x:Name="ButtonDown" Content="背面" Click="ButtonZDown_Click"/>
+                  </StackPanel>
+                </GroupBox>
+                <Button Content="グループ解除" Click="ButtonUnGroup_Click" Canvas.Left="100" Canvas.Top="8"/>
               </Canvas>
+
               <TextBlock Text="{Binding Data.Guid, StringFormat=Guid \= {0}}"/>
               <TextBlock Text="{Binding Data.Type, StringFormat=Type \= {0}}"/>
               <StackPanel Orientation="Horizontal">
@@ -510,10 +526,10 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
           </GroupBox>
 
           <GroupBox Header="ClickedThumb" DataContext="{Binding ClickedThumb}">
-            <StackPanel>
-              <Grid Width="90" Height="70">
+            <StackPanel Orientation="Horizontal">
+              <Grid Width="30" Height="30">
                 <Border  Background="White" BorderBrush="Gray" BorderThickness="1">
-                  <Rectangle Width="80" Height="60"
+                  <Rectangle Width="20" Height="20"
                        Canvas.Left="0" Canvas.Top="0">
                     <Rectangle.Fill>
                       <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
@@ -521,35 +537,79 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                   </Rectangle>
                 </Border>
               </Grid>
-              <TextBlock Text="{Binding Data.Type}"/>
-              <StackPanel Orientation="Horizontal">
-                <TextBlock Text="{Binding Data.X, StringFormat=x\={0:000}}"/>
-                <TextBlock Text="{Binding Data.Y, StringFormat=y\={0:000}}"/>
-                <TextBlock Text="{Binding ActualWidth, StringFormat=幅\={0:000}}"/>
-                <TextBlock Text="{Binding ActualHeight, StringFormat=高さ\={0:000}}"/>
+              <StackPanel>
+                <TextBlock Text="{Binding Data.Type, StringFormat=Type \= {0}}"/>
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock Text="{Binding Data.X, StringFormat=x\={0:000}}"/>
+                  <TextBlock Text="{Binding Data.Y, StringFormat=y\={0:000}}"/>
+                  <TextBlock Text="{Binding ActualWidth, StringFormat=幅\={0:000}}"/>
+                  <TextBlock Text="{Binding ActualHeight, StringFormat=高さ\={0:000}}"/>
+                </StackPanel>
               </StackPanel>
             </StackPanel>
           </GroupBox>
 
-          <GroupBox Header="SelectedThumbs" DataContext="{Binding SelectedThumbs}">
-            <ListBox ItemsSource="{Binding}">
-              <ListBox.ItemTemplate>
-                <DataTemplate>
-                  <StackPanel Orientation="Horizontal">
-                    <Rectangle Width="20" Height="20">
-                      <Rectangle.Fill>
-                        <VisualBrush Visual="{Binding}"/>
-                      </Rectangle.Fill>
-                    </Rectangle>
-                    <TextBlock Text="{Binding Data.Type}"/>
-                  </StackPanel>
-                </DataTemplate>
-              </ListBox.ItemTemplate>
-            </ListBox>
+          <GroupBox Header="選択Thumbs" DataContext="{Binding SelectedThumbs}">
+            <StackPanel>
+              <DockPanel>
+                <Button Content="削除" Click="ButtonRemove_Click"/>
+                <ListBox ItemsSource="{Binding}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" d:ItemsSource="{d:SampleData ItemCount=5}">
+                  <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <WrapPanel IsItemsHost="True" Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                  </ListBox.ItemsPanel>
+                  <ListBox.ItemTemplate>
+                    <DataTemplate>
+                      <StackPanel Orientation="Vertical">
+                        <Rectangle Width="20" Height="20">
+                          <Rectangle.Fill>
+                            <VisualBrush Visual="{Binding}"/>
+                          </Rectangle.Fill>
+                        </Rectangle>
+                        <TextBlock Text="{Binding Data.Type}"/>
+                      </StackPanel>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </DockPanel>
+              <DockPanel>
+                <Button Content="グループ化" Click="ButtonToGroup_Click"/>
+              </DockPanel>
+            </StackPanel>
           </GroupBox>
         </StackPanel>
       </TabItem>
 
+      <TabItem Header="設定" DataContext="{Binding}">
+        <StackPanel>
+          <CheckBox Content="起動時に前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>
+          <GroupBox Header="枠表示設定">
+            <GroupBox.Resources>
+              <local:ConverterEnumToBool x:Key="waku"/>
+            </GroupBox.Resources>
+            <WrapPanel Name="MyWrap">
+              <RadioButton Content="表示しない" IsChecked="{Binding
+              ConverterParameter={x:Static local:WakuVisibleType.None},
+              Path=WakuVisibleType,
+              Converter={StaticResource waku}}"/>
+              <RadioButton Content="全部表示" IsChecked="{Binding
+              ConverterParameter={x:Static local:WakuVisibleType.All},
+              Path=WakuVisibleType,
+              Converter={StaticResource waku}}"/>
+              <RadioButton Content="Group以外表示" IsChecked="{Binding
+              ConverterParameter={x:Static local:WakuVisibleType.NotGroup},
+              Path=WakuVisibleType,
+              Converter={StaticResource waku}}"/>
+              <RadioButton Content="ActiveGroupだけ" IsChecked="{Binding
+              ConverterParameter={x:Static local:WakuVisibleType.OnlyActiveGroup},
+              Path=WakuVisibleType,
+              Converter={StaticResource waku}}"/>
+
+            </WrapPanel>
+          </GroupBox>
+        </StackPanel>
+      </TabItem>
     </TabControl>
   </Grid>
 </Window>
