@@ -50,7 +50,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <MenuItem Header="ActiveThumb" Click="ButtonSaveActiveThumb_Click"/>
             <MenuItem Header="ClickedThumb" Click="ButtonSaveCickedThumb_Click"/>
           </MenuItem>
-          <MenuItem Header="Dataファイルを開く">
+          <MenuItem Header="ファイルを開く">
             <!--<MenuItem Header="Root＆アプリ設定" Click="ButtonLoadDataPrevious_Click"/>-->
             <MenuItem Header="Root" Click="ButtonLoadData_Click"/>
             <MenuItem Header="RootをGroupとして追加" Click="ButtonLoadDataRootToGroup_Click"/>
@@ -272,7 +272,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                 <!--<Button x:Name="ButtonLoadLastEndTime" Content="前回終了時を読み込み" Click="ButtonLoadLastEndTime_Click"/>-->
               </UniformGrid>
             </GroupBox>
-            <GroupBox Header="Dataファイルを保存">
+            <GroupBox Header="ファイル保存">
               <WrapPanel>
                 <Button x:Name="ButtonSaveAllData" Content="アプリ設+Root" Click="ButtonSaveAllData_Click"/>
                 <Button x:Name="ButtonSaveRootThumb" Content="Root" Click="ButtonSaveRootThumb_Click"/>
@@ -280,12 +280,13 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                 <Button x:Name="ButtonSaveCickedThumb" Content="Clicked" Click="ButtonSaveCickedThumb_Click"/>
               </WrapPanel>
             </GroupBox>
-            <GroupBox Header="Dataファイルデータ読み込み">
+            <GroupBox Header="ファイル読み込み">
               <WrapPanel>
                 <!--<Button x:Name="ButtonLoadDataPrevious" Content="前回" Click="ButtonLoadDataPrevious_Click"/>-->
                 <Button x:Name="ButtonLoadData" Content="全体" Click="ButtonLoadData_Click"/>
                 <Button x:Name="ButtonLoadDataThumb" Content="個別" Click="ButtonLoadDataThumb_Click"/>
                 <Button x:Name="ButtonLoadDataRootToGroup" Content="Rootをグループとして追加" Click="ButtonLoadDataRootToGroup_Click"/>
+                <Button x:Name="ButtonLoadFiles" Content="複数ファイル" Click="ButtonLoadFiles_Click"/>
               </WrapPanel>
             </GroupBox>
             <GroupBox Header="クリップボードから画像貼り付け">
@@ -460,15 +461,6 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                   <Button  Content="png" Click="ButtonAddFromClipboardPNG_Click"/>
                 </UniformGrid>
               </GroupBox>
-              <GroupBox Header="追加位置">
-                <GroupBox.Resources>
-                  <local:ConverterBoolInverse x:Key="boolInverse"/>
-                </GroupBox.Resources>
-                <UniformGrid Rows="1">
-                  <RadioButton Content="上層" IsChecked="{Binding Data.IsAddUpper, Mode=TwoWay}"/>
-                  <RadioButton Content="下層" IsChecked="{Binding Data.IsAddUpper, Mode=TwoWay, Converter={StaticResource boolInverse}}"/>
-                </UniformGrid>
-              </GroupBox>
             </StackPanel>
           </GroupBox>
           <GroupBox Header="ActiveThumb" DataContext="{Binding ActiveThumb}">
@@ -584,6 +576,10 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
       <TabItem Header="設定" DataContext="{Binding}">
         <StackPanel>
           <CheckBox Content="起動時に前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>
+          <CheckBox Content="複数追加時はファイル名昇順ソートで追加する" IsChecked="{Binding IsAscendingSort}"/>
+          <CheckBox Content="Thumbは上層に追加する" IsChecked="{Binding IsAddUpper}"
+                    ToolTip="チェック無しで最下層に追加するけど、\n複製や貼付け時は常に上層へ追加になる"/>
+
           <GroupBox Header="枠表示設定">
             <GroupBox.Resources>
               <local:ConverterEnumToBool x:Key="waku"/>

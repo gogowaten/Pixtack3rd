@@ -1,29 +1,20 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Runtime.Loader;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Xml;
-using ControlLibraryCore20200620;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Windows.Automation.Provider;
-using System.Windows.Markup;
 
 namespace Pixtack3rd
 {
@@ -37,16 +28,16 @@ namespace Pixtack3rd
         //アプリ情報
         private const string APP_NAME = "Pixtack3rd";
         private const string APP_CONFIG_FILE_NAME = "config" + ".xml";
-        private const string APP_LAST_END_TIME_FILE_NAME = "LastEndTimeData" + EXTENSION_NAME_DATA_AND_CONFIG;
+        private const string APP_LAST_END_TIME_FILE_NAME = "LastEndTimeData" + EXTENSION_NAME_APP;
         //読み込んでいるデータファイルのフルパス、上書き保存対象、起動時は前回終了時を読み込み
         private string CurrentFileFullPath = string.Empty;
         //終了時に状態保存、起動時に読み込みするファイルのフルパス
         private string AppLastEndTimeDataFilePath { get; } = string.Empty;
 
-        private const string EXTENSION_NAME_DATA_AND_CONFIG = ".p3rd";//Rootデータとアプリの設定を含んだ拡張子
+        private const string EXTENSION_NAME_APP = ".p3rd";//Rootデータとアプリの設定を含んだ拡張子
         private const string EXTENSION_NAME_DATA = ".p3";//データだけの拡張子
 
-        private const string EXTENSION_FILTER_P3 = "Pixtack3 設定＆全Data|*" + EXTENSION_NAME_DATA_AND_CONFIG;
+        private const string EXTENSION_FILTER_P3 = "Pixtack3 設定＆全Data|*" + EXTENSION_NAME_APP;
         private const string EXTENSION_FILTER_P3D = "Pixtack3 アイテムData|*" + EXTENSION_NAME_DATA;
 
         private string AppVersion;
@@ -1013,83 +1004,99 @@ namespace Pixtack3rd
 
         #region ファイルドロップで開く
 
+        private void AddThumbFromFiles(string[] fileList2)
+        {
+            List<string> errorFiles = new();
+
+            foreach (var item in fileList2)
+            {
+                //拡張子で判定、関連ファイルならDataで追加
+                var ext = System.IO.Path.GetExtension(item);
+                if (ext == EXTENSION_NAME_DATA || ext == EXTENSION_NAME_APP)
+                {
+                    var (data, appConfig) = LoadDataFromFile(item);
+                    if (data == null)
+                    {
+                        errorFiles.Add(item); continue;
+                    }
+                    //DataがRootならGroupに変換して追加
+                    if (data.Type == TType.Root)
+                    {
+                        //2
+                        //MyRoot.SetRootData(data);
+
+                        //3
+                        //MyRoot.AddThumbDataToActiveGroup(data);
+
+                        //1
+                        data = ConvertDataRootToGroup(data);
+                        if (data != null && appConfig is not null)
+                        {
+                            MyRoot.AddThumbDataToActiveGroup(data, appConfig.IsAddUpper);
+                        }
+                        else { errorFiles.Add(item); continue; }
+                    }
+                    else if (MyAppConfig is not null)
+                    {
+                        MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
+                    }
+
+
+                }
+                //それ以外の拡張子ファイルは画像として読み込む
+                else
+                {
+                    //試みてエラーだったらファイル名を表示
+                    try
+                    {
+                        FileStream stream = new(item, FileMode.Open, FileAccess.Read);
+                        BitmapImage img = new();
+                        img.BeginInit();
+                        img.StreamSource = stream;
+                        img.EndInit();
+                        Data data = new(TType.Image)
+                        {
+                            BitmapSource = img
+                        };
+                        if (MyAppConfig is not null)
+                        {
+                            MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        errorFiles.Add(item);
+                        continue;
+                    }
+                }
+            }
+            if (errorFiles.Count > 0)
+            {
+                string ms = "";
+                foreach (var name in errorFiles)
+                {
+                    ms += $"{name}\n";
+                }
+                MessageBox.Show(ms, "開くことができなかったファイル一覧",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
         private void MainWindow_Drop(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 //ファイル名一覧取得
                 var fileList2 = ((string[])e.Data.GetData(DataFormats.FileDrop)).ToArray();
-                Array.Sort(fileList2);//昇順ソート
-                List<string> errorFiles = new();
-
-                foreach (var item in fileList2)
+                if (MyAppConfig.IsAscendingSort)
                 {
-                    //拡張子で判定、関連ファイルならDataで追加
-                    var ext = System.IO.Path.GetExtension(item);
-                    if (ext == EXTENSION_NAME_DATA || ext == EXTENSION_NAME_DATA_AND_CONFIG)
-                    {
-                        var (data, appConfig) = LoadDataFromFile(item);
-                        if (data == null)
-                        {
-                            errorFiles.Add(item); continue;
-                        }
-                        //DataがRootならGroupに変換して追加
-                        if (data.Type == TType.Root)
-                        {
-                            //2
-                            //MyRoot.SetRootData(data);
-
-                            //3
-                            //MyRoot.AddThumbDataToActiveGroup(data);
-
-                            //1
-                            data = ConvertDataRootToGroup(data);
-                            if (data != null)
-                            {
-                                MyRoot.AddThumbDataToActiveGroup(data);
-                            }
-                            else { errorFiles.Add(item); continue; }
-                        }
-                        else
-                        {
-                            MyRoot.AddThumbDataToActiveGroup(data);
-                        }
-
-
-                    }
-                    //それ以外の拡張子ファイルは画像として読み込む
-                    else
-                    {
-                        //試みてエラーだったらファイル名を表示
-                        try
-                        {
-                            FileStream stream = new(item, FileMode.Open, FileAccess.Read);
-                            BitmapImage img = new();
-                            img.BeginInit();
-                            img.StreamSource = stream;
-                            img.EndInit();
-                            Data data = new(TType.Image)
-                            {
-                                BitmapSource = img
-                            };
-                            MyRoot.AddThumbDataToActiveGroup(data);
-                        }
-                        catch (Exception)
-                        {
-                            errorFiles.Add(item);
-                            continue;
-                        }
-                    }
+                    Array.Sort(fileList2);//昇順ソート
                 }
-                if (errorFiles.Count > 0)
+                else
                 {
-                    string ms = "";
-                    foreach (var name in errorFiles)
-                    {
-                        ms += $"{name}\n";
-                    }
-                    MessageBox.Show(ms, "開くことができなかったファイル一覧", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Array.Sort(fileList2);
+                    Array.Reverse(fileList2);
                 }
+                AddThumbFromFiles(fileList2);
             }
         }
         #endregion ファイルドロップで開く
@@ -1312,9 +1319,9 @@ namespace Pixtack3rd
             if (GetLoadFilePathFromFileDialog(EXTENSION_FILTER_P3) is string filePath)
             {
                 (Data? data, AppConfig? appConfig) = LoadDataFromFile(filePath);
-                if (ConvertDataRootToGroup(data) is Data groupData)
+                if (ConvertDataRootToGroup(data) is Data groupData && appConfig != null)
                 {
-                    MyRoot.AddThumbDataToActiveGroup(groupData);
+                    MyRoot.AddThumbDataToActiveGroup(groupData, appConfig.IsAddUpper);
                     return true;
                 }
                 return false;
@@ -1332,14 +1339,32 @@ namespace Pixtack3rd
             if (GetLoadFilePathFromFileDialog(EXTENSION_FILTER_P3D) is string filePath)
             {
                 (Data? data, AppConfig? config) = LoadDataFromFile(filePath);
-                if (data is not null)
+                if (data is not null && config is not null)
                 {
-                    MyRoot.AddThumbDataToActiveGroup(data);
+                    MyRoot.AddThumbDataToActiveGroup(data, config.IsAddUpper);
                     return true;
                 }
                 return false;
             }
             return false;
+        }
+
+        //複数ファイル
+        private void ButtonLoadFiles_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog dialog = new();
+            dialog.Multiselect = true;
+            dialog.Filter = "対応ファイル|*.bmp;*.jpg;*.png;*.gif;*.tiff;*.p3d;*.p3|すべて|*.*";
+            if (dialog.ShowDialog() == true)
+            {
+                string[] names = dialog.FileNames;
+                Array.Sort(names);
+                if (MyAppConfig.IsAscendingSort == false)
+                {
+                    Array.Reverse(names);
+                }
+                AddThumbFromFiles(names);
+            }
         }
 
         #endregion データ読み込み、アプリの設定読み込み
@@ -1523,6 +1548,10 @@ namespace Pixtack3rd
 
         #endregion 保存系
 
+        #region その他
+
+
+
         private void ButtonToGroup_Click(object sender, RoutedEventArgs e)
         {
             //グループ化
@@ -1546,6 +1575,17 @@ namespace Pixtack3rd
             //全削除
             MyRoot.RemoveAll();
         }
+        //グリッドの値を指定
+        private void ButtonGrid1_Click(object sender, RoutedEventArgs e)
+        {
+            NumeGrid.MyValue = 1;
+        }
+
+        private void ButtonGrid8_Click(object sender, RoutedEventArgs e)
+        {
+            NumeGrid.MyValue = 8;
+        }
+        #endregion その他
 
         #region クリップボード
         private void ButtonAddFromClipboard_Click(object sender, RoutedEventArgs e)
@@ -1592,7 +1632,7 @@ namespace Pixtack3rd
             //画像として複製、全体
             if (MyRoot.GetBitmapRoot() is BitmapSource bmp)
             {
-                MyRoot.AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
+                MyRoot.AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp }, true);
             }
         }
 
@@ -1624,7 +1664,7 @@ namespace Pixtack3rd
             //Dataとして複製、全体Root
             if (ConvertDataRootToGroup(MyRoot.Data) is Data data && MyRoot.Thumbs.Count > 0)
             {
-                MyRoot.AddThumbDataToActiveGroup(data);
+                MyRoot.AddThumbDataToActiveGroup(data, true);
                 return true;
             }
             return false;
@@ -1740,19 +1780,12 @@ namespace Pixtack3rd
 
         private void ButtonTest_Click(object sender, RoutedEventArgs e)
         {
-            var neko = MyRoot.ActiveGroup.Data.IsAddUpper;
+            var neko = MyAppConfig.IsAddUpper;
+            var config = MyAppConfig.IsAscendingSort;
             //MyRoot.ActiveGroup.Visibility = Visibility.Hidden;
         }
 
-        private void ButtonGrid1_Click(object sender, RoutedEventArgs e)
-        {
-            NumeGrid.MyValue = 1;
-        }
 
-        private void ButtonGrid8_Click(object sender, RoutedEventArgs e)
-        {
-            NumeGrid.MyValue = 8;
-        }
     }
 
 
@@ -1777,14 +1810,21 @@ namespace Pixtack3rd
 
         //枠表示設定
         private WakuVisibleType _wakuVisibleType = WakuVisibleType.All;
-        [DataMember] public WakuVisibleType WakuVisibleType
+        [DataMember]
+        public WakuVisibleType WakuVisibleType
         {
-            get => _wakuVisibleType; 
-            set
-            {
-                SetProperty(ref _wakuVisibleType, value);
-            }
+            get => _wakuVisibleType;
+            set => SetProperty(ref _wakuVisibleType, value);
         }
+        //複数ファイル追加時の順番、昇順ソート、falseなら降順ソートになる
+        private bool _isAscendingSort = true;
+        public bool IsAscendingSort { get => _isAscendingSort; set => SetProperty(ref _isAscendingSort, value); }
+        //Thumbは上側に追加する、falseなら下側に追加
+
+        private bool _isAddUpper = true;
+        public bool IsAddUpper { get => _isAddUpper; set => SetProperty(ref _isAddUpper, value); }
+
+
 
 
 

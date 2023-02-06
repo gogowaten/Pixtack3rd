@@ -1175,13 +1175,22 @@ namespace Pixtack3rd
         /// ActiveThumbに要素をDataで追加
         /// </summary>
         /// <param name="data"></param>
+        /// <param name="addUpper">trueで上層に追加、falseで下層に追加</param>
         /// <param name="locateFix">追加位置修正、通常はtrue。複製時にはfalse</param>
-        public TThumb? AddThumbDataToActiveGroup(Data data, bool locateFix = true)
+        public TThumb? AddThumbDataToActiveGroup(Data data, bool addUpper, bool locateFix = true)
         {
 
             if (BuildThumb(data) is TThumb thumb)
             {
-                AddThumb(thumb, ActiveGroup);//直下にはドラッグ移動イベント付加
+                if (addUpper)
+                {
+                    AddThumb(thumb, ActiveGroup);//直下にはドラッグ移動イベント付加
+                }
+                else
+                {
+
+                    AddThumb(thumb, ActiveGroup, 0);
+                }
                 //位置修正、追加先のActiveThumbに合わせる
                 if (locateFix)
                 {
@@ -1867,7 +1876,7 @@ namespace Pixtack3rd
         {
             if (MyClipboard.GetImageFromClipboardPreferPNG() is BitmapSource bmp)
             {
-                AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
+                AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp }, true);
             }
             else { MessageBox.Show("画像は得られなかった"); }
         }
@@ -1876,7 +1885,7 @@ namespace Pixtack3rd
         {
             if (MyClipboard.GetClipboardImagePngWithAlphaFix() is BitmapSource bmp)
             {
-                AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
+                AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp }, true);
             }
             else { MessageBox.Show("画像は得られなかった"); }
         }
@@ -1885,7 +1894,7 @@ namespace Pixtack3rd
         {
             if (MyClipboard.GetClipboardImageBgr32() is BitmapSource bmp)
             {
-                AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp });
+                AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp }, true);
             }
             else { MessageBox.Show("画像は得られなかった"); }
         }
@@ -2002,7 +2011,7 @@ namespace Pixtack3rd
             List<TThumb> selection = new();
             foreach (var item in datas)
             {
-                if (AddThumbDataToActiveGroup(item, false) is TThumb thumb)
+                if (AddThumbDataToActiveGroup(item, true,false) is TThumb thumb)
                 {
                     selection.Add(thumb);
                     count++;
@@ -2047,7 +2056,7 @@ namespace Pixtack3rd
             List<TThumb> selection = new();
             foreach (var item in datas)
             {
-                if (AddThumbDataToActiveGroup(item, false) is TThumb thumb)
+                if (AddThumbDataToActiveGroup(item,true, false) is TThumb thumb)
                 {
                     selection.Add(thumb);
                     count++;
