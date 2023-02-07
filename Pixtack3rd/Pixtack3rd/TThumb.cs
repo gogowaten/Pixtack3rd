@@ -211,67 +211,7 @@ namespace Pixtack3rd
                     break;
             }
         }
-        //#region XYZ移動
-        ///// <summary>
-        ///// ActiveThumbを1グリッド上へ移動
-        ///// </summary>
-        //public void ActiveThumbGoUpGrid()
-        //{
-        //    if (TTParent is TTGroup parent)
-        //    {
-        //        TTTop -= parent.TTGrid;
-        //    }
-        //}
-        //public void ActiveThumbGoDownGrid()
-        //{
-        //    if (TTParent is TTGroup parent)
-        //    {
-        //        TTTop += parent.TTGrid;
-        //    }
-        //}
-        //public void ActiveThumbGoLeftGrid()
-        //{
-        //    if (TTParent is TTGroup parent)
-        //    {
-        //        TTLeft -= parent.TTGrid;
-        //    }
-        //}
-        //public void ActiveThumbGoRightGrid()
-        //{
-        //    if (TTParent is TTGroup parent)
-        //    {
-        //        TTLeft += parent.TTGrid;
-        //    }
-        //}
-        //public void ActiveThumbGoUp1Pix()
-        //{
-        //    if (TTParent is TTGroup parent)
-        //    {
-        //        TTTop--;
-        //    }
-        //}
-        //public void ActiveThumbGoDown1Pix()
-        //{
-        //    if (TTParent is TTGroup parent)
-        //    {
-        //        TTTop++;
-        //    }
-        //}
-        //public void ActiveThumbGoLeft1Pix()
-        //{
-        //    if (TTParent is TTGroup parent)
-        //    {
-        //        TTLeft--;
-        //    }
-        //}
-        //public void ActiveThumbGoRight1Pix()
-        //{
-        //    if (TTParent is TTGroup parent)
-        //    {
-        //        TTLeft++;
-        //    }
-        //}
-
+       
 
         //#endregion XYZ移動
         //サイズ変更時には親要素の位置とサイズ更新
@@ -683,7 +623,7 @@ namespace Pixtack3rd
                     _activeThumb.Focus();
                 }
                 //FrontActiveThumbとBackActiveThumbを更新する
-                ChangedActiveThumb(value);
+                ChangedActiveFrontAndBackThumb(value);
             }
         }
 
@@ -1026,7 +966,7 @@ namespace Pixtack3rd
         /// ActiveThumb変更時に実行、FrontActiveThumbとBackActiveThumbを更新する
         /// </summary>
         /// <param name="value"></param>
-        private void ChangedActiveThumb(TThumb? value)
+        private void ChangedActiveFrontAndBackThumb(TThumb? value)
         {
             if (value == null)
             {
@@ -1618,6 +1558,8 @@ namespace Pixtack3rd
                 }
                 else { return false; }
             }
+            //ActiveThumbのFrontThumbとBackThumbの更新
+            ChangedActiveFrontAndBackThumb(ActiveThumb);
             return true;
         }
         /// <summary>
@@ -1658,7 +1600,8 @@ namespace Pixtack3rd
                     throw new ArgumentException("対象要素が親要素から見つからなかった");
                 }
             }
-
+            //ActiveThumbのFrontThumbとBackThumbの更新
+            ChangedActiveFrontAndBackThumb(ActiveThumb);
             return true;
         }
         #endregion 背面に移動
@@ -1687,6 +1630,8 @@ namespace Pixtack3rd
                 }
                 else { return false; }
             }
+            //ActiveThumbのFrontThumbとBackThumbの更新
+            ChangedActiveFrontAndBackThumb(ActiveThumb);
             return true;
         }
         /// <summary>
@@ -1725,6 +1670,8 @@ namespace Pixtack3rd
                 }
                 else { return false; }
             }
+            //ActiveThumbのFrontThumbとBackThumbの更新
+            ChangedActiveFrontAndBackThumb(ActiveThumb);
             return true;
 
         }
@@ -1812,7 +1759,7 @@ namespace Pixtack3rd
                 context.DrawRectangle(vBrush, null, new Rect(bounds.Size));
             }
             RenderTargetBitmap bitmap
-                = new((int)bounds.Width, (int)bounds.Height, 96, 96, PixelFormats.Pbgra32);
+                = new((int)bounds.Width, (int)bounds.Height, 96.0, 96.0, PixelFormats.Pbgra32);
             bitmap.Render(dVisual);
 
             //枠表示を元に戻す

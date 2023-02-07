@@ -1049,15 +1049,32 @@ namespace Pixtack3rd
                     //試みてエラーだったらファイル名を表示
                     try
                     {
-                        FileStream stream = new(item, FileMode.Open, FileAccess.Read);
-                        BitmapImage img = new();
-                        img.BeginInit();
-                        img.StreamSource = stream;
-                        img.EndInit();
+                        //using FileStream stream = new(item, FileMode.Open, FileAccess.Read);
+                        //BitmapImage img = new();
+                        //img.BeginInit();
+                        //img.CacheOption = BitmapCacheOption.OnLoad;
+                        //img.StreamSource = stream;
+                        //img.EndInit();
+
+                        using var stream = System.IO.File.OpenRead(item);
+                        BitmapSource img = BitmapFrame.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+                        if (img.DpiX != 96.0)
+                        {
+                            FormatConvertedBitmap fcb = new(img, PixelFormats.Bgra32, null, 0.0);
+                            int w = fcb.PixelWidth;
+                            int h = fcb.PixelHeight;
+                            int stride = w * 4;
+                            byte[] pixels = new byte[stride * h];
+                            fcb.CopyPixels(pixels, stride, 0);
+                            img = BitmapSource.Create(w, h, 96.0, 96.0, fcb.Format, null, pixels, stride);
+
+                        }
+
                         Data data = new(TType.Image)
                         {
                             BitmapSource = img
                         };
+
                         if (MyAppConfig is not null)
                         {
                             MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
@@ -1078,7 +1095,7 @@ namespace Pixtack3rd
                     ms += $"{name}\n";
                 }
                 MessageBox.Show(ms, "開くことができなかったファイル一覧",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                                MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
         private void MainWindow_Drop(object sender, DragEventArgs e)
@@ -1782,10 +1799,21 @@ namespace Pixtack3rd
         {
             var neko = MyAppConfig.IsAddUpper;
             var config = MyAppConfig.IsAscendingSort;
+            var dpi = MyRoot.Thumbs[0].Data;
             //MyRoot.ActiveGroup.Visibility = Visibility.Hidden;
         }
 
-
+        private void GroupBox_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if(e.Delta> 0)
+            {
+                MyRoot.ZUp();
+            }
+            else
+            {
+                MyRoot.ZDown();
+            }
+        }
     }
 
 
@@ -1818,11 +1846,11 @@ namespace Pixtack3rd
         }
         //複数ファイル追加時の順番、昇順ソート、falseなら降順ソートになる
         private bool _isAscendingSort = true;
-        public bool IsAscendingSort { get => _isAscendingSort; set => SetProperty(ref _isAscendingSort, value); }
+        [DataMember] public bool IsAscendingSort { get => _isAscendingSort; set => SetProperty(ref _isAscendingSort, value); }
         //Thumbは上側に追加する、falseなら下側に追加
 
         private bool _isAddUpper = true;
-        public bool IsAddUpper { get => _isAddUpper; set => SetProperty(ref _isAddUpper, value); }
+        [DataMember] public bool IsAddUpper { get => _isAddUpper; set => SetProperty(ref _isAddUpper, value); }
 
 
 
@@ -1831,7 +1859,7 @@ namespace Pixtack3rd
         [DataMember] public int JpegQuality { get; set; } = 94;//jpeg画質
         [DataMember] public double Top { get; set; }//アプリ
         [DataMember] public double Left { get; set; }//アプリ
-        //保存先リスト
+                                                     //保存先リスト
         [DataMember] public ObservableCollection<string> DirList { get; set; }
         [DataMember] public string? Dir { get; set; }
         [DataMember] public int DirIndex { get; set; }
