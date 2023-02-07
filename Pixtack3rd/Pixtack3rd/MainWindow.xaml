@@ -497,7 +497,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                     </Rectangle>
                   </Border>
                 </Grid>
-                <GroupBox Header="Z移動" Canvas.Left="190">
+                <GroupBox Header="Z移動" Canvas.Left="190" MouseWheel="GroupBox_MouseWheel">
                   <StackPanel>
                     <Button x:Name="ButtonUp" Content="前面" Click="ButtonZUp_Click"/>
                     <Button x:Name="ButtonDown" Content="背面" Click="ButtonZDown_Click"/>
