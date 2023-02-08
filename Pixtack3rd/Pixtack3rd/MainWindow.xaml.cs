@@ -10,6 +10,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -74,7 +75,10 @@ namespace Pixtack3rd
 
             //Data dataImg1 = new(TType.Image) { BitmapSource = TTRoot.GetBitmap(imagePath) };
             //Data dataImg2 = new(TType.Image) { BitmapSource = TTRoot.GetBitmap(imagePath1), X = 100, Y = 100 };
-
+            //MyTextBox1.KeyDown += (a, b) =>
+            //{
+            //    var neko = b.Source;
+            //};
         }
 
 
@@ -1805,7 +1809,7 @@ namespace Pixtack3rd
 
         private void GroupBox_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if(e.Delta> 0)
+            if (e.Delta > 0)
             {
                 MyRoot.ZUp();
             }
@@ -1817,13 +1821,30 @@ namespace Pixtack3rd
 
         private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if(e.Delta > 0) { MyRoot.ChangeActiveThumbToFrontThumb(); }
+            if (e.Delta > 0) { MyRoot.ChangeActiveThumbToFrontThumb(); }
             else { MyRoot.ChangeActiveThumbToBackThumb(); }
         }
 
         private void Grid_KeyDown(object sender, KeyEventArgs e)
         {
-            e.Handled = true;
+            //if (MyRoot.ActiveThumb is TTTextBox textb)
+            //{
+            //    if (textb.IsFocused)
+            //    {
+
+            //        e.Handled = true;
+            //    }
+            //}
+            //var isf = MytextBox.IsFocused;
+            //var iskef = MytextBox.IsKeyboardFocused;
+            //var iskfw = MytextBox.IsKeyboardFocusWithin;
+            //if (!MytextBox.IsFocused) { e.Handled = true; }
+            //e.Handled = true;
+        }
+
+        private void Grid_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            //e.Handled = true;
         }
     }
 

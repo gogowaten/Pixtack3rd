@@ -12,7 +12,7 @@ using System.Windows.Media.Imaging;
 
 namespace Pixtack3rd
 {
-    public enum TType { None = 0, Root, Group, TextBlock, Image, Rectangle }
+    public enum TType { None = 0, Root, Group, TextBlock, TextBox, Image, Rectangle }
 
 
 
@@ -105,6 +105,8 @@ namespace Pixtack3rd
                 case TType.Image:
                     break;
                 case TType.Rectangle:
+                    break;
+                case TType.TextBox:
                     break;
                 default:
                     break;

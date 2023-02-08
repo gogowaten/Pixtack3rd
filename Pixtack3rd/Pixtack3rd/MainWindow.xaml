@@ -220,32 +220,34 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                   HorizontalScrollBarVisibility="Auto"
                   VerticalScrollBarVisibility="Auto"
                   UseLayoutRounding="True">
-      <Grid KeyDown="Grid_KeyDown">
-      <!--<local:TTTextBlock TTText="222"/>-->
-      <local:TTRoot x:Name="MyRoot"
+      <!--<Grid KeyDown="Grid_KeyDown" PreviewKeyDown="Grid_PreviewKeyDown">-->
+        <!--<local:TTTextBlock TTText="222"/>-->
+        <local:TTRoot x:Name="MyRoot"
                     HorizontalAlignment="Left" VerticalAlignment="Top"
                     TTGrid="8" TTXShift="32" TTYShift="32">
 
-        <!--<local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
+          <!--<local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
         <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection2.png"/>
         <local:TTImage x:Name="MyImage1" TTLeft="100" TTTop="100"
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection3.png"/>
         <local:TTImage x:Name="MyImage2" TTLeft="120" TTTop="120"
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection4.png"/>-->
-        <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
+          <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect000.png"/>
-        <local:TTImage x:Name="MyImage1" TTLeft="30" TTTop="30"
+          <local:TTImage x:Name="MyImage1" TTLeft="30" TTTop="30"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect030.png"/>
-        <local:TTImage x:Name="MyImage2" TTLeft="60" TTTop="60"
+          <local:TTImage x:Name="MyImage2" TTLeft="60" TTTop="60"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect060.png"/>
-        <local:TTImage x:Name="MyImage3" TTLeft="90" TTTop="90"
+          <local:TTImage x:Name="MyImage3" TTLeft="90" TTTop="90"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect090.png"/>
-        <local:TTImage x:Name="MyImage4" TTLeft="120" TTTop="120"
+          <local:TTImage x:Name="MyImage4" TTLeft="120" TTTop="120"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect135.png"/>
-
-      </local:TTRoot>
-      </Grid>
+          <local:TTTextBox x:Name="MyTextBox1"
+            TTText="TextBox" TTLeft="128" TTTop="188" FontSize="30"/>
+        </local:TTRoot>
+        <!--<TextBox x:Name="MytextBox" Text="nornalTextbox" Width="100"/>-->
+      <!--</Grid>-->
     </ScrollViewer>
 
     <TabControl Grid.Row="1" Grid.Column="1" TabStripPlacement="Top">
