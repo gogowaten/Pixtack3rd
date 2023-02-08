@@ -1814,6 +1814,17 @@ namespace Pixtack3rd
                 MyRoot.ZDown();
             }
         }
+
+        private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if(e.Delta > 0) { MyRoot.ChangeActiveThumbToFrontThumb(); }
+            else { MyRoot.ChangeActiveThumbToBackThumb(); }
+        }
+
+        private void Grid_KeyDown(object sender, KeyEventArgs e)
+        {
+            e.Handled = true;
+        }
     }
 
 

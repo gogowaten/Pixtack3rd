@@ -961,6 +961,27 @@ namespace Pixtack3rd
             bmp.EndInit();
             return bmp;
         }
+        public void ChangeActiveThumbToFrontThumb()
+        {
+            if (ActiveThumb == null) return;
+            if (Thumbs[^1] == ActiveThumb) { return; }
+            if (Thumbs.Count == 1) { return; }
+            int ii = Thumbs.IndexOf(ActiveThumb);
+            ActiveThumb = Thumbs[ii + 1];
+            SelectedThumbs.Clear();
+            SelectedThumbs.Add(ActiveThumb);
+        }
+        public void ChangeActiveThumbToBackThumb()
+        {
+            if (ActiveThumb == null) return;
+            if (Thumbs[0] == ActiveThumb) { return; }
+            if (Thumbs.Count == 1) { return; }
+            int ii = Thumbs.IndexOf(ActiveThumb);
+            ActiveThumb = Thumbs[ii - 1];
+            SelectedThumbs.Clear();
+            SelectedThumbs.Add(ActiveThumb);
+        }
+
 
         /// <summary>
         /// ActiveThumb変更時に実行、FrontActiveThumbとBackActiveThumbを更新する
@@ -2068,6 +2089,44 @@ namespace Pixtack3rd
             //MySetXYBinging(this.Data);
         }
     }
+    public class TTTextBox : TThumb
+    {
+        #region 依存プロパティ
+
+        public string TTText
+        {
+            get { return (string)GetValue(TTTextProperty); }
+            set { SetValue(TTTextProperty, value); }
+        }
+        public static readonly DependencyProperty TTTextProperty =
+            DependencyProperty.Register(nameof(TTText), typeof(string), typeof(TTTextBox),
+                new FrameworkPropertyMetadata("",
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        #endregion 依存プロパティ
+
+
+        private readonly TextBox MyTemplateElement;
+
+        public TTTextBox() : this(new Data(TType.TextBlock)) { }
+
+        public TTTextBox(Data data) : base(data)
+        {
+            Data = data;
+            this.DataContext = Data;
+            if (MakeTemplate<TextBox>() is TextBox element)
+            {
+                MyTemplateElement = element;
+            }
+            else { throw new ArgumentException("テンプレート作成できんかった"); }
+
+            SetBinding(TTTextProperty, nameof(Data.Text));
+            MyTemplateElement.SetBinding(TextBox.TextProperty, nameof(Data.Text));
+
+        }
+    }
 
 
     public class TTImage : TThumb
@@ -2101,7 +2160,6 @@ namespace Pixtack3rd
             if (MakeTemplate<Image>() is Image element) { MyTemplateElement = element; }
             else { throw new ArgumentException("テンプレート作成できんかった"); }
 
-            //SetBinding(TTSourceProperty, nameof(Data.BitmapSource));
             MyTemplateElement.SetBinding(Image.SourceProperty, nameof(Data.BitmapSource));
             //MySetXYBinging(this.Data);
         }
@@ -2109,6 +2167,10 @@ namespace Pixtack3rd
     }
 
 
+
+
+    #region コンバーター
+    
     public class ConverterWakuBrush : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
@@ -2247,6 +2309,9 @@ namespace Pixtack3rd
             else { return true; }
         }
     }
+
+    #endregion コンバーター
+
 
     public class ExObservableCollection : ObservableCollection<TThumb>
     {

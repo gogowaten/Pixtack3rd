@@ -220,6 +220,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                   HorizontalScrollBarVisibility="Auto"
                   VerticalScrollBarVisibility="Auto"
                   UseLayoutRounding="True">
+      <Grid KeyDown="Grid_KeyDown">
       <!--<local:TTTextBlock TTText="222"/>-->
       <local:TTRoot x:Name="MyRoot"
                     HorizontalAlignment="Left" VerticalAlignment="Top"
@@ -244,6 +245,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect135.png"/>
 
       </local:TTRoot>
+      </Grid>
     </ScrollViewer>
 
     <TabControl Grid.Row="1" Grid.Column="1" TabStripPlacement="Top">
@@ -477,7 +479,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                     </Rectangle>
                   </Border>
                 </Grid>
-                <Grid Canvas.Left="60" Canvas.Top="30" Width="130" Height="100">
+                <Grid Canvas.Left="60" Canvas.Top="30" Width="130" Height="100" MouseWheel="Grid_MouseWheel">
                   <Border Background="White" BorderBrush="Gray" BorderThickness="1">
                     <Rectangle Width="120" Height="90" Canvas.Left="60" Canvas.Top="35">
                       <Rectangle.Fill>
