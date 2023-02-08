@@ -19,6 +19,7 @@ using System.Windows.Input;
 using System.Collections.Specialized;
 using System.Windows.Shapes;
 using System.IO;
+using System.Dynamic;
 
 namespace Pixtack3rd
 {
@@ -128,6 +129,7 @@ namespace Pixtack3rd
 
         }
 
+
         //ショートカットキー
         protected override void OnKeyDown(KeyEventArgs e)
         {
@@ -138,45 +140,64 @@ namespace Pixtack3rd
                 {
                     case ModifierKeys.None:
                         {
-                            if (e.Key == Key.Up) { root.ActiveThumbGoUpGrid(); }
-                            else if (e.Key == Key.Down) { root.ActiveThumbGoDownGrid(); }
-                            else if (e.Key == Key.Left) { root.ActiveThumbGoLeftGrid(); }
-                            else if (e.Key == Key.Right) { root.ActiveThumbGoRightGrid(); }
-                            else if (e.Key == Key.PageUp) { root.ZUp(); }
-                            else if (e.Key == Key.PageDown) { root.ZDown(); }
-                            else if (e.Key == Key.Home) { root.ChangeActiveGroupOutside(); }
-                            else if (e.Key == Key.End) { root.ChangeActiveGroupInside(); }
+                            //スクロールバーを動かさないように
+                            //カーソルキーとPageupdownキーを含むキー操作の後にはe.Handled = true;
+                            if (e.Key == Key.Up) { root.ActiveThumbGoUpGrid(); e.Handled = true; }
+                            else if (e.Key == Key.Down) { root.ActiveThumbGoDownGrid(); e.Handled = true; }
+                            else if (e.Key == Key.Left) { root.ActiveThumbGoLeftGrid(); e.Handled = true; }
+                            else if (e.Key == Key.Right) { root.ActiveThumbGoRightGrid(); e.Handled = true; }
+                            else if (e.Key == Key.PageUp) { root.ZUp(); e.Handled = true; }
+                            else if (e.Key == Key.PageDown) { root.ZDown(); e.Handled = true; }
+                            else if (e.Key == Key.Home) { root.ChangeActiveGroupOutside(); e.Handled = true; }
+                            else if (e.Key == Key.End) { root.ChangeActiveGroupInside(); e.Handled = true; }
                             else if (e.Key == Key.C) { root.CopyImageActiveThumb(); }
                         }
                         break;
                     case ModifierKeys.Alt:
                         break;
                     case ModifierKeys.Control:
-                        if (e.Key == Key.Home) { root.ChangeActiveGroupToRoot(); }//最外
-                        else if (e.Key == Key.End) { root.ChangeActiveGroupInsideClickedParent(); }//最奥
+                        if (e.Key == Key.Up) { e.Handled = true; }
+                        else if (e.Key == Key.Down) { e.Handled = true; }
+                        else if (e.Key == Key.Left) { e.Handled = true; }
+                        else if (e.Key == Key.Right) { e.Handled = true; }
+                        else if (e.Key == Key.PageUp) { e.Handled = true; }
+                        else if (e.Key == Key.PageDown) { e.Handled = true; }
+                        else if (e.Key == Key.Home) { root.ChangeActiveGroupToRoot(); e.Handled = true; }//最外
+                        else if (e.Key == Key.End) { root.ChangeActiveGroupInsideClickedParent(); e.Handled = true; }//最奥
                         else if (e.Key == Key.V) { root.AddImageThumbFromClipboard(); }//画像貼り付け
                         else if (e.Key == Key.D) { root.DuplicateDataSelectedThumbs(); }//複製
                         break;
                     case ModifierKeys.Shift:
-
                         {
-                            if (e.Key == Key.Up) { root.ActiveThumbGoUp1Pix(); }
-                            else if (e.Key == Key.Down) { root.ActiveThumbGoDown1Pix(); }
-                            else if (e.Key == Key.Left) { root.ActiveThumbGoLeft1Pix(); }
-                            else if (e.Key == Key.Right) { root.ActiveThumbGoRight1Pix(); }
+                            if (e.Key == Key.Up) { root.ActiveThumbGoUp1Pix(); e.Handled = true; }
+                            else if (e.Key == Key.Down) { root.ActiveThumbGoDown1Pix(); e.Handled = true; }
+                            else if (e.Key == Key.Left) { root.ActiveThumbGoLeft1Pix(); e.Handled = true; }
+                            else if (e.Key == Key.Right) { root.ActiveThumbGoRight1Pix(); e.Handled = true; }
+                            else if (e.Key == Key.PageUp) { e.Handled = true; }
+                            else if (e.Key == Key.PageDown) { e.Handled = true; }
+                            else if (e.Key == Key.Home) { e.Handled = true; }
+                            else if (e.Key == Key.End) { e.Handled = true; }
                         }
                         break;
                     case ModifierKeys.Windows:
                         break;
                     case (ModifierKeys.Control | ModifierKeys.Shift):
-                        if (e.Key == Key.PageUp) { root.ZUpFrontMost(); }
-                        else if (e.Key == Key.PageDown) { root.ZDownBackMost(); }
+                        if (e.Key == Key.Up) { e.Handled = true; }
+                        else if (e.Key == Key.Down) { e.Handled = true; }
+                        else if (e.Key == Key.Left) { e.Handled = true; }
+                        else if (e.Key == Key.Right) { e.Handled = true; }
+                        else if (e.Key == Key.PageUp) { root.ZUpFrontMost(); e.Handled = true; }
+                        else if (e.Key == Key.PageDown) { root.ZDownBackMost(); e.Handled = true; }
+                        else if (e.Key == Key.Home) { e.Handled = true; }
+                        else if (e.Key == Key.End) { e.Handled = true; }
                         else if (e.Key == Key.C) { root.CopyImageRoot(); }
                         break;
                     case (ModifierKeys.Control | ModifierKeys.Alt):
                         if (e.Key == Key.C) { root.CopyImageClickedThumb(); }
                         break;
                 }
+                //これだとTTTextBoxに文字入力できない
+                //e.Handled = true;
             }
 
         }
@@ -211,7 +232,7 @@ namespace Pixtack3rd
                     break;
             }
         }
-       
+
 
         //#endregion XYZ移動
         //サイズ変更時には親要素の位置とサイズ更新
@@ -480,42 +501,6 @@ namespace Pixtack3rd
             }
             else { throw new ArgumentException("テンプレート作成できんかった"); }
         }
-        //private ItemsControl MakeTemplate()
-        //{
-        //    FrameworkElementFactory fGrid = new(typeof(Grid));
-        //    FrameworkElementFactory fWaku = new(typeof(Rectangle));
-
-        //    fWaku.SetValue(VisibilityProperty, new Binding(nameof(TTVisibleBorder)) { Source = this });
-
-        //    fWaku.SetValue(Shape.StrokeProperty, Brushes.Red);
-        //    fWaku.SetValue(Shape.StrokeThicknessProperty, 10.0);
-        //    FrameworkElementFactory factory = new(typeof(ItemsControl), TEMPLATE_NAME);
-        //    factory.SetValue(ItemsControl.ItemsPanelProperty,
-        //        new ItemsPanelTemplate(new FrameworkElementFactory(typeof(Canvas))));
-        //    fGrid.AppendChild(fWaku);
-        //    fGrid.AppendChild(factory);
-        //    this.Template = new() { VisualTree = fGrid };
-        //    this.ApplyTemplate();
-        //    if (this.Template.FindName(TEMPLATE_NAME, this) is ItemsControl element)
-        //    {
-        //        return element;
-        //    }
-        //    else { throw new ArgumentException("テンプレート作成できんかった"); }
-        //}
-
-        //private ItemsControl MakeTemplate()
-        //{
-        //    FrameworkElementFactory fContent = new(typeof(ItemsControl), TEMPLATE_NAME);
-        //    fContent.SetValue(ItemsControl.ItemsPanelProperty,
-        //        new ItemsPanelTemplate(new FrameworkElementFactory(typeof(Canvas))));
-        //    this.Template = new() { VisualTree = fContent };
-        //    this.ApplyTemplate();
-        //    if (this.Template.FindName(TEMPLATE_NAME, this) is ItemsControl element)
-        //    {
-        //        return element;
-        //    }
-        //    else { throw new ArgumentException("テンプレート作成できんかった"); }
-        //}
 
         #region サイズと位置の更新
 
@@ -879,6 +864,23 @@ namespace Pixtack3rd
             //TTGroupUpdateLayout();
         }
 
+        /// <summary>
+        /// クリックしたときに使う、クリックイベントからクリックされたThumbを探す
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        private TThumb? GetClickedThumbFromMouseEvent(object obj)
+        {
+            if (obj is FrameworkElement element)
+            {
+                if (element.TemplatedParent is TThumb tt) { return tt; }
+                else if (element.TemplatedParent is DependencyObject dObj)
+                {
+                    return GetClickedThumbFromMouseEvent(dObj);
+                }
+            }
+            return null;
+        }
         //クリックしたとき、ClickedThumbの更新とActiveThumbの更新、SelectedThumbsの更新
         protected override void OnPreviewMouseLeftButtonDown(MouseButtonEventArgs e)
         {
@@ -886,44 +888,45 @@ namespace Pixtack3rd
 
             //OriginalSourceにテンプレートに使っている要素が入っているので、
             //そのTemplateParentプロパティから目的のThumbが取得できる
-            if (e.OriginalSource is FrameworkElement el && el.TemplatedParent is TThumb clicked)
+            var clicked = GetClickedThumbFromMouseEvent(e.OriginalSource);
+            ClickedThumb = clicked;
+            TThumb? active = GetActiveThumb(clicked);
+            if (active != ActiveThumb)
             {
-                ClickedThumb = clicked;
-                TThumb? active = GetActiveThumb(clicked);
-                if (active != ActiveThumb)
+                if (active == null && Thumbs.Count != 0) { return; }
+                ActiveThumb = active;
+            }
+            //SelectedThumbsの更新
+            if (active != null)
+            {
+                if (Keyboard.Modifiers == ModifierKeys.Control)
                 {
-                    ActiveThumb = active;
-                }
-                //SelectedThumbsの更新
-                if (active != null)
-                {
-                    if (Keyboard.Modifiers == ModifierKeys.Control)
+                    if (SelectedThumbs.Contains(active) == false)
                     {
-                        if (SelectedThumbs.Contains(active) == false)
-                        {
-                            SelectedThumbs.Add(active);
-                            IsSelectedPreviewMouseDown = false;
-                        }
-                        else
-                        {
-                            //フラグ
-                            //ctrl+クリックされたものがもともと選択状態だったら
-                            //マウスアップ時に削除するためのフラグ
-                            IsSelectedPreviewMouseDown = true;
-                        }
+                        SelectedThumbs.Add(active);
+                        IsSelectedPreviewMouseDown = false;
                     }
                     else
                     {
-                        if (SelectedThumbs.Contains(active) == false)
-                        {
-                            SelectedThumbs.Clear();
-                            SelectedThumbs.Add(active);
-                            IsSelectedPreviewMouseDown = false;
-                        }
+                        //フラグ
+                        //ctrl+クリックされたものがもともと選択状態だったら
+                        //マウスアップ時に削除するためのフラグ
+                        IsSelectedPreviewMouseDown = true;
                     }
                 }
-                else { IsSelectedPreviewMouseDown = false; }
+                else
+                {
+                    if (SelectedThumbs.Contains(active) == false)
+                    {
+                        SelectedThumbs.Clear();
+                        SelectedThumbs.Add(active);
+                        IsSelectedPreviewMouseDown = false;
+                    }
+                }
             }
+            else { IsSelectedPreviewMouseDown = false; }
+
+
         }
 
         //マウスレフトアップ、フラグがあればSelectedThumbsから削除する
@@ -936,8 +939,6 @@ namespace Pixtack3rd
                 IsSelectedPreviewMouseDown = false;//フラグ切り替え
                 ClickedThumb = SelectedThumbs[^1];
                 ActiveThumb = SelectedThumbs[^1];
-                //ActiveThumb = null;
-                //ClickedThumb = null;
             }
 
         }
@@ -961,6 +962,27 @@ namespace Pixtack3rd
             bmp.EndInit();
             return bmp;
         }
+        public void ChangeActiveThumbToFrontThumb()
+        {
+            if (ActiveThumb == null) return;
+            if (Thumbs[^1] == ActiveThumb) { return; }
+            if (Thumbs.Count == 1) { return; }
+            int ii = Thumbs.IndexOf(ActiveThumb);
+            ActiveThumb = Thumbs[ii + 1];
+            SelectedThumbs.Clear();
+            SelectedThumbs.Add(ActiveThumb);
+        }
+        public void ChangeActiveThumbToBackThumb()
+        {
+            if (ActiveThumb == null) return;
+            if (Thumbs[0] == ActiveThumb) { return; }
+            if (Thumbs.Count == 1) { return; }
+            int ii = Thumbs.IndexOf(ActiveThumb);
+            ActiveThumb = Thumbs[ii - 1];
+            SelectedThumbs.Clear();
+            SelectedThumbs.Add(ActiveThumb);
+        }
+
 
         /// <summary>
         /// ActiveThumb変更時に実行、FrontActiveThumbとBackActiveThumbを更新する
@@ -1958,7 +1980,7 @@ namespace Pixtack3rd
             List<TThumb> selection = new();
             foreach (var item in datas)
             {
-                if (AddThumbDataToActiveGroup(item, true,false) is TThumb thumb)
+                if (AddThumbDataToActiveGroup(item, true, false) is TThumb thumb)
                 {
                     selection.Add(thumb);
                     count++;
@@ -2003,7 +2025,7 @@ namespace Pixtack3rd
             List<TThumb> selection = new();
             foreach (var item in datas)
             {
-                if (AddThumbDataToActiveGroup(item,true, false) is TThumb thumb)
+                if (AddThumbDataToActiveGroup(item, true, false) is TThumb thumb)
                 {
                     selection.Add(thumb);
                     count++;
@@ -2068,7 +2090,108 @@ namespace Pixtack3rd
             //MySetXYBinging(this.Data);
         }
     }
+    public class TTTextBox : TThumb
+    {
+        #region 依存プロパティ
 
+        public string TTText
+        {
+            get { return (string)GetValue(TTTextProperty); }
+            set { SetValue(TTTextProperty, value); }
+        }
+        public static readonly DependencyProperty TTTextProperty =
+            DependencyProperty.Register(nameof(TTText), typeof(string), typeof(TTTextBox),
+                new FrameworkPropertyMetadata("",
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        #endregion 依存プロパティ
+
+
+        private readonly HutaTextBox MyTemplateElement;
+
+        public TTTextBox() : this(new Data(TType.TextBox)) { }
+
+        public TTTextBox(Data data) : base(data)
+        {
+            Data = data;
+            this.DataContext = Data;
+            if (MakeTemplate<HutaTextBox>() is HutaTextBox element)
+            {
+                MyTemplateElement = element;
+            }
+            else { throw new ArgumentException("テンプレート作成できんかった"); }
+
+            SetBinding(TTTextProperty, nameof(Data.Text));
+            MyTemplateElement.SetBinding(HutaTextBox.TextProperty, nameof(Data.Text));
+
+        }
+    }
+    /// <summary>
+    /// ダブルクリックで編集可能状態を切り替えるTextBox
+    /// </summary>
+    class HutaTextBox : ContentControl
+    {
+        private readonly string HUTA = "huta";
+        private readonly string TEXTBOX = "mytextbox";
+        private readonly Grid HutaGrid;
+        private readonly TextBox MyTextBox;
+        public string Text
+        {
+            get { return (string)GetValue(TextProperty); }
+            set { SetValue(TextProperty, value); }
+        }
+        public static readonly DependencyProperty TextProperty =
+            DependencyProperty.Register(nameof(Text), typeof(string), typeof(HutaTextBox),
+                new FrameworkPropertyMetadata("",
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public HutaTextBox()
+        {
+            SetTemplata();
+            HutaGrid = (Grid)Template.FindName(HUTA, this);
+            MyTextBox = (TextBox)Template.FindName(TEXTBOX, this);
+            MouseDoubleClick += HutaTextBox_MouseDoubleClick;
+        }
+
+        private void SetTemplata()
+        {
+            FrameworkElementFactory baseGrid = new(typeof(Grid));
+            FrameworkElementFactory factory = new(typeof(TextBox), TEXTBOX);
+            FrameworkElementFactory huta = new(typeof(Grid), HUTA);
+            huta.SetValue(Grid.BackgroundProperty, Brushes.Transparent);
+            factory.SetValue(TextBox.TextProperty,
+                new Binding() { Source = this, Path = new PropertyPath(TextProperty) });
+            factory.SetValue(TextBox.TextWrappingProperty, TextWrapping.Wrap);
+            factory.SetValue(TextBox.AcceptsReturnProperty, true);
+            baseGrid.AppendChild(factory);
+            baseGrid.AppendChild(huta);
+            Template = new() { VisualTree = baseGrid };
+            ApplyTemplate();
+        }
+
+        //ダブルクリックでテキスト編集状態の切り替え
+        //蓋の背景色が透明色ならnullにしてTextBoxを編集状態にする
+        //蓋の背景色がnullだった場合は透明色にして編集状態終了
+        private void HutaTextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (HutaGrid.Background == Brushes.Transparent)
+            {
+                HutaGrid.Background = null;
+                Keyboard.Focus(MyTextBox);
+                MyTextBox.Select(0, 0);
+                //MyTextBox.SelectAll();
+            }
+            else
+            {
+                HutaGrid.Background = Brushes.Transparent;
+                Keyboard.ClearFocus();
+            }
+        }
+    }
 
     public class TTImage : TThumb
     {
@@ -2101,13 +2224,16 @@ namespace Pixtack3rd
             if (MakeTemplate<Image>() is Image element) { MyTemplateElement = element; }
             else { throw new ArgumentException("テンプレート作成できんかった"); }
 
-            //SetBinding(TTSourceProperty, nameof(Data.BitmapSource));
             MyTemplateElement.SetBinding(Image.SourceProperty, nameof(Data.BitmapSource));
             //MySetXYBinging(this.Data);
         }
 
     }
 
+
+
+
+    #region コンバーター
 
     public class ConverterWakuBrush : IMultiValueConverter
     {
@@ -2247,6 +2373,9 @@ namespace Pixtack3rd
             else { return true; }
         }
     }
+
+    #endregion コンバーター
+
 
     public class ExObservableCollection : ObservableCollection<TThumb>
     {

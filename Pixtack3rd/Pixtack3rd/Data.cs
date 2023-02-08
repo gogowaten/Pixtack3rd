@@ -12,7 +12,7 @@ using System.Windows.Media.Imaging;
 
 namespace Pixtack3rd
 {
-    public enum TType { None = 0, Root, Group, TextBlock, Image, Rectangle }
+    public enum TType { None = 0, Root, Group, TextBlock, TextBox, Image, Rectangle }
 
 
 
@@ -47,10 +47,6 @@ namespace Pixtack3rd
         //グループの表示非表示
         private bool _isVisibleThumb = false;
         [DataMember] public bool IsNotVisiblle { get => _isVisibleThumb; set => SetProperty(ref _isVisibleThumb, value); }
-
-        ////Thumb追加位置
-        //private bool _isAddUpper = true;
-        //[DataMember] public bool IsAddUpper { get => _isAddUpper; set => SetProperty(ref _isAddUpper, value); }
 
         #endregion Group専用
 
@@ -100,7 +96,6 @@ namespace Pixtack3rd
                     break;
                 case TType.Root:
                     Datas = new ObservableCollection<Data>();
-
                     break;
                 case TType.Group:
                     Datas = new ObservableCollection<Data>();
@@ -110,6 +105,8 @@ namespace Pixtack3rd
                 case TType.Image:
                     break;
                 case TType.Rectangle:
+                    break;
+                case TType.TextBox:
                     break;
                 default:
                     break;
