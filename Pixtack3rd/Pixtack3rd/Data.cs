@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 
@@ -77,6 +78,18 @@ namespace Pixtack3rd
         private string _text = string.Empty;
         [DataMember] public string Text { get => _text; set => SetProperty(ref _text, value); }
 
+        //private FontFamily _fontFamily = SystemFonts.MessageFontFamily;
+        //[IgnoreDataMember] public FontFamily FontFamily { get => _fontFamily; set => SetProperty(ref _fontFamily, value); }
+
+        private string _fontName = SystemFonts.MessageFontFamily.Source;
+        [DataMember] public string FontName { get => _fontName; set => SetProperty(ref _fontName, value); }
+
+        private double _fontSize = SystemFonts.MessageFontSize;
+        [DataMember] public double FontSize { get => _fontSize; set => SetProperty(ref _fontSize, value); }
+
+        private FontStretch _fontStretch = FontStretches.Medium;
+        [DataMember] public FontStretch FontStretch { get => _fontStretch; set => SetProperty(ref _fontStretch, value); }
+
 
         //画像、それ自体は直接シリアライズしないので[IgnoreDataMember]
         //        [IgnoreDataMember] public BitmapSource? BitmapSource { get; set; }
@@ -89,6 +102,7 @@ namespace Pixtack3rd
         #region コンストラクタ
         public Data(TType type)
         {
+
             Type = type;
             switch (type)
             {

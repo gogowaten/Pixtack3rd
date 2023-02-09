@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -51,6 +52,14 @@ namespace Pixtack3rd
         public MainWindow()
         {
             InitializeComponent();
+            FontFamily ff = this.FontFamily;
+            LanguageSpecificStringDictionary fff = ff.FamilyNames;
+            string fssou = ff.Source;
+            FontFamilyMapCollection fffmap = ff.FamilyMaps;
+            FamilyTypefaceCollection famtype = ff.FamilyTypefaces;
+            FontFamilyConverter ffc = new();
+
+
             MyAppConfig = GetAppConfig(APP_CONFIG_FILE_NAME);
 
             //前回終了時に保存したファイルのフルパスをセット
@@ -69,6 +78,8 @@ namespace Pixtack3rd
 
             Drop += MainWindow_Drop;
             Closed += MainWindow_Closed;
+
+            MyTabControl.SelectedIndex = 2;
 
             //string imagePath = "D:\\ブログ用\\テスト用画像\\collection5.png";
             //string imagePath1 = "D:\\ブログ用\\テスト用画像\\collection4.png";
@@ -178,6 +189,8 @@ namespace Pixtack3rd
         private void MyInitializeComboBox()
         {
             ComboBoxSaveFileType.ItemsSource = Enum.GetValues(typeof(ImageType));
+            MyCombBoxFontFmilyNames.ItemsSource = GetFontFamilies();
+            MyComboBoxFontStretchs.ItemsSource = MakeFontStretchDictionary();
 
             //List<double> vs = new() { 0, 1.5, 2.5, 3.5, 5 };
             //MyComboBoxFileNameDateOrder.ItemsSource = vs;
@@ -212,6 +225,7 @@ namespace Pixtack3rd
             //    { SaveBehaviorType.SaveAtClipboardChange, "クリップボード監視、更新されたら保存" },
             //    { SaveBehaviorType.AddPreviewWindowFromClopboard, "クリップボード監視、更新されたらプレビューウィンドウに追加 (保存はしない)" }
             //};
+
         }
 
         /// <summary>
@@ -265,6 +279,69 @@ namespace Pixtack3rd
         #endregion 設定保存と読み込み
 
         #region その他関数
+        private SortedDictionary<string, FontStretch> MakeFontStretchDictionary()
+        {
+            System.Reflection.PropertyInfo[] stretchInfos = typeof(FontStretches).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            Dictionary<string, FontStretch> kv = new();
+            foreach (var item in stretchInfos)
+            {
+                if (item.GetValue(null) is not FontStretch fs)
+                {
+                    continue;
+                }
+                kv.Add(item.Name, fs);
+
+                //kv.Add(item.Name, item);
+            }
+             SortedDictionary<string, FontStretch> sorted = new(kv);
+            return sorted;
+        }
+        //WPF、インストールされているフォント一覧取得、Fonts.SystemFontFamiliesそのままでは不十分だった - 午後わてんのブログ
+        //        https://gogowaten.hatenablog.com/entry/2021/12/09/125022
+
+        /// <summary>
+        /// SystemFontFamiliesから日本語フォント名で並べ替えたフォント一覧を返す、1ファイルに別名のフォントがある場合も取得
+        /// </summary>
+        /// <returns></returns>
+        private SortedDictionary<string, FontFamily> GetFontFamilies()
+        {
+            //今のPCで使っている言語(日本語)のCulture取得
+            //var language =
+            // System.Windows.Markup.XmlLanguage.GetLanguage(
+            // CultureInfo.CurrentCulture.IetfLanguageTag);
+            CultureInfo culture = CultureInfo.CurrentCulture;//日本
+            CultureInfo cultureUS = new("en-US");//英語？米国？
+
+            List<string> uName = new();//フォント名の重複判定に使う
+            Dictionary<string, FontFamily> tempDictionary = new();
+            foreach (var item in Fonts.SystemFontFamilies)
+            {
+                var typefaces = item.GetTypefaces();
+                foreach (var typeface in typefaces)
+                {
+                    _ = typeface.TryGetGlyphTypeface(out GlyphTypeface gType);
+                    if (gType != null)
+                    {
+                        //フォント名取得はFamilyNamesではなく、Win32FamilyNamesを使う
+                        //FamilyNamesだと違うフォントなのに同じフォント名で取得されるものがあるので
+                        //Win32FamilyNamesを使う
+                        //日本語名がなければ英語名
+                        string fontName = gType.Win32FamilyNames[culture] ?? gType.Win32FamilyNames[cultureUS];
+                        //string fontName = gType.FamilyNames[culture] ?? gType.FamilyNames[cultureUS];
+
+                        //フォント名で重複判定
+                        var uri = gType.FontUri;
+                        if (uName.Contains(fontName) == false)
+                        {
+                            uName.Add(fontName);
+                            tempDictionary.Add(fontName, new(uri, fontName));
+                        }
+                    }
+                }
+            }
+            SortedDictionary<string, FontFamily> fontDictionary = new(tempDictionary);
+            return fontDictionary;
+        }
 
         /// <summary>
         /// DataTypeの変換、RootDataだった場合GroupDataに変換する
@@ -1034,7 +1111,7 @@ namespace Pixtack3rd
 
                         //1
                         data = ConvertDataRootToGroup(data);
-                        if (data != null && appConfig is not null)
+                        if (data != null)
                         {
                             MyRoot.AddThumbDataToActiveGroup(data, appConfig.IsAddUpper);
                         }
@@ -1801,10 +1878,7 @@ namespace Pixtack3rd
 
         private void ButtonTest_Click(object sender, RoutedEventArgs e)
         {
-            var neko = MyAppConfig.IsAddUpper;
-            var config = MyAppConfig.IsAscendingSort;
-            var dpi = MyRoot.Thumbs[0].Data;
-            //MyRoot.ActiveGroup.Visibility = Visibility.Hidden;
+            var fn = MyRoot.ActiveThumb.Data.FontName;
         }
 
         private void GroupBox_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -1845,6 +1919,11 @@ namespace Pixtack3rd
         private void Grid_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             //e.Handled = true;
+        }
+
+        private void NumericUpDown_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+
         }
     }
 
