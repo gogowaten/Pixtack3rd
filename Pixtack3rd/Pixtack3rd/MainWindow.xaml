@@ -19,8 +19,8 @@
 
   <Grid Name="MyGrid">
     <Grid.ColumnDefinitions>
-      <ColumnDefinition/>
       <ColumnDefinition Width="260"/>
+      <ColumnDefinition/>
     </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
       <RowDefinition Height="auto"/>
@@ -215,42 +215,42 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
       </DockPanel>
     </StatusBar>
 
-    <ScrollViewer Grid.Row="1" Grid.Column="0"
+    <ScrollViewer Grid.Row="1" Grid.Column="1"
                   x:Name="MyScrollViewer"
                   HorizontalScrollBarVisibility="Auto"
                   VerticalScrollBarVisibility="Auto"
                   UseLayoutRounding="True">
       <!--<Grid KeyDown="Grid_KeyDown" PreviewKeyDown="Grid_PreviewKeyDown">-->
-        <!--<local:TTTextBlock TTText="222"/>-->
-        <local:TTRoot x:Name="MyRoot"
+      <!--<local:TTTextBlock TTText="222"/>-->
+      <local:TTRoot x:Name="MyRoot"
                     HorizontalAlignment="Left" VerticalAlignment="Top"
                     TTGrid="8" TTXShift="32" TTYShift="32">
 
-          <!--<local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
+        <!--<local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
         <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection2.png"/>
         <local:TTImage x:Name="MyImage1" TTLeft="100" TTTop="100"
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection3.png"/>
         <local:TTImage x:Name="MyImage2" TTLeft="120" TTTop="120"
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection4.png"/>-->
-          <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
+        <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect000.png"/>
-          <local:TTImage x:Name="MyImage1" TTLeft="30" TTTop="30"
+        <local:TTImage x:Name="MyImage1" TTLeft="24" TTTop="24"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect030.png"/>
-          <local:TTImage x:Name="MyImage2" TTLeft="60" TTTop="60"
+        <local:TTImage x:Name="MyImage2" TTLeft="48" TTTop="48"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect060.png"/>
-          <local:TTImage x:Name="MyImage3" TTLeft="90" TTTop="90"
+        <local:TTImage x:Name="MyImage3" TTLeft="72" TTTop="72"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect090.png"/>
-          <local:TTImage x:Name="MyImage4" TTLeft="120" TTTop="120"
+        <local:TTImage x:Name="MyImage4" TTLeft="96" TTTop="96"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect135.png"/>
-          <local:TTTextBox x:Name="MyTextBox1"
-            TTText="TextBox" TTLeft="128" TTTop="188" FontSize="30"/>
-        </local:TTRoot>
-        <!--<TextBox x:Name="MytextBox" Text="nornalTextbox" Width="100"/>-->
+        <local:TTTextBox x:Name="MyTextBox1"
+            TTText="TextBox" TTLeft="152" TTTop="152" FontSize="30"/>
+      </local:TTRoot>
+      <!--<TextBox x:Name="MytextBox" Text="nornalTextbox" Width="100"/>-->
       <!--</Grid>-->
     </ScrollViewer>
 
-    <TabControl Grid.Row="1" Grid.Column="1" TabStripPlacement="Top">
+    <TabControl Grid.Row="1" Grid.Column="0" x:Name="MyTabControl" TabStripPlacement="Top">
 
       <TabItem x:Name="MyTab1App" Header="test1">
         <StackPanel>
@@ -339,13 +339,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                 <Button x:Name="ButtonDoRootActiveGroup" Content="RootActiveGroup" Click="ButtonDoRootActiveGroup_Click"/>
               </UniformGrid>
             </GroupBox>
-            <GroupBox Header="奥行き(Z軸)移動、対象はActiveThumb">
-              <UniformGrid Rows="1">
-                <Button x:Name="ButtonMostUp" Content="最前面" Click="ButtonZMostUp_Click"/>
-                <Button x:Name="ButtonMostDown" Content="最背面" Click="ButtonZMostDown_Click"/>
-              </UniformGrid>
-            </GroupBox>
-
+            
             <!--<GroupBox Header="グリッドスナップ移動、対象はActiveThumb">
               <UniformGrid Rows="1">
                 <Button x:Name="ButtonGoUpGrid" Content="上" Click="ButtonGoUpGrid_Click"/>
@@ -382,8 +376,6 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               <Setter Property="Margin" Value="2,1,4,4"/>
             </Style>
           </StackPanel.Resources>
-          <TextBlock Text="{Binding Thumbs.Count, StringFormat=RootItem数 \= {0}}"/>
-          <TextBlock Text="{Binding TTWakuVisibleType}"/>
 
           <!--<TreeView ItemsSource="{Binding Data.Datas}">
             <TreeView.Resources>
@@ -410,6 +402,61 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
 
 
 
+          <GroupBox Header="ActiveThumb" DataContext="{Binding ActiveThumb}">
+            <StackPanel>
+              <Canvas Width="250" Height="160" HorizontalAlignment="Left">
+                <Grid Width="90" Height="70" Canvas.Left="0" Canvas.Top="90">
+                  <Border Background="White" BorderBrush="Gray" BorderThickness="1">
+                    <Rectangle Width="80" Height="60"
+                         DataContext="{Binding ElementName=MyRoot}">
+                      <Rectangle.Fill>
+                        <VisualBrush Visual="{Binding BackActiveThumb}" Stretch="Uniform"/>
+                      </Rectangle.Fill>
+                    </Rectangle>
+                  </Border>
+                </Grid>
+                <Grid Canvas.Left="60" Canvas.Top="30" Width="130" Height="100" MouseWheel="Grid_MouseWheel">
+                  <Border Background="White" BorderBrush="Gray" BorderThickness="1">
+                    <Rectangle Width="120" Height="90" Canvas.Left="60" Canvas.Top="35">
+                      <Rectangle.Fill>
+                        <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
+                      </Rectangle.Fill>
+                    </Rectangle>
+                  </Border>
+                </Grid>
+                <Grid Width="90" Height="70">
+                  <Border  Background="White" BorderBrush="Gray" BorderThickness="1">
+                    <Rectangle Width="80" Height="60"
+                         DataContext="{Binding ElementName=MyRoot}"
+                       Canvas.Left="0" Canvas.Top="0">
+                      <Rectangle.Fill>
+                        <VisualBrush Visual="{Binding FrontActiveThumb}" Stretch="Uniform"/>
+                      </Rectangle.Fill>
+                    </Rectangle>
+                  </Border>
+                </Grid>
+                <GroupBox Header="Z移動" Canvas.Left="190" MouseWheel="GroupBox_MouseWheel">
+                  <StackPanel>
+                    <Button x:Name="ButtonMostUp" Content="最前面" Click="ButtonZMostUp_Click"/>
+                    <Button x:Name="ButtonUp" Content="前面" Click="ButtonZUp_Click"/>
+                    <Button x:Name="ButtonDown" Content="背面" Click="ButtonZDown_Click"/>
+                    <Button x:Name="ButtonMostDown" Content="最背面" Click="ButtonZMostDown_Click"/>
+                  </StackPanel>
+                </GroupBox>
+                <Button Content="グループ解除" Click="ButtonUnGroup_Click" Canvas.Left="100" Canvas.Top="8"/>
+              </Canvas>
+
+              <TextBlock Text="{Binding Data.Guid, StringFormat=Guid \= {0}}"/>
+              <TextBlock Text="{Binding Data.Type, StringFormat=Type \= {0}}"/>
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding Data.X, StringFormat=x\={0:000}}"/>
+                <TextBlock Text="{Binding Data.Y, StringFormat=y\={0:000}}"/>
+                <TextBlock Text="{Binding ActualWidth, StringFormat=幅\={0:000}}"/>
+                <TextBlock Text="{Binding ActualHeight, StringFormat=高さ\={0:000}}"/>
+              </StackPanel>
+              <TextBlock Text="{Binding Data.Text}"/>
+            </StackPanel>
+          </GroupBox>
           <GroupBox Header="ActiveGroup" DataContext="{Binding ActiveGroup}">
             <StackPanel>
               <StackPanel Orientation="Horizontal">
@@ -468,59 +515,6 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               </GroupBox>
             </StackPanel>
           </GroupBox>
-          <GroupBox Header="ActiveThumb" DataContext="{Binding ActiveThumb}">
-            <StackPanel>
-              <Canvas Width="250" Height="160" HorizontalAlignment="Left">
-                <Grid Width="90" Height="70" Canvas.Left="0" Canvas.Top="90">
-                  <Border Background="White" BorderBrush="Gray" BorderThickness="1">
-                    <Rectangle Width="80" Height="60"
-                         DataContext="{Binding ElementName=MyRoot}">
-                      <Rectangle.Fill>
-                        <VisualBrush Visual="{Binding BackActiveThumb}" Stretch="Uniform"/>
-                      </Rectangle.Fill>
-                    </Rectangle>
-                  </Border>
-                </Grid>
-                <Grid Canvas.Left="60" Canvas.Top="30" Width="130" Height="100" MouseWheel="Grid_MouseWheel">
-                  <Border Background="White" BorderBrush="Gray" BorderThickness="1">
-                    <Rectangle Width="120" Height="90" Canvas.Left="60" Canvas.Top="35">
-                      <Rectangle.Fill>
-                        <VisualBrush Visual="{Binding}" Stretch="Uniform"/>
-                      </Rectangle.Fill>
-                    </Rectangle>
-                  </Border>
-                </Grid>
-                <Grid Width="90" Height="70">
-                  <Border  Background="White" BorderBrush="Gray" BorderThickness="1">
-                    <Rectangle Width="80" Height="60"
-                         DataContext="{Binding ElementName=MyRoot}"
-                       Canvas.Left="0" Canvas.Top="0">
-                      <Rectangle.Fill>
-                        <VisualBrush Visual="{Binding FrontActiveThumb}" Stretch="Uniform"/>
-                      </Rectangle.Fill>
-                    </Rectangle>
-                  </Border>
-                </Grid>
-                <GroupBox Header="Z移動" Canvas.Left="190" MouseWheel="GroupBox_MouseWheel">
-                  <StackPanel>
-                    <Button x:Name="ButtonUp" Content="前面" Click="ButtonZUp_Click"/>
-                    <Button x:Name="ButtonDown" Content="背面" Click="ButtonZDown_Click"/>
-                  </StackPanel>
-                </GroupBox>
-                <Button Content="グループ解除" Click="ButtonUnGroup_Click" Canvas.Left="100" Canvas.Top="8"/>
-              </Canvas>
-
-              <TextBlock Text="{Binding Data.Guid, StringFormat=Guid \= {0}}"/>
-              <TextBlock Text="{Binding Data.Type, StringFormat=Type \= {0}}"/>
-              <StackPanel Orientation="Horizontal">
-                <TextBlock Text="{Binding Data.X, StringFormat=x\={0:000}}"/>
-                <TextBlock Text="{Binding Data.Y, StringFormat=y\={0:000}}"/>
-                <TextBlock Text="{Binding ActualWidth, StringFormat=幅\={0:000}}"/>
-                <TextBlock Text="{Binding ActualHeight, StringFormat=高さ\={0:000}}"/>
-              </StackPanel>
-              <TextBlock Text="{Binding Data.Text}"/>
-            </StackPanel>
-          </GroupBox>
 
           <GroupBox Header="ClickedThumb" DataContext="{Binding ClickedThumb}">
             <StackPanel Orientation="Horizontal">
@@ -542,6 +536,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                   <TextBlock Text="{Binding ActualWidth, StringFormat=幅\={0:000}}"/>
                   <TextBlock Text="{Binding ActualHeight, StringFormat=高さ\={0:000}}"/>
                 </StackPanel>
+                <TextBox Text="{Binding Data.Text}"/>
               </StackPanel>
             </StackPanel>
           </GroupBox>
@@ -575,6 +570,9 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               </DockPanel>
             </StackPanel>
           </GroupBox>
+          <TextBlock Text="{Binding Thumbs.Count, StringFormat=RootItem数 \= {0}}"/>
+          <TextBlock Text="{Binding TTWakuVisibleType}"/>
+
         </StackPanel>
       </TabItem>
 

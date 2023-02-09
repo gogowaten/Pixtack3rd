@@ -142,15 +142,27 @@ namespace Pixtack3rd
                         {
                             //スクロールバーを動かさないように
                             //カーソルキーとPageupdownキーを含むキー操作の後にはe.Handled = true;
-                            if (e.Key == Key.Up) { root.ActiveThumbGoUpGrid(); e.Handled = true; }
-                            else if (e.Key == Key.Down) { root.ActiveThumbGoDownGrid(); e.Handled = true; }
-                            else if (e.Key == Key.Left) { root.ActiveThumbGoLeftGrid(); e.Handled = true; }
-                            else if (e.Key == Key.Right) { root.ActiveThumbGoRightGrid(); e.Handled = true; }
-                            else if (e.Key == Key.PageUp) { root.ZUp(); e.Handled = true; }
-                            else if (e.Key == Key.PageDown) { root.ZDown(); e.Handled = true; }
-                            else if (e.Key == Key.Home) { root.ChangeActiveGroupOutside(); e.Handled = true; }
-                            else if (e.Key == Key.End) { root.ChangeActiveGroupInside(); e.Handled = true; }
-                            else if (e.Key == Key.C) { root.CopyImageActiveThumb(); }
+                            switch (e.Key)
+                            {
+                                case Key.Up:
+                                    root.ActiveThumbGoUpGrid(); e.Handled = true; break;
+                                case Key.Down:
+                                    root.ActiveThumbGoDownGrid(); e.Handled = true; break;
+                                case Key.Left:
+                                    root.ActiveThumbGoLeftGrid(); e.Handled = true; break;
+                                case Key.Right:
+                                    root.ActiveThumbGoRightGrid(); e.Handled = true; break;
+                                case Key.PageUp:
+                                    root.ZUp(); e.Handled = true; break;
+                                case Key.PageDown:
+                                    root.ZDown(); e.Handled = true; break;
+                                case Key.Home:
+                                    root.ChangeActiveGroupOutside(); e.Handled = true; break;
+                                case Key.End:
+                                    root.ChangeActiveGroupInside(); e.Handled = true; break;
+                                case Key.C:
+                                    root.CopyImageActiveThumb(); break;
+                            }
                         }
                         break;
                     case ModifierKeys.Alt:
@@ -2106,6 +2118,33 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
+        /// <summary>
+        /// Text編集状態の切り替え、編集終了時にはコールバックでTTTextBoxにフォーカスを移す
+        /// </summary>
+        public bool IsEdit
+        {
+            get { return (bool)GetValue(IsEditProperty); }
+            set { SetValue(IsEditProperty, value); }
+        }
+        public static readonly DependencyProperty IsEditProperty =
+            DependencyProperty.Register(nameof(IsEdit), typeof(bool), typeof(TTTextBox),
+                new FrameworkPropertyMetadata(false, new PropertyChangedCallback(OnIsEditChanged)));
+        /// <summary>
+        /// 編集終了時にはTTTextBoxにフォーカスを移す
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="e"></param>
+        private static void OnIsEditChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is TTTextBox ttt && e.NewValue is bool b && b == false)
+            {
+                ttt.Focus();
+                //Keyboard.Focus(ttt);
+               var neko = FocusManager.GetFocusedElement(d);
+               var inu= Keyboard.FocusedElement;
+            }
+        }
+
         #endregion 依存プロパティ
 
 
@@ -2125,11 +2164,24 @@ namespace Pixtack3rd
 
             SetBinding(TTTextProperty, nameof(Data.Text));
             MyTemplateElement.SetBinding(HutaTextBox.TextProperty, nameof(Data.Text));
+            MyTemplateElement.SetBinding(HutaTextBox.IsEditProperty, new Binding() { Source = this, Path = new PropertyPath(IsEditProperty) });
 
+
+        }
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+            if (e.Key == Key.F2) { IsEdit = !IsEdit; }
+        }
+        protected override void OnMouseDoubleClick(MouseButtonEventArgs e)
+        {
+            base.OnMouseDoubleClick(e);
+            IsEdit = !IsEdit;
         }
     }
     /// <summary>
-    /// ダブルクリックで編集可能状態を切り替えるTextBox
+    /// 編集可能状態を切り替えるTextBox、Gridの蓋の取り外しをIsEditプロパティで切り替える
+    /// TTTextBoxのテンプレート用
     /// </summary>
     class HutaTextBox : ContentControl
     {
@@ -2149,12 +2201,45 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
+        /// <summary>
+        /// 編集状態の切り替え、プロパティ変更時にcallbackを使って切り替える
+        /// 蓋の背景色が透明色ならnullにしてTextBoxを編集状態にする
+        /// 蓋の背景色がnullだった場合は透明色にして編集状態終了
+        /// </summary>
+        public bool IsEdit
+        {
+            get { return (bool)GetValue(IsEditProperty); }
+            set { SetValue(IsEditProperty, value); }
+        }
+        public static readonly DependencyProperty IsEditProperty =
+            DependencyProperty.Register(nameof(IsEdit), typeof(bool), typeof(HutaTextBox),
+                new FrameworkPropertyMetadata(false, new PropertyChangedCallback(OnIsEditChanged)));
+        private static void OnIsEditChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is HutaTextBox huta)
+            {
+                if (huta.HutaGrid.Background == Brushes.Transparent)
+                {
+                    huta.HutaGrid.Background = null;
+                    huta.MyTextBox.Focusable = true;
+                    Keyboard.Focus(huta.MyTextBox);
+                    huta.MyTextBox.SelectAll();
+                }
+                else
+                {
+                    huta.HutaGrid.Background = Brushes.Transparent;
+                    Keyboard.ClearFocus();
+                    huta.MyTextBox.Focusable = false;
+                }
+            }
+        }
+
         public HutaTextBox()
         {
             SetTemplata();
             HutaGrid = (Grid)Template.FindName(HUTA, this);
             MyTextBox = (TextBox)Template.FindName(TEXTBOX, this);
-            MouseDoubleClick += HutaTextBox_MouseDoubleClick;
+            //MouseDoubleClick += HutaTextBox_MouseDoubleClick;
         }
 
         private void SetTemplata()
@@ -2166,31 +2251,49 @@ namespace Pixtack3rd
             factory.SetValue(TextBox.TextProperty,
                 new Binding() { Source = this, Path = new PropertyPath(TextProperty) });
             factory.SetValue(TextBox.TextWrappingProperty, TextWrapping.Wrap);
-            factory.SetValue(TextBox.AcceptsReturnProperty, true);
+            factory.SetValue(TextBox.AcceptsReturnProperty, true);//Enterで改行入力
+            factory.SetValue(TextBox.AcceptsTabProperty, true);//Tabでタブ文字入力
+
             baseGrid.AppendChild(factory);
             baseGrid.AppendChild(huta);
             Template = new() { VisualTree = baseGrid };
             ApplyTemplate();
         }
 
-        //ダブルクリックでテキスト編集状態の切り替え
-        //蓋の背景色が透明色ならnullにしてTextBoxを編集状態にする
-        //蓋の背景色がnullだった場合は透明色にして編集状態終了
-        private void HutaTextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if (HutaGrid.Background == Brushes.Transparent)
-            {
-                HutaGrid.Background = null;
-                Keyboard.Focus(MyTextBox);
-                MyTextBox.Select(0, 0);
-                //MyTextBox.SelectAll();
-            }
-            else
-            {
-                HutaGrid.Background = Brushes.Transparent;
-                Keyboard.ClearFocus();
-            }
-        }
+        ////ダブルクリックでテキスト編集状態の切り替え
+        ////蓋の背景色が透明色ならnullにしてTextBoxを編集状態にする
+        ////蓋の背景色がnullだった場合は透明色にして編集状態終了
+        //private void HutaTextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        //{
+        //    if (HutaGrid.Background == Brushes.Transparent)
+        //    {
+        //        HutaGrid.Background = null;
+        //        var thf = this.IsFocused;
+        //        var tf = MyTextBox.IsFocused;
+        //        MyTextBox.Focus();
+        //        Keyboard.Focus(MyTextBox);
+        //        MyTextBox.Select(0, 0);
+        //        var neko = MyTextBox.IsFocused;
+        //        var selet = MyTextBox.SelectedText;
+        //        var keyin = MyTextBox.IsKeyboardFocusWithin;
+
+        //        //MyTextBox.SelectAll();
+        //    }
+        //    else
+        //    {
+        //        HutaGrid.Background = Brushes.Transparent;
+        //        Keyboard.ClearFocus();
+        //    }
+        //}
+
+        //protected override void OnPreviewKeyDown(KeyEventArgs e)
+        //{
+        //    base.OnPreviewKeyDown(e);
+        //}
+        //protected override void OnKeyDown(KeyEventArgs e)
+        //{
+        //    base.OnKeyDown(e);
+        //}
     }
 
     public class TTImage : TThumb

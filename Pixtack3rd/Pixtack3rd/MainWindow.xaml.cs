@@ -70,6 +70,7 @@ namespace Pixtack3rd
             Drop += MainWindow_Drop;
             Closed += MainWindow_Closed;
 
+            MyTabControl.SelectedIndex = 1;
             //string imagePath = "D:\\ブログ用\\テスト用画像\\collection5.png";
             //string imagePath1 = "D:\\ブログ用\\テスト用画像\\collection4.png";
 
