@@ -243,7 +243,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect090.png"/>
         <local:TTImage x:Name="MyImage4" TTLeft="96" TTTop="96"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect135.png"/>
-        <local:TTTextBox x:Name="MyTextBox1"
+        <local:TTTextBox x:Name="MyTextBox1" FontFamily="ＭＳ 明朝"
             TTText="TextBox" TTLeft="152" TTTop="152" FontSize="30"/>
       </local:TTRoot>
       <!--<TextBox x:Name="MytextBox" Text="nornalTextbox" Width="100"/>-->
@@ -536,7 +536,8 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                   <TextBlock Text="{Binding ActualWidth, StringFormat=幅\={0:000}}"/>
                   <TextBlock Text="{Binding ActualHeight, StringFormat=高さ\={0:000}}"/>
                 </StackPanel>
-                <TextBox Text="{Binding Data.Text}"/>
+                <TextBox Text="{Binding Data.Text, UpdateSourceTrigger=PropertyChanged}"
+                         TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True"/>
               </StackPanel>
             </StackPanel>
           </GroupBox>
@@ -575,7 +576,19 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
 
         </StackPanel>
       </TabItem>
-
+      <TabItem Header="文字列">
+        <StackPanel>
+          <ComboBox x:Name="MyCombBoxFontFmilyNames" SelectedValuePath="Key" DisplayMemberPath="Value">
+            <!--<ComboBox.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding Key}" FontFamily="{Binding Value}"/>
+              </DataTemplate>
+            </ComboBox.ItemTemplate>-->
+          </ComboBox>
+          <TextBox x:Name="MyTextBoxText" AcceptsReturn="True" AcceptsTab="True" FontFamily="ＭＳ 明朝"
+                   TextWrapping="Wrap" Text="testttttttttttttttttttttttt"/>
+        </StackPanel>
+      </TabItem>
       <TabItem Header="設定" DataContext="{Binding}">
         <StackPanel>
           <CheckBox Content="起動時に前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>

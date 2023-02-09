@@ -2139,9 +2139,6 @@ namespace Pixtack3rd
             if (d is TTTextBox ttt && e.NewValue is bool b && b == false)
             {
                 ttt.Focus();
-                //Keyboard.Focus(ttt);
-               var neko = FocusManager.GetFocusedElement(d);
-               var inu= Keyboard.FocusedElement;
             }
         }
 
@@ -2165,8 +2162,11 @@ namespace Pixtack3rd
             SetBinding(TTTextProperty, nameof(Data.Text));
             MyTemplateElement.SetBinding(HutaTextBox.TextProperty, nameof(Data.Text));
             MyTemplateElement.SetBinding(HutaTextBox.IsEditProperty, new Binding() { Source = this, Path = new PropertyPath(IsEditProperty) });
-
-
+            Binding b = new(nameof(data.FontName));
+            b.Mode = BindingMode.TwoWay;
+            b.Converter = new ConverterFontFamilyName();
+            SetBinding(FontFamilyProperty, b);
+            MyTemplateElement.SetBinding(FontFamilyProperty, b);
         }
         protected override void OnKeyDown(KeyEventArgs e)
         {
@@ -2214,6 +2214,7 @@ namespace Pixtack3rd
         public static readonly DependencyProperty IsEditProperty =
             DependencyProperty.Register(nameof(IsEdit), typeof(bool), typeof(HutaTextBox),
                 new FrameworkPropertyMetadata(false, new PropertyChangedCallback(OnIsEditChanged)));
+
         private static void OnIsEditChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is HutaTextBox huta)
@@ -2239,7 +2240,6 @@ namespace Pixtack3rd
             SetTemplata();
             HutaGrid = (Grid)Template.FindName(HUTA, this);
             MyTextBox = (TextBox)Template.FindName(TEXTBOX, this);
-            //MouseDoubleClick += HutaTextBox_MouseDoubleClick;
         }
 
         private void SetTemplata()
@@ -2250,6 +2250,7 @@ namespace Pixtack3rd
             huta.SetValue(Grid.BackgroundProperty, Brushes.Transparent);
             factory.SetValue(TextBox.TextProperty,
                 new Binding() { Source = this, Path = new PropertyPath(TextProperty) });
+
             factory.SetValue(TextBox.TextWrappingProperty, TextWrapping.Wrap);
             factory.SetValue(TextBox.AcceptsReturnProperty, true);//Enterで改行入力
             factory.SetValue(TextBox.AcceptsTabProperty, true);//Tabでタブ文字入力
@@ -2260,40 +2261,6 @@ namespace Pixtack3rd
             ApplyTemplate();
         }
 
-        ////ダブルクリックでテキスト編集状態の切り替え
-        ////蓋の背景色が透明色ならnullにしてTextBoxを編集状態にする
-        ////蓋の背景色がnullだった場合は透明色にして編集状態終了
-        //private void HutaTextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        //{
-        //    if (HutaGrid.Background == Brushes.Transparent)
-        //    {
-        //        HutaGrid.Background = null;
-        //        var thf = this.IsFocused;
-        //        var tf = MyTextBox.IsFocused;
-        //        MyTextBox.Focus();
-        //        Keyboard.Focus(MyTextBox);
-        //        MyTextBox.Select(0, 0);
-        //        var neko = MyTextBox.IsFocused;
-        //        var selet = MyTextBox.SelectedText;
-        //        var keyin = MyTextBox.IsKeyboardFocusWithin;
-
-        //        //MyTextBox.SelectAll();
-        //    }
-        //    else
-        //    {
-        //        HutaGrid.Background = Brushes.Transparent;
-        //        Keyboard.ClearFocus();
-        //    }
-        //}
-
-        //protected override void OnPreviewKeyDown(KeyEventArgs e)
-        //{
-        //    base.OnPreviewKeyDown(e);
-        //}
-        //protected override void OnKeyDown(KeyEventArgs e)
-        //{
-        //    base.OnKeyDown(e);
-        //}
     }
 
     public class TTImage : TThumb
@@ -2337,6 +2304,21 @@ namespace Pixtack3rd
 
 
     #region コンバーター
+    public class ConverterFontFamilyName : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            string name = (string)value;
+            FontFamily font = new(name);
+            return font;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            FontFamily font = (FontFamily)value;
+            return font.Source;
+        }
+    }
 
     public class ConverterWakuBrush : IMultiValueConverter
     {
