@@ -2162,11 +2162,22 @@ namespace Pixtack3rd
             SetBinding(TTTextProperty, nameof(Data.Text));
             MyTemplateElement.SetBinding(HutaTextBox.TextProperty, nameof(Data.Text));
             MyTemplateElement.SetBinding(HutaTextBox.IsEditProperty, new Binding() { Source = this, Path = new PropertyPath(IsEditProperty) });
+            
             Binding b = new(nameof(data.FontName));
             b.Mode = BindingMode.TwoWay;
             b.Converter = new ConverterFontFamilyName();
             SetBinding(FontFamilyProperty, b);
             MyTemplateElement.SetBinding(FontFamilyProperty, b);
+            
+            b = new(nameof(data.FontSize));            
+            b.Mode = BindingMode.TwoWay;
+            SetBinding(TextBox.FontSizeProperty, b);
+
+            b = new(nameof(data.FontStretch));
+            b.Mode= BindingMode.TwoWay;
+            SetBinding(TextBox.FontStretchProperty, b);
+
+            //SetBinding(TextBox.FontStretchProperty,new Binding(nameof(data.FontStretch)) { Mode= BindingMode.TwoWay });
         }
         protected override void OnKeyDown(KeyEventArgs e)
         {

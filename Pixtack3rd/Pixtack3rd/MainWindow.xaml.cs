@@ -58,7 +58,7 @@ namespace Pixtack3rd
             FontFamilyMapCollection fffmap = ff.FamilyMaps;
             FamilyTypefaceCollection famtype = ff.FamilyTypefaces;
             FontFamilyConverter ffc = new();
-            
+
 
             MyAppConfig = GetAppConfig(APP_CONFIG_FILE_NAME);
 
@@ -80,6 +80,7 @@ namespace Pixtack3rd
             Closed += MainWindow_Closed;
 
             MyTabControl.SelectedIndex = 2;
+
             //string imagePath = "D:\\ブログ用\\テスト用画像\\collection5.png";
             //string imagePath1 = "D:\\ブログ用\\テスト用画像\\collection4.png";
 
@@ -189,6 +190,7 @@ namespace Pixtack3rd
         {
             ComboBoxSaveFileType.ItemsSource = Enum.GetValues(typeof(ImageType));
             MyCombBoxFontFmilyNames.ItemsSource = GetFontFamilies();
+            MyComboBoxFontStretchs.ItemsSource = MakeFontStretchDictionary();
 
             //List<double> vs = new() { 0, 1.5, 2.5, 3.5, 5 };
             //MyComboBoxFileNameDateOrder.ItemsSource = vs;
@@ -277,6 +279,23 @@ namespace Pixtack3rd
         #endregion 設定保存と読み込み
 
         #region その他関数
+        private SortedDictionary<string, FontStretch> MakeFontStretchDictionary()
+        {
+            System.Reflection.PropertyInfo[] stretchInfos = typeof(FontStretches).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            Dictionary<string, FontStretch> kv = new();
+            foreach (var item in stretchInfos)
+            {
+                if (item.GetValue(null) is not FontStretch fs)
+                {
+                    continue;
+                }
+                kv.Add(item.Name, fs);
+
+                //kv.Add(item.Name, item);
+            }
+             SortedDictionary<string, FontStretch> sorted = new(kv);
+            return sorted;
+        }
         //WPF、インストールされているフォント一覧取得、Fonts.SystemFontFamiliesそのままでは不十分だった - 午後わてんのブログ
         //        https://gogowaten.hatenablog.com/entry/2021/12/09/125022
 
@@ -1092,7 +1111,7 @@ namespace Pixtack3rd
 
                         //1
                         data = ConvertDataRootToGroup(data);
-                        if (data != null && appConfig is not null)
+                        if (data != null)
                         {
                             MyRoot.AddThumbDataToActiveGroup(data, appConfig.IsAddUpper);
                         }
@@ -1900,6 +1919,11 @@ namespace Pixtack3rd
         private void Grid_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             //e.Handled = true;
+        }
+
+        private void NumericUpDown_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+
         }
     }
 
