@@ -1224,6 +1224,9 @@ namespace Pixtack3rd
                 //return new TTImage(data);
                 case TType.Rectangle:
                     throw new NotImplementedException();
+                case TType.TextBox:
+                    result = new TTTextBox(data);
+                    break;
                 default:
                     throw new NotImplementedException();
             }
