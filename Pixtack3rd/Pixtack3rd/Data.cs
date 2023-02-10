@@ -87,8 +87,12 @@ namespace Pixtack3rd
         private double _fontSize = SystemFonts.MessageFontSize;
         [DataMember] public double FontSize { get => _fontSize; set => SetProperty(ref _fontSize, value); }
 
-        private FontStretch _fontStretch = FontStretches.Medium;
-        [DataMember] public FontStretch FontStretch { get => _fontStretch; set => SetProperty(ref _fontStretch, value); }
+        
+        private FontStyle _fontStyle = FontStyles.Normal;
+       [DataMember] public FontStyle FontStyle { get => _fontStyle; set => SetProperty(ref _fontStyle, value); }
+
+        private FontWeight _fontWeight = FontWeights.Normal;
+        public FontWeight FontWeight { get => _fontWeight; set => SetProperty(ref _fontWeight, value); }
 
 
         //画像、それ自体は直接シリアライズしないので[IgnoreDataMember]

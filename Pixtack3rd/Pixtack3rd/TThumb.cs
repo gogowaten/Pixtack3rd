@@ -1224,6 +1224,9 @@ namespace Pixtack3rd
                 //return new TTImage(data);
                 case TType.Rectangle:
                     throw new NotImplementedException();
+                case TType.TextBox:
+                    result = new TTTextBox(data);
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -2173,9 +2176,17 @@ namespace Pixtack3rd
             b.Mode = BindingMode.TwoWay;
             SetBinding(TextBox.FontSizeProperty, b);
 
-            b = new(nameof(data.FontStretch));
+            //b = new(nameof(data.FontStretch));
+            //b.Mode= BindingMode.TwoWay;
+            //SetBinding(TextBox.FontStretchProperty, b);
+
+            b = new(nameof(data.FontStyle));
             b.Mode= BindingMode.TwoWay;
-            SetBinding(TextBox.FontStretchProperty, b);
+            SetBinding(TextBox.FontStyleProperty, b);
+            
+            b = new(nameof(data.FontWeight));
+            b.Mode= BindingMode.TwoWay;
+            SetBinding(TextBox.FontWeightProperty, b);
 
             //SetBinding(TextBox.FontStretchProperty,new Binding(nameof(data.FontStretch)) { Mode= BindingMode.TwoWay });
         }

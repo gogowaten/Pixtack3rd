@@ -29,24 +29,26 @@ namespace Pixtack3rd
         public AppConfig MyAppConfig { get; set; }
         //アプリ情報
         private const string APP_NAME = "Pixtack3rd";
-        private const string APP_CONFIG_FILE_NAME = "config" + ".xml";
+        //アプリの設定ファイル名
+        private const string APP_CONFIG_FILE_NAME = "config.xml";
+        //データのファイル名
+        private readonly string XML_FILE_NAME = "Data.xml";
         private const string APP_LAST_END_TIME_FILE_NAME = "LastEndTimeData" + EXTENSION_NAME_APP;
         //読み込んでいるデータファイルのフルパス、上書き保存対象、起動時は前回終了時を読み込み
         private string CurrentFileFullPath = string.Empty;
         //終了時に状態保存、起動時に読み込みするファイルのフルパス
         private string AppLastEndTimeDataFilePath { get; } = string.Empty;
+        //拡張子名、全データ(Rootデータとアプリの設定)用の拡張子
+        private const string EXTENSION_NAME_APP = ".p3";
+        //拡張子名、Thumbデータだけ用の拡張子
+        private const string EXTENSION_NAME_DATA = ".p3d";
 
-        private const string EXTENSION_NAME_APP = ".p3rd";//Rootデータとアプリの設定を含んだ拡張子
-        private const string EXTENSION_NAME_DATA = ".p3";//データだけの拡張子
-
-        private const string EXTENSION_FILTER_P3 = "Pixtack3 設定＆全Data|*" + EXTENSION_NAME_APP;
-        private const string EXTENSION_FILTER_P3D = "Pixtack3 アイテムData|*" + EXTENSION_NAME_DATA;
+        private const string EXTENSION_FILTER_P3 = "Data + 設定|*" + EXTENSION_NAME_APP;
+        private const string EXTENSION_FILTER_P3D = "Data|*" + EXTENSION_NAME_DATA;
 
         private string AppVersion;
         //datetime.tostringの書式、これを既定値にする
         private const string DATE_TIME_STRING_FORMAT = "yyyyMMdd'_'HHmmss'_'fff";
-        //データ保存時のxmlのファイル名
-        private readonly string XML_FILE_NAME = "Data.xml";
         private const string APP_ROOT_DATA_FILENAME = "TTRoot" + EXTENSION_NAME_DATA;
 
         public MainWindow()
@@ -120,13 +122,13 @@ namespace Pixtack3rd
             //タイトルをアプリの名前 + バージョン
             this.Title = APP_NAME + AppVersion;
 
-            //前回終了時に保存したファイルのフルパスを上書き保存パスにセット
+            //アプリ終了時に保存したファイルのフルパスを上書き保存パスにセット
             CurrentFileFullPath = AppLastEndTimeDataFilePath;
 
-            //前回終了時のデータを読み込み
+            //アプリ終了時のデータを読み込み
             if (MyAppConfig.IsLoadPreviewData)
             {
-                //前回終了時のデータと設定を読み込んでセット
+                //アプリ終了時のデータと設定を読み込んでセット
                 (Data? data, AppConfig? config) = LoadDataFromFile(CurrentFileFullPath);
                 if (data is not null) { MyRoot.SetRootData(data); }
             }
@@ -141,23 +143,6 @@ namespace Pixtack3rd
             this.PreviewKeyDown += MainWindow_PreviewKeyDown;
         }
 
-        ///// <summary>
-        ///// 前回終了時のRootデータ読み込みしてセット
-        ///// <paramref name="withAppconfigSet">AppConfigもセットするときはtrue</paramref>
-        ///// </summary>
-        //private void LoadPreviousData(bool withAppconfigSet = false)
-        //{
-        //    var (data, appConfig) = LoadDataFromFile(System.IO.Path.Combine(Environment.CurrentDirectory, APP_ROOT_DATA_FILENAME));
-        //    if (data != null)
-        //    {
-        //        MyRoot.SetRootData(data);
-        //    }
-        //    if (appConfig != null && withAppconfigSet)
-        //    {
-        //        MyAppConfig = appConfig;
-        //        DataContext = MyAppConfig;
-        //    }
-        //}
 
         //ショートカットキー
         private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -190,7 +175,10 @@ namespace Pixtack3rd
         {
             ComboBoxSaveFileType.ItemsSource = Enum.GetValues(typeof(ImageType));
             MyCombBoxFontFmilyNames.ItemsSource = GetFontFamilies();
-            MyComboBoxFontStretchs.ItemsSource = MakeFontStretchDictionary();
+            //MyComboBoxFontStretchs.ItemsSource = MakeFontStretchDictionary();
+            MyComboBoxFontStyle.ItemsSource = MakeFontStylesDictionary();
+            MyComboBoxFontWeight.ItemsSource = MakeFontWeightDictionary();
+
 
             //List<double> vs = new() { 0, 1.5, 2.5, 3.5, 5 };
             //MyComboBoxFileNameDateOrder.ItemsSource = vs;
@@ -279,6 +267,38 @@ namespace Pixtack3rd
         #endregion 設定保存と読み込み
 
         #region その他関数
+
+        private SortedDictionary<string, FontWeight> MakeFontWeightDictionary()
+        {
+            System.Reflection.PropertyInfo[] infos = typeof(FontWeights).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            Dictionary<string, FontWeight> tempDict = new();
+            foreach (var item in infos)
+            {
+                if (item.GetValue(null) is not FontWeight value)
+                {
+                    continue;
+                }
+                tempDict.Add(item.Name, value);
+            }
+            SortedDictionary<string, FontWeight> sorted = new(tempDict);
+            return sorted;
+        }
+
+        private SortedDictionary<string, FontStyle> MakeFontStylesDictionary()
+        {
+            System.Reflection.PropertyInfo[] infos = typeof(FontStyles).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            Dictionary<string, FontStyle> tempDict = new();
+            foreach (var item in infos)
+            {
+                if (item.GetValue(null) is not FontStyle value)
+                {
+                    continue;
+                }
+                tempDict.Add(item.Name, value);
+            }
+            SortedDictionary<string, FontStyle> sorted = new(tempDict);
+            return sorted;
+        }
         private SortedDictionary<string, FontStretch> MakeFontStretchDictionary()
         {
             System.Reflection.PropertyInfo[] stretchInfos = typeof(FontStretches).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
@@ -291,9 +311,9 @@ namespace Pixtack3rd
                 }
                 kv.Add(item.Name, fs);
 
-                //kv.Add(item.Name, item);
+                //tempDict.Add(item.Name, item);
             }
-             SortedDictionary<string, FontStretch> sorted = new(kv);
+            SortedDictionary<string, FontStretch> sorted = new(kv);
             return sorted;
         }
         //WPF、インストールされているフォント一覧取得、Fonts.SystemFontFamiliesそのままでは不十分だった - 午後わてんのブログ
@@ -688,8 +708,8 @@ namespace Pixtack3rd
         //        fullPath = MakeFilePathAvoidDuplicate(fullPath);
         //        try
         //        {
-        //            using FileStream fs = new(fullPath, FileMode.Create, FileAccess.Write);
-        //            encoder.Save(fs);
+        //            using FileStream value = new(fullPath, FileMode.Create, FileAccess.Write);
+        //            encoder.Save(value);
         //            return true;
         //        }
         //        catch (Exception ex)
@@ -1103,17 +1123,10 @@ namespace Pixtack3rd
                     //DataがRootならGroupに変換して追加
                     if (data.Type == TType.Root)
                     {
-                        //2
-                        //MyRoot.SetRootData(data);
-
-                        //3
-                        //MyRoot.AddThumbDataToActiveGroup(data);
-
-                        //1
                         data = ConvertDataRootToGroup(data);
-                        if (data != null)
+                        if (data != null && MyAppConfig != null)
                         {
-                            MyRoot.AddThumbDataToActiveGroup(data, appConfig.IsAddUpper);
+                            MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
                         }
                         else { errorFiles.Add(item); continue; }
                     }
@@ -1374,9 +1387,9 @@ namespace Pixtack3rd
         //TTRootのDataとアプリの設定を取得して設定
         private void ButtonLoadData_Click(object sender, RoutedEventArgs e)
         {
-            LoadData();
+            LoadP3File();
         }
-        private bool LoadData()
+        private bool LoadP3File()
         {
             if (GetLoadFilePathFromFileDialog(EXTENSION_FILTER_P3) is string filePath)
             {
@@ -1397,7 +1410,7 @@ namespace Pixtack3rd
         }
         private string? GetLoadFilePathFromFileDialog(string extFilter)
         {
-            Microsoft.Win32.OpenFileDialog dialog = new();
+            OpenFileDialog dialog = new();
             dialog.Filter = extFilter;
             if (dialog.ShowDialog() == true)
             {
@@ -1406,27 +1419,62 @@ namespace Pixtack3rd
             return null;
         }
 
-        //RootDataであるaz3ファイルを読み込んで、TTGroupに変換して追加
+        //Data＋アプリ設定ファイルのp3ファイルを読み込むけど、アプリ設定は無視する
+        //RootDataはTTGroupに変換して追加
         //変換部分が怪しい、項目が増えた場合はここも増やす必要があるのでバグ発生源になる？
         private void ButtonLoadDataRootToGroup_Click(object sender, RoutedEventArgs e)
         {
-            LoadDataRootToGroup();
+            LoadDataRootToGroup(false);
         }
-        private bool LoadDataRootToGroup()
+        /// <summary>
+        /// p3ファイルを開く、Dataは読み込むけどアプリ設定は無視する
+        /// </summary>
+        /// <param name="isOverrideRoot">開いたファイルでRootを上書きする(入れ替える)</param>
+        /// <returns></returns>
+        private bool LoadDataRootToGroup(bool isOverrideRoot)
         {
             if (GetLoadFilePathFromFileDialog(EXTENSION_FILTER_P3) is string filePath)
             {
                 (Data? data, AppConfig? appConfig) = LoadDataFromFile(filePath);
-                if (ConvertDataRootToGroup(data) is Data groupData && appConfig != null)
+                if (data != null)
                 {
-                    MyRoot.AddThumbDataToActiveGroup(groupData, appConfig.IsAddUpper);
+                    if (isOverrideRoot)
+                    {
+                        MyRoot.SetRootData(data);
+                        return true;
+                    }
+                    else if (ConvertDataRootToGroup(data) is Data groupData)
+                    {
+                        MyRoot.AddThumbDataToActiveGroup(groupData, MyAppConfig.IsAddUpper);
+                        return true;
+                    }
+                }
+                return false;
+            }
+            return false;
+        }
+        private void ButtonLoadDataP3WithoutConfig_Click(object sender, RoutedEventArgs e)
+        {
+            _ = LoadP3FileWithoutConfig();
+        }
+        /// <summary>
+        /// p3ファイルを開く、RootDataだけ読み込んで、設定ファイルは無視する
+        /// </summary>
+        /// <returns></returns>
+        private bool LoadP3FileWithoutConfig()
+        {
+            if (GetLoadFilePathFromFileDialog(EXTENSION_FILTER_P3) is string filePath)
+            {
+                (Data? data, AppConfig? appConfig) = LoadDataFromFile(filePath);
+                if (data != null)
+                {
+                    MyRoot.SetRootData(data);
                     return true;
                 }
                 return false;
             }
             return false;
         }
-
         //個別Data読み込み
         private void ButtonLoadDataThumb_Click(object sender, RoutedEventArgs e)
         {
@@ -1593,7 +1641,7 @@ namespace Pixtack3rd
         /// <returns></returns>
         private string? GetSaveDataFilePath(string extFilter)
         {
-            Microsoft.Win32.SaveFileDialog dialog = new();
+            SaveFileDialog dialog = new();
             dialog.Filter = extFilter;
             if (dialog.ShowDialog() == true)
             {
@@ -1611,19 +1659,26 @@ namespace Pixtack3rd
         private void SaveAll()
         {
             if (MyRoot.Thumbs.Count == 0) { return; }
-            if (GetSaveDataFilePath(EXTENSION_FILTER_P3) is string path)
+            if (GetSaveDataFilePath("Dataとアプリ設定|*.p3|Dataのみ|*.p3d") is string path)
             {
-                SaveRootDataWithConfig(path, MyRoot.Data, true);
+                if (Path.GetExtension(path) == EXTENSION_NAME_APP)
+                {
+                    SaveRootDataWithConfig(path, MyRoot.Data, true);
+                }
+                else
+                {
+                    SaveRootDataWithConfig(path, MyRoot.Data, false);
+                }
             }
         }
-        private void ButtonSaveRootThumb_Click(object sender, RoutedEventArgs e)
-        {
-            if (MyRoot.Thumbs.Count == 0) { return; }
-            if (GetSaveDataFilePath(EXTENSION_FILTER_P3D) is string path)
-            {
-                SaveRootDataWithConfig(path, MyRoot.Data, false);
-            }
-        }
+        //private void ButtonSaveRootThumb_Click(object sender, RoutedEventArgs e)
+        //{
+        //    if (MyRoot.Thumbs.Count == 0) { return; }
+        //    if (GetSaveDataFilePath(EXTENSION_FILTER_P3D) is string path)
+        //    {
+        //        SaveRootDataWithConfig(path, MyRoot.Data, false);
+        //    }
+        //}
 
         private void ButtonSaveCickedThumb_Click(object sender, RoutedEventArgs e)
         {
@@ -1925,6 +1980,7 @@ namespace Pixtack3rd
         {
 
         }
+
     }
 
 

@@ -39,23 +39,24 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
         KeyboardNavigation.ControlTabNavigation="None"
             KeyboardNavigation.DirectionalNavigation="None">
         <MenuItem Header="ファイル(_F)">
+          <MenuItem Header="名前をつけて保存(_S)">
+            <MenuItem Header="編集状態保存(Root＆アプリ設定)" Click="ButtonSaveAllData_Click"/>
+            <!--<MenuItem Header="編集状態保存(Root)" Click="ButtonSaveRootThumb_Click"/>-->
+            <MenuItem Header="ActiveThumb" Click="ButtonSaveActiveThumb_Click"/>
+            <MenuItem Header="ClickedThumb" Click="ButtonSaveCickedThumb_Click"/>
+          </MenuItem>
           <MenuItem Header="画像として名前をつけて保存">
             <MenuItem Header="Root" Click="ButtonSaveToImage_Click"/>
             <MenuItem Header="ActiveThumb" Click="ButtonSaveToImageActive_Click"/>
             <MenuItem Header="ClickedThumb" Click="ButtonSaveToImageClicked_Click"/>
           </MenuItem>
-          <MenuItem Header="Dataとして名前をつけて保存(_S)">
-            <MenuItem Header="編集状態保存(Root＆アプリ設定)" Click="ButtonSaveAllData_Click"/>
-            <MenuItem Header="編集状態保存(Root)" Click="ButtonSaveRootThumb_Click"/>
-            <MenuItem Header="ActiveThumb" Click="ButtonSaveActiveThumb_Click"/>
-            <MenuItem Header="ClickedThumb" Click="ButtonSaveCickedThumb_Click"/>
-          </MenuItem>
           <MenuItem Header="ファイルを開く">
             <!--<MenuItem Header="Root＆アプリ設定" Click="ButtonLoadDataPrevious_Click"/>-->
-            <MenuItem Header="Root" Click="ButtonLoadData_Click"/>
-            <MenuItem Header="対応ファイル(複数可能)" Click="ButtonLoadFiles_Click"/>
-            <MenuItem Header="RootをGroupとして追加" Click="ButtonLoadDataRootToGroup_Click"/>
-            <MenuItem Header="ThumbData" Click="ButtonLoadDataThumb_Click"/>
+            <MenuItem Header="ファイルを開く" Click="ButtonLoadData_Click"/>
+            <MenuItem Header="ファイルを開く(アプリ設定はそのまま)" Click="ButtonLoadDataP3WithoutConfig_Click"/>
+            <MenuItem Header="対応ファイルを追加(複数可能)" Click="ButtonLoadFiles_Click"/>
+            <!--<MenuItem Header="p3ファイルをGroupとして追加" Click="ButtonLoadDataRootToGroup_Click"/>-->
+            <!--<MenuItem Header="ThumbData" Click="ButtonLoadDataThumb_Click"/>-->
           </MenuItem>
           <MenuItem Header="編集状態保存(上書き)" InputGestureText="Ctrl+S"/>
           <MenuItem Header="編集状態読み込み"/>
@@ -245,7 +246,9 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect135.png"/>
         <!--<local:TTTextBox x:Name="MyTextBox1" FontFamily="Bahnschrift SemiBold Condensed"
             TTText="TextBox" TTLeft="152" TTTop="152" FontSize="30" FontStretch="Medium"/>-->
-        <local:TTTextBox x:Name="MyTextBox1" FontFamily="ＭＳ 明朝"
+        <!--<local:TTTextBox x:Name="MyTextBox1" FontFamily="ＭＳ 明朝" FontStyle="Italic"
+            TTText="TextBox" TTLeft="152" TTTop="152" FontSize="30"/>-->
+        <local:TTTextBox x:Name="MyTextBox1"
             TTText="TextBox" TTLeft="152" TTTop="152" FontSize="30"/>
       </local:TTRoot>
       <!--<TextBox x:Name="MytextBox" Text="nornalTextbox" Width="100"/>-->
@@ -281,19 +284,20 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             </GroupBox>
             <GroupBox Header="ファイル保存">
               <WrapPanel>
-                <Button x:Name="ButtonSaveAllData" Content="アプリ設+Root" Click="ButtonSaveAllData_Click"/>
-                <Button x:Name="ButtonSaveRootThumb" Content="Root" Click="ButtonSaveRootThumb_Click"/>
-                <Button x:Name="ButtonSaveActiveThumb" Content="Active" Click="ButtonSaveActiveThumb_Click"/>
-                <Button x:Name="ButtonSaveCickedThumb" Content="Clicked" Click="ButtonSaveCickedThumb_Click"/>
+                <Button x:Name="ButtonSaveAllData" Content="保存(p3,p3d)" Click="ButtonSaveAllData_Click"/>
+                <!--<Button x:Name="ButtonSaveRootThumb" Content="Root" Click="ButtonSaveRootThumb_Click"/>-->
+                <Button x:Name="ButtonSaveActiveThumb" Content="Active(p3d)" Click="ButtonSaveActiveThumb_Click"/>
+                <Button x:Name="ButtonSaveCickedThumb" Content="Clicked(p3d)" Click="ButtonSaveCickedThumb_Click"/>
               </WrapPanel>
             </GroupBox>
-            <GroupBox Header="ファイル読み込み">
+            <GroupBox Header="ファイルを開く">
               <WrapPanel>
                 <!--<Button x:Name="ButtonLoadDataPrevious" Content="前回" Click="ButtonLoadDataPrevious_Click"/>-->
-                <Button x:Name="ButtonLoadData" Content="全体" Click="ButtonLoadData_Click"/>
-                <Button x:Name="ButtonLoadDataThumb" Content="個別" Click="ButtonLoadDataThumb_Click"/>
-                <Button x:Name="ButtonLoadDataRootToGroup" Content="Rootをグループとして追加" Click="ButtonLoadDataRootToGroup_Click"/>
-                <Button x:Name="ButtonLoadFiles" Content="複数ファイル" Click="ButtonLoadFiles_Click"/>
+                <Button x:Name="ButtonLoadData" Content="p3を開く" Click="ButtonLoadData_Click"/>
+                <!--<Button x:Name="ButtonLoadDataThumb" Content="個別" Click="ButtonLoadDataThumb_Click"/>-->
+                <!--<Button x:Name="ButtonLoadDataRootToGroup" Content="p3をグループとして追加" Click="ButtonLoadDataRootToGroup_Click"/>-->
+                <Button x:Name="ButtonLoadDataP3WithoutConfig" Content="アプリ設定はそのままでp3を開く" Click="ButtonLoadDataP3WithoutConfig_Click"/>
+                <Button x:Name="ButtonLoadFiles" Content="対応ファイル(複数)" Click="ButtonLoadFiles_Click"/>
               </WrapPanel>
             </GroupBox>
             <GroupBox Header="クリップボードから画像貼り付け">
@@ -584,26 +588,26 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
           <StackPanel>
             <ComboBox x:Name="MyCombBoxFontFmilyNames" SelectedValuePath="Key" DisplayMemberPath="Value"
                     SelectedValue="{Binding ActiveThumb.FontFamily}">
-
-              <!--<ComboBox.ItemTemplate>
-              <DataTemplate>
-                <TextBlock Text="{Binding Key}" FontFamily="{Binding Value}"/>
-              </DataTemplate>
-            </ComboBox.ItemTemplate>-->
             </ComboBox>
+            
             <tomato:NumericUpDown MyValue="{Binding ActiveThumb.FontSize}"
                                 MyStringFormat="FontSize 0"
                                 MyMinValue="1" MyMaxValue="1000" MySmallChange="1" MyLargeChange="10"
                                 MouseWheel="NumericUpDown_MouseWheel"/>
-            <ComboBox x:Name="MyComboBoxFontStretchs"
-                      SelectedValuePath="Key" DisplayMemberPath="Value"
-                      SelectedItem="{Binding ActiveThumb.FontStretch}">
+            
+            <ComboBox x:Name="MyComboBoxFontWeight" SelectedValuePath="Key" DisplayMemberPath="Value"
+                      SelectedValue="{Binding ActiveThumb.FontWeight}">
+              
               <!--<ComboBox.ItemTemplate>
                 <DataTemplate>
-                  <TextBlock Text="{Binding Key}" FontStretch="{Binding Value}"/>
+                  <TextBlock Text="{Binding Key}" FontStyle="{Binding Value}"/>
                 </DataTemplate>
               </ComboBox.ItemTemplate>-->
             </ComboBox>
+            
+            <ComboBox x:Name="MyComboBoxFontStyle" SelectedValuePath="Key" DisplayMemberPath="Value"
+                      SelectedValue="{Binding ActiveThumb.FontStyle}"/>
+            
             <TextBox x:Name="MyTextBoxText" AcceptsReturn="True" AcceptsTab="True" FontFamily="ＭＳ 明朝"
                    TextWrapping="Wrap" Text="testttttttttttttttttttttttt"/>
             <Button Content="button"/>
