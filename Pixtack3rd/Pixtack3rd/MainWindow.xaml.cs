@@ -58,7 +58,7 @@ namespace Pixtack3rd
             FontFamilyMapCollection fffmap = ff.FamilyMaps;
             FamilyTypefaceCollection famtype = ff.FamilyTypefaces;
             FontFamilyConverter ffc = new();
-
+            
 
             MyAppConfig = GetAppConfig(APP_CONFIG_FILE_NAME);
 
@@ -190,7 +190,10 @@ namespace Pixtack3rd
         {
             ComboBoxSaveFileType.ItemsSource = Enum.GetValues(typeof(ImageType));
             MyCombBoxFontFmilyNames.ItemsSource = GetFontFamilies();
-            MyComboBoxFontStretchs.ItemsSource = MakeFontStretchDictionary();
+            //MyComboBoxFontStretchs.ItemsSource = MakeFontStretchDictionary();
+            MyComboBoxFontStyle.ItemsSource = MakeFontStylesDictionary();
+            MyComboBoxFontWeight.ItemsSource = MakeFontWeightDictionary();
+
 
             //List<double> vs = new() { 0, 1.5, 2.5, 3.5, 5 };
             //MyComboBoxFileNameDateOrder.ItemsSource = vs;
@@ -279,6 +282,38 @@ namespace Pixtack3rd
         #endregion 設定保存と読み込み
 
         #region その他関数
+
+        private SortedDictionary<string, FontWeight> MakeFontWeightDictionary()
+        {
+            System.Reflection.PropertyInfo[] infos = typeof(FontWeights).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            Dictionary<string, FontWeight> tempDict = new();
+            foreach (var item in infos)
+            {
+                if (item.GetValue(null) is not FontWeight value)
+                {
+                    continue;
+                }
+                tempDict.Add(item.Name, value);
+            }
+            SortedDictionary<string, FontWeight> sorted = new(tempDict);
+            return sorted;
+        }
+        
+        private SortedDictionary<string, FontStyle> MakeFontStylesDictionary()
+        {
+            System.Reflection.PropertyInfo[] infos = typeof(FontStyles).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            Dictionary<string, FontStyle> tempDict = new();
+            foreach (var item in infos)
+            {
+                if (item.GetValue(null) is not FontStyle value)
+                {
+                    continue;
+                }
+                tempDict.Add(item.Name, value);
+            }
+            SortedDictionary<string, FontStyle> sorted = new(tempDict);
+            return sorted;
+        }
         private SortedDictionary<string, FontStretch> MakeFontStretchDictionary()
         {
             System.Reflection.PropertyInfo[] stretchInfos = typeof(FontStretches).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
@@ -291,7 +326,7 @@ namespace Pixtack3rd
                 }
                 kv.Add(item.Name, fs);
 
-                //kv.Add(item.Name, item);
+                //tempDict.Add(item.Name, item);
             }
              SortedDictionary<string, FontStretch> sorted = new(kv);
             return sorted;
@@ -688,8 +723,8 @@ namespace Pixtack3rd
         //        fullPath = MakeFilePathAvoidDuplicate(fullPath);
         //        try
         //        {
-        //            using FileStream fs = new(fullPath, FileMode.Create, FileAccess.Write);
-        //            encoder.Save(fs);
+        //            using FileStream value = new(fullPath, FileMode.Create, FileAccess.Write);
+        //            encoder.Save(value);
         //            return true;
         //        }
         //        catch (Exception ex)

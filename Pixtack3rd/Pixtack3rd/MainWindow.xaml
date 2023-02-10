@@ -245,7 +245,9 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect135.png"/>
         <!--<local:TTTextBox x:Name="MyTextBox1" FontFamily="Bahnschrift SemiBold Condensed"
             TTText="TextBox" TTLeft="152" TTTop="152" FontSize="30" FontStretch="Medium"/>-->
-        <local:TTTextBox x:Name="MyTextBox1" FontFamily="ＭＳ 明朝"
+        <!--<local:TTTextBox x:Name="MyTextBox1" FontFamily="ＭＳ 明朝" FontStyle="Italic"
+            TTText="TextBox" TTLeft="152" TTTop="152" FontSize="30"/>-->
+        <local:TTTextBox x:Name="MyTextBox1"
             TTText="TextBox" TTLeft="152" TTTop="152" FontSize="30"/>
       </local:TTRoot>
       <!--<TextBox x:Name="MytextBox" Text="nornalTextbox" Width="100"/>-->
@@ -584,26 +586,26 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
           <StackPanel>
             <ComboBox x:Name="MyCombBoxFontFmilyNames" SelectedValuePath="Key" DisplayMemberPath="Value"
                     SelectedValue="{Binding ActiveThumb.FontFamily}">
-
-              <!--<ComboBox.ItemTemplate>
-              <DataTemplate>
-                <TextBlock Text="{Binding Key}" FontFamily="{Binding Value}"/>
-              </DataTemplate>
-            </ComboBox.ItemTemplate>-->
             </ComboBox>
+            
             <tomato:NumericUpDown MyValue="{Binding ActiveThumb.FontSize}"
                                 MyStringFormat="FontSize 0"
                                 MyMinValue="1" MyMaxValue="1000" MySmallChange="1" MyLargeChange="10"
                                 MouseWheel="NumericUpDown_MouseWheel"/>
-            <ComboBox x:Name="MyComboBoxFontStretchs"
-                      SelectedValuePath="Key" DisplayMemberPath="Value"
-                      SelectedItem="{Binding ActiveThumb.FontStretch}">
+            
+            <ComboBox x:Name="MyComboBoxFontWeight" SelectedValuePath="Key" DisplayMemberPath="Value"
+                      SelectedValue="{Binding ActiveThumb.FontWeight}">
+              
               <!--<ComboBox.ItemTemplate>
                 <DataTemplate>
-                  <TextBlock Text="{Binding Key}" FontStretch="{Binding Value}"/>
+                  <TextBlock Text="{Binding Key}" FontStyle="{Binding Value}"/>
                 </DataTemplate>
               </ComboBox.ItemTemplate>-->
             </ComboBox>
+            
+            <ComboBox x:Name="MyComboBoxFontStyle" SelectedValuePath="Key" DisplayMemberPath="Value"
+                      SelectedValue="{Binding ActiveThumb.FontStyle}"/>
+            
             <TextBox x:Name="MyTextBoxText" AcceptsReturn="True" AcceptsTab="True" FontFamily="ＭＳ 明朝"
                    TextWrapping="Wrap" Text="testttttttttttttttttttttttt"/>
             <Button Content="button"/>
