@@ -156,7 +156,7 @@ namespace Pixtack3rd
                     break;
                 case ModifierKeys.Control:
                     if (e.Key == Key.S) { SaveRootDataWithConfig(CurrentFileFullPath, MyRoot.Data, true); }
-                    else if (e.Key == Key.D) { DuplicateDataSelectedThumbs(); }
+                    //else if (e.Key == Key.D) { DuplicateDataSelectedThumbs(); }
                     break;
                 case ModifierKeys.Shift:
                     break;
@@ -175,10 +175,12 @@ namespace Pixtack3rd
         {
             ComboBoxSaveFileType.ItemsSource = Enum.GetValues(typeof(ImageType));
             MyCombBoxFontFmilyNames.ItemsSource = GetFontFamilies();
+            MyCombBoxFontFmilyNames.SelectedValue = this.FontFamily;
             //MyComboBoxFontStretchs.ItemsSource = MakeFontStretchDictionary();
             MyComboBoxFontStyle.ItemsSource = MakeFontStylesDictionary();
+            MyComboBoxFontStyle.SelectedValue = this.FontStyle;
             MyComboBoxFontWeight.ItemsSource = MakeFontWeightDictionary();
-
+            MyComboBoxFontWeight.SelectedValue = this.FontWeight;
 
             //List<double> vs = new() { 0, 1.5, 2.5, 3.5, 5 };
             //MyComboBoxFileNameDateOrder.ItemsSource = vs;
@@ -1981,6 +1983,41 @@ namespace Pixtack3rd
 
         }
 
+        private void ButtonRenderText_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(MyTextBox.Text)) { return; }
+
+
+            Data data = new(TType.TextBox)
+            {
+                Text = MyTextBox.Text,
+                FontSize = (double)NumeFontSize.MyValue,
+            };
+            if (((FontFamily)MyCombBoxFontFmilyNames.SelectedValue).Source is string ff && !string.IsNullOrEmpty(ff))
+            { data.FontName = ff; }
+            if (((FontStyle)MyComboBoxFontStyle.SelectedValue) is FontStyle fs) { data.FontStyle = fs; }
+
+
+            var myFW = MyComboBoxFontWeight.SelectedValue;
+            if (myFW.GetType() == typeof(FontWeight))
+            {
+                data.FontWeight = (FontWeight)myFW;
+            }
+            else
+            {
+                FontWeightConverter fwc = new();
+                if (fwc.CanConvertFrom(myFW.GetType()))
+                {
+                    if ((FontWeight?)fwc.ConvertFrom(MyComboBoxFontWeight.SelectedValue) is FontWeight fw)
+                    {
+                        data.FontWeight = fw;
+                    }
+                }
+            }
+            
+
+            MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
+        }
     }
 
 

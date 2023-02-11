@@ -2165,28 +2165,59 @@ namespace Pixtack3rd
             SetBinding(TTTextProperty, nameof(Data.Text));
             MyTemplateElement.SetBinding(HutaTextBox.TextProperty, nameof(Data.Text));
             MyTemplateElement.SetBinding(HutaTextBox.IsEditProperty, new Binding() { Source = this, Path = new PropertyPath(IsEditProperty) });
-            
+
             Binding b = new(nameof(data.FontName));
             b.Mode = BindingMode.TwoWay;
             b.Converter = new ConverterFontFamilyName();
             SetBinding(FontFamilyProperty, b);
             MyTemplateElement.SetBinding(FontFamilyProperty, b);
-            
-            b = new(nameof(data.FontSize));            
+
+            b = new(nameof(data.FontSize));
             b.Mode = BindingMode.TwoWay;
-            SetBinding(TextBox.FontSizeProperty, b);
+            SetBinding(FontSizeProperty, b);
 
             //b = new(nameof(data.FontStretch));
             //b.Mode= BindingMode.TwoWay;
             //SetBinding(TextBox.FontStretchProperty, b);
 
             b = new(nameof(data.FontStyle));
-            b.Mode= BindingMode.TwoWay;
-            SetBinding(TextBox.FontStyleProperty, b);
-            
+            b.Mode = BindingMode.TwoWay;
+            SetBinding(FontStyleProperty, b);
+
             b = new(nameof(data.FontWeight));
-            b.Mode= BindingMode.TwoWay;
-            SetBinding(TextBox.FontWeightProperty, b);
+            b.Mode = BindingMode.TwoWay;
+            SetBinding(FontWeightProperty, b);
+
+            b = new(nameof(data.ForeColor));
+            b.Converter = new ConverterColorSolidBrush();
+            b.Mode = BindingMode.TwoWay;
+            SetBinding(ForegroundProperty, b);
+            MyTemplateElement.SetBinding(ForegroundProperty, b);
+
+            b = new(nameof(data.BackColor));
+            b.Converter = new ConverterColorSolidBrush();
+            b.Mode = BindingMode.TwoWay;
+            SetBinding(BackgroundProperty, b);
+            MyTemplateElement.SetBinding(BackgroundProperty, b);
+
+            b = new(nameof(data.BorderThickness));
+            b.Mode = BindingMode.TwoWay;
+            SetBinding(BorderThicknessProperty, b);
+            MyTemplateElement.SetBinding(BorderThicknessProperty, b);
+
+            b = new(nameof(data.BorderColor));
+            b.Converter = new ConverterColorSolidBrush();
+            b.Mode = BindingMode.TwoWay;
+            SetBinding(BorderBrushProperty, b);
+            MyTemplateElement.SetBinding(BorderBrushProperty, b);
+
+            b = new(nameof(data.BackColor));
+            b.Converter = new ConverterColorSolidBrushNegative();
+            b.Mode = BindingMode.TwoWay;
+            //SetBinding(BorderBrushProperty, b);
+            MyTemplateElement.SetBinding(HutaTextBox.CaretBrushProperty, b);
+
+            
 
             //SetBinding(TextBox.FontStretchProperty,new Binding(nameof(data.FontStretch)) { Mode= BindingMode.TwoWay });
         }
@@ -2237,6 +2268,15 @@ namespace Pixtack3rd
             DependencyProperty.Register(nameof(IsEdit), typeof(bool), typeof(HutaTextBox),
                 new FrameworkPropertyMetadata(false, new PropertyChangedCallback(OnIsEditChanged)));
 
+        public Brush CaretBrush
+        {
+            get { return (Brush)GetValue(CaretBrushProperty); }
+            set { SetValue(CaretBrushProperty, value); }
+        }
+        public static readonly DependencyProperty CaretBrushProperty =
+            DependencyProperty.Register(nameof(CaretBrush), typeof(Brush), typeof(HutaTextBox), new PropertyMetadata(Brushes.Black));
+
+
         private static void OnIsEditChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is HutaTextBox huta)
@@ -2272,6 +2312,17 @@ namespace Pixtack3rd
             huta.SetValue(Grid.BackgroundProperty, Brushes.Transparent);
             factory.SetValue(TextBox.TextProperty,
                 new Binding() { Source = this, Path = new PropertyPath(TextProperty) });
+            factory.SetValue(ForegroundProperty,
+                new Binding() { Source = this, Path = new PropertyPath(ForegroundProperty) });
+            factory.SetValue(BackgroundProperty,
+                new Binding() { Source = this, Path = new PropertyPath(BackgroundProperty) });
+            factory.SetValue(BorderThicknessProperty,
+                new Binding() { Source = this, Path = new PropertyPath(BorderThicknessProperty) });
+            factory.SetValue(BorderBrushProperty,
+                new Binding() { Source = this, Path = new PropertyPath(BorderBrushProperty) });
+            factory.SetValue(TextBox.CaretBrushProperty,
+                new Binding() { Source = this, Path = new PropertyPath(CaretBrushProperty) });
+            
 
             factory.SetValue(TextBox.TextWrappingProperty, TextWrapping.Wrap);
             factory.SetValue(TextBox.AcceptsReturnProperty, true);//Enterで改行入力
@@ -2326,6 +2377,40 @@ namespace Pixtack3rd
 
 
     #region コンバーター
+
+    //ColorとSolidBrushの変換＋色反転、テキストボックスのカーソルの色に使用
+    public class ConverterColorSolidBrushNegative : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            Color c = (Color)value;
+            Color negative = Color.FromArgb(255, (byte)(255 - c.R), (byte)(255 - c.G), (byte)(255 - c.B));
+            return new SolidColorBrush(negative);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            SolidColorBrush b = (SolidColorBrush)value;
+            Color c = b.Color;
+            Color negative = Color.FromArgb(255, (byte)(255 - c.R), (byte)(255 - c.G), (byte)(255 - c.B));
+            return negative;
+        }
+    }
+    public class ConverterColorSolidBrush : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            Color c = (Color)value;
+            return new SolidColorBrush(c);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            SolidColorBrush b = (SolidColorBrush)value;
+            return b.Color;
+        }
+    }
+
     public class ConverterFontFamilyName : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
