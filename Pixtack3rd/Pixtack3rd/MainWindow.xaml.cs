@@ -177,10 +177,10 @@ namespace Pixtack3rd
             MyCombBoxFontFmilyNames.ItemsSource = GetFontFamilies();
             MyCombBoxFontFmilyNames.SelectedValue = this.FontFamily;
             //MyComboBoxFontStretchs.ItemsSource = MakeFontStretchDictionary();
-            MyComboBoxFontStyle.ItemsSource = MakeFontStylesDictionary();
-            MyComboBoxFontStyle.SelectedValue = this.FontStyle;
-            MyComboBoxFontWeight.ItemsSource = MakeFontWeightDictionary();
-            MyComboBoxFontWeight.SelectedValue = this.FontWeight;
+            //MyComboBoxFontStyle.ItemsSource = MakeFontStylesDictionary();
+            //MyComboBoxFontStyle.SelectedValue = this.FontStyle;
+            //MyComboBoxFontWeight.ItemsSource = MakeFontWeightDictionary();
+            //MyComboBoxFontWeight.SelectedValue = this.FontWeight;
 
             //List<double> vs = new() { 0, 1.5, 2.5, 3.5, 5 };
             //MyComboBoxFileNameDateOrder.ItemsSource = vs;
@@ -1935,7 +1935,7 @@ namespace Pixtack3rd
 
         private void ButtonTest_Click(object sender, RoutedEventArgs e)
         {
-            var fn = MyRoot.ActiveThumb.Data.FontName;
+            var fn = MyRoot.ActiveThumb?.Data.FontName;
         }
 
         private void GroupBox_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -1993,28 +1993,21 @@ namespace Pixtack3rd
                 Text = MyTextBox.Text,
                 FontSize = (double)NumeFontSize.MyValue,
             };
-            if (((FontFamily)MyCombBoxFontFmilyNames.SelectedValue).Source is string ff && !string.IsNullOrEmpty(ff))
-            { data.FontName = ff; }
-            if (((FontStyle)MyComboBoxFontStyle.SelectedValue) is FontStyle fs) { data.FontStyle = fs; }
+            if (MyCombBoxFontFmilyNames.SelectedItem is KeyValuePair<string, FontFamily> kvp)
+            {
+                data.FontName = kvp.Key;
+            }
 
 
-            var myFW = MyComboBoxFontWeight.SelectedValue;
-            if (myFW.GetType() == typeof(FontWeight))
-            {
-                data.FontWeight = (FontWeight)myFW;
-            }
-            else
-            {
-                FontWeightConverter fwc = new();
-                if (fwc.CanConvertFrom(myFW.GetType()))
-                {
-                    if ((FontWeight?)fwc.ConvertFrom(MyComboBoxFontWeight.SelectedValue) is FontWeight fw)
-                    {
-                        data.FontWeight = fw;
-                    }
-                }
-            }
-            
+            data.ForeColor = Color.FromArgb((byte)MyNumeFontA.MyValue,
+                (byte)MyNumeFontR.MyValue, (byte)MyNumeFontG.MyValue, (byte)MyNumeFontB.MyValue);
+            data.BackColor = Color.FromArgb((byte)MyNumeBackA.MyValue,
+                (byte)MyNumeBackR.MyValue, (byte)MyNumeBackG.MyValue, (byte)MyNumeBackB.MyValue);
+            data.BorderColor = Color.FromArgb((byte)MyNumeWakuA.MyValue,
+                (byte)MyNumeWakuR.MyValue, (byte)MyNumeWakuG.MyValue, (byte)MyNumeWakuB.MyValue);
+            data.BorderThickness = new Thickness((double)NumeWakuThickness.MyValue);
+            if (MyCheckIsBold.IsChecked == true) { data.IsBold = true; }
+            if (MyCheckIsItalic.IsChecked == true) { data.IsItalic = true; }
 
             MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
         }

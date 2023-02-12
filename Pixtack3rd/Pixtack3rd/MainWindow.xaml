@@ -19,7 +19,7 @@
 
   <Grid Name="MyGrid">
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="260"/>
+      <ColumnDefinition Width="280"/>
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
     <Grid.RowDefinitions>
@@ -248,12 +248,12 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             TTText="TextBox" TTLeft="152" TTTop="152" FontSize="30" FontStretch="Medium"/>-->
         <!--<local:TTTextBox x:Name="MyTextBox1" FontFamily="ＭＳ 明朝" FontStyle="Italic"
             TTText="TextBox" TTLeft="152" TTTop="152" FontSize="30"/>-->
-        <local:TTTextBox x:Name="MyTextBox1" Background="Gray"
+        <local:TTTextBox x:Name="MyTextBox1" BorderBrush="Red" BorderThickness="2"
             TTText="TextBox" TTLeft="152" TTTop="160" FontSize="30"/>
 
 
       </local:TTRoot>
-      
+
       <!--</Grid>-->
     </ScrollViewer>
 
@@ -587,37 +587,122 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
       </TabItem>
       <TabItem Header="文字列" DataContext="{Binding ElementName=MyRoot}">
         <!--ScrollViewerの中ならマウスホイールで選択タブが変化しなくなる-->
-        <ScrollViewer>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
           <StackPanel>
+            <StackPanel.Resources>
+              <Style TargetType="UniformGrid">
+                <Setter Property="Margin" Value="1"/>
+              </Style>
+              <Style TargetType="tomato:NumericUpDown">
+                <Setter Property="Margin" Value="1,0"/>
+              </Style>
+              <local:ConverterArgbNumericToBrush x:Key="color"/>
+              <local:ConverterFontWeightIsBold x:Key="isBold"/>
+              <local:ConverterFontStyleIsItalic x:Key="isItalic"/>
+              <local:ConverterThickness x:Key="thickness"/>
+            </StackPanel.Resources>
+            <Grid Height="100">
+              <TextBox Text="見本"  HorizontalAlignment="Center" VerticalAlignment="Center"
+                       IsReadOnly="True"
+                       FontSize="{Binding ElementName=NumeFontSize, Path=MyValue}"
+                       FontFamily="{Binding ElementName=MyCombBoxFontFmilyNames, Path=SelectedValue}"
+                       FontWeight="{Binding ElementName=MyCheckIsBold, Converter={StaticResource isBold}, Path=IsChecked}"
+                       FontStyle="{Binding ElementName=MyCheckIsItalic, Converter={StaticResource isItalic}, Path=IsChecked}"
+                       BorderThickness="{Binding ElementName=NumeWakuThickness, Converter={StaticResource thickness}, Path=MyValue}">
+                <TextBox.Foreground>
+                  <MultiBinding Converter="{StaticResource color}">
+                    <MultiBinding.Bindings>
+                      <Binding ElementName="MyNumeFontA" Path="MyValue"/>
+                      <Binding ElementName="MyNumeFontR" Path="MyValue"/>
+                      <Binding ElementName="MyNumeFontG" Path="MyValue"/>
+                      <Binding ElementName="MyNumeFontB" Path="MyValue"/>
+                    </MultiBinding.Bindings>
+                  </MultiBinding>
+                </TextBox.Foreground>
+                <TextBox.Background>
+                  <MultiBinding Converter="{StaticResource color}">
+                    <MultiBinding.Bindings>
+                      <Binding ElementName="MyNumeBackA" Path="MyValue"/>
+                      <Binding ElementName="MyNumeBackR" Path="MyValue"/>
+                      <Binding ElementName="MyNumeBackG" Path="MyValue"/>
+                      <Binding ElementName="MyNumeBackB" Path="MyValue"/>
+                    </MultiBinding.Bindings>
+                  </MultiBinding>
+                </TextBox.Background>
+                <TextBox.BorderBrush>
+                  <MultiBinding Converter="{StaticResource color}">
+                    <MultiBinding.Bindings>
+                      <Binding ElementName="MyNumeWakuA" Path="MyValue"/>
+                      <Binding ElementName="MyNumeWakuR" Path="MyValue"/>
+                      <Binding ElementName="MyNumeWakuG" Path="MyValue"/>
+                      <Binding ElementName="MyNumeWakuB" Path="MyValue"/>
+                    </MultiBinding.Bindings>
+                  </MultiBinding>
+                </TextBox.BorderBrush>
+
+
+              </TextBox>
+            </Grid>
             <Button x:Name="MyButtonRenderText" Content="描画！" Click="ButtonRenderText_Click"/>
             <TextBox x:Name="MyTextBox" Text="test"
                      TextWrapping="Wrap" AcceptsTab="True" AcceptsReturn="True"/>
-            <TextBlock Text="見本" Height="80"
-                       FontSize="{Binding ElementName=NumeFontSize, Path=MyValue}"
-                       FontFamily="{Binding ElementName=MyCombBoxFontFmilyNames, Path=SelectedValue}"
-                       FontWeight="{Binding ElementName=MyComboBoxFontWeight, Path=SelectedValue}"
-                       FontStyle="{Binding ElementName=MyComboBoxFontStyle, Path=SelectedValue}"/>
-            <ComboBox x:Name="MyCombBoxFontFmilyNames" SelectedValuePath="Key" DisplayMemberPath="Value"/>
-            <tomato:NumericUpDown x:Name="NumeFontSize" MyValue="12"
-                                MyStringFormat="FontSize 0"
+            <DockPanel>
+              <tomato:NumericUpDown x:Name="NumeFontSize" MyValue="30"
+                                MyStringFormat="Size 000"
                                 MyMinValue="1" MyMaxValue="1000" MySmallChange="1" MyLargeChange="10"
                                 MouseWheel="NumericUpDown_MouseWheel"/>
+              <ComboBox x:Name="MyCombBoxFontFmilyNames" SelectedValuePath="Key" DisplayMemberPath="Value"/>
+            </DockPanel>
+            <UniformGrid Rows="1">
+              <CheckBox x:Name="MyCheckIsBold" Content="太字" VerticalAlignment="Center"/>
+              <CheckBox x:Name="MyCheckIsItalic" Content="斜体" VerticalAlignment="Center"/>
 
-            <ComboBox x:Name="MyComboBoxFontWeight" SelectedValuePath="Key" DisplayMemberPath="Value"/>
+            </UniformGrid>
+            <UniformGrid Rows="1">
+              <TextBlock Text="文字色" VerticalAlignment="Center"/>
+              <tomato:NumericUpDown x:Name="MyNumeFontA" MyMinValue="0" MyMaxValue="255" MyValue="255" MyStringFormat="A 000" BorderBrush="Transparent"/>
+              <tomato:NumericUpDown x:Name="MyNumeFontR" MyMinValue="0" MyMaxValue="255" MyValue="00" MyStringFormat="R 000" BorderBrush="Transparent" Foreground="Crimson" MyButtonMarkColor="Crimson"/>
+              <tomato:NumericUpDown x:Name="MyNumeFontG" MyMinValue="0" MyMaxValue="255" MyValue="0" MyStringFormat="G 000" BorderBrush="Transparent" Foreground="ForestGreen" MyButtonMarkColor="ForestGreen"/>
+              <tomato:NumericUpDown x:Name="MyNumeFontB" MyMinValue="0" MyMaxValue="255" MyValue="0" MyStringFormat="B 000" BorderBrush="Transparent" Foreground="RoyalBlue" MyButtonMarkColor="RoyalBlue"/>
+            </UniformGrid>
+            <UniformGrid Rows="1">
+              <TextBlock Text="背景色" VerticalAlignment="Center"/>
+              <tomato:NumericUpDown x:Name="MyNumeBackA" MyMinValue="0" MyMaxValue="255" MyValue="0" MyStringFormat="A 000" BorderBrush="Transparent"/>
+              <tomato:NumericUpDown x:Name="MyNumeBackR" MyMinValue="0" MyMaxValue="255" MyValue="255" MyStringFormat="R 000" BorderBrush="Transparent" Background="Crimson" Foreground="White" MyButtonMarkColor="White"/>
+              <tomato:NumericUpDown x:Name="MyNumeBackG" MyMinValue="0" MyMaxValue="255" MyValue="255" MyStringFormat="G 000" BorderBrush="Transparent" Background="ForestGreen" Foreground="White" MyButtonMarkColor="White"/>
+              <tomato:NumericUpDown x:Name="MyNumeBackB" MyMinValue="0" MyMaxValue="255" MyValue="255" MyStringFormat="B 000" BorderBrush="Transparent" Background="DodgerBlue" Foreground="White" MyButtonMarkColor="White"/>
+            </UniformGrid>
+            <UniformGrid Rows="1">
+              <!--<TextBlock Text="枠色" VerticalAlignment="Center"/>-->
+              <tomato:NumericUpDown x:Name="NumeWakuThickness" MyValue="0"
+                                MyStringFormat="枠 000"
+                                MyMinValue="0" MyMaxValue="1000" MySmallChange="1" MyLargeChange="10"
+                                MouseWheel="NumericUpDown_MouseWheel"/>
+
+              <tomato:NumericUpDown x:Name="MyNumeWakuA" MyMinValue="0" MyMaxValue="255" MyValue="255" MyStringFormat="A 000"/>
+              <tomato:NumericUpDown x:Name="MyNumeWakuR" MyMinValue="0" MyMaxValue="255" MyValue="255" MyStringFormat="R 000" BorderBrush="Crimson" Foreground="Black" MyButtonMarkColor="Crimson"/>
+              <tomato:NumericUpDown x:Name="MyNumeWakuG" MyMinValue="0" MyMaxValue="255" MyValue="0" MyStringFormat="G 000" BorderBrush="ForestGreen" Foreground="Black" MyButtonMarkColor="ForestGreen"/>
+              <tomato:NumericUpDown x:Name="MyNumeWakuB" MyMinValue="0" MyMaxValue="255" MyValue="0" MyStringFormat="B 000" BorderBrush="DodgerBlue" Foreground="Black" MyButtonMarkColor="RoyalBlue"/>
+            </UniformGrid>
+
+            <!--<ComboBox x:Name="MyComboBoxFontWeight" SelectedValuePath="Key" DisplayMemberPath="Value"/>
+            -->
             <!--<ComboBox.ItemTemplate>
                 <DataTemplate>
                   <TextBlock Text="{Binding Key}" FontStyle="{Binding Value}"/>
                 </DataTemplate>
               </ComboBox.ItemTemplate>-->
+            <!--
 
-            <ComboBox x:Name="MyComboBoxFontStyle" SelectedValuePath="Key" DisplayMemberPath="Value"/>
+            <ComboBox x:Name="MyComboBoxFontStyle" SelectedValuePath="Key" DisplayMemberPath="Value"/>-->
 
-            <TextBox x:Name="MyTextBoxText" AcceptsReturn="True" AcceptsTab="True" FontFamily="ＭＳ 明朝"
-                   TextWrapping="Wrap" Text="testttttttttttttttttttttttt"/>
-            <Button Content="button"/>
+            <!--<TextBox x:Name="MyTextBoxText" AcceptsReturn="True" AcceptsTab="True" FontFamily="ＭＳ 明朝"
+                   TextWrapping="Wrap" Text="testttttttttttttttttttttttt"/>-->
+
           </StackPanel>
         </ScrollViewer>
       </TabItem>
+
       <TabItem Header="設定" DataContext="{Binding}">
         <StackPanel>
           <CheckBox Content="起動時に前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>

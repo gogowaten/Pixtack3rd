@@ -611,6 +611,8 @@ namespace Pixtack3rd
                 {
                     _activeThumb.IsActiveThumb = false;
                     _activeThumb.Focusable = false;
+                    //テキスト編集終了させる
+                    if (_activeThumb is TTTextBox box) { box.IsEdit = false; }
                 }
                 SetProperty(ref _activeThumb, value);
                 if (_activeThumb != null)
@@ -2166,6 +2168,11 @@ namespace Pixtack3rd
             MyTemplateElement.SetBinding(HutaTextBox.TextProperty, nameof(Data.Text));
             MyTemplateElement.SetBinding(HutaTextBox.IsEditProperty, new Binding() { Source = this, Path = new PropertyPath(IsEditProperty) });
 
+            //Binding b = new(nameof(data.FontFamily));
+            //b.Mode = BindingMode.TwoWay;            
+            //SetBinding(FontFamilyProperty, b);
+            //MyTemplateElement.SetBinding(FontFamilyProperty, b);
+
             Binding b = new(nameof(data.FontName));
             b.Mode = BindingMode.TwoWay;
             b.Converter = new ConverterFontFamilyName();
@@ -2175,18 +2182,6 @@ namespace Pixtack3rd
             b = new(nameof(data.FontSize));
             b.Mode = BindingMode.TwoWay;
             SetBinding(FontSizeProperty, b);
-
-            //b = new(nameof(data.FontStretch));
-            //b.Mode= BindingMode.TwoWay;
-            //SetBinding(TextBox.FontStretchProperty, b);
-
-            b = new(nameof(data.FontStyle));
-            b.Mode = BindingMode.TwoWay;
-            SetBinding(FontStyleProperty, b);
-
-            b = new(nameof(data.FontWeight));
-            b.Mode = BindingMode.TwoWay;
-            SetBinding(FontWeightProperty, b);
 
             b = new(nameof(data.ForeColor));
             b.Converter = new ConverterColorSolidBrush();
@@ -2214,23 +2209,38 @@ namespace Pixtack3rd
             b = new(nameof(data.BackColor));
             b.Converter = new ConverterColorSolidBrushNegative();
             b.Mode = BindingMode.TwoWay;
-            //SetBinding(BorderBrushProperty, b);
             MyTemplateElement.SetBinding(HutaTextBox.CaretBrushProperty, b);
 
+            b = new(nameof(data.IsBold));
+            b.Converter = new ConverterFontWeightIsBold();            
+            MyTemplateElement.SetBinding(FontWeightProperty, b);
             
+            b = new(nameof(data.IsItalic));
+            b.Converter = new ConverterFontStyleIsItalic();            
+            MyTemplateElement.SetBinding(FontStyleProperty, b);
+
+
 
             //SetBinding(TextBox.FontStretchProperty,new Binding(nameof(data.FontStretch)) { Mode= BindingMode.TwoWay });
         }
+
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
+            //編集状態の切り替え
             if (e.Key == Key.F2) { IsEdit = !IsEdit; }
         }
         protected override void OnMouseDoubleClick(MouseButtonEventArgs e)
         {
             base.OnMouseDoubleClick(e);
+            //編集状態の切り替え
             IsEdit = !IsEdit;
         }
+        //protected override void OnLostFocus(RoutedEventArgs e)
+        //{
+        //    base.OnLostFocus(e);
+        //    if (Focusable == false) { IsEdit = false; }
+        //}
     }
     /// <summary>
     /// 編集可能状態を切り替えるTextBox、Gridの蓋の取り外しをIsEditプロパティで切り替える
@@ -2322,7 +2332,7 @@ namespace Pixtack3rd
                 new Binding() { Source = this, Path = new PropertyPath(BorderBrushProperty) });
             factory.SetValue(TextBox.CaretBrushProperty,
                 new Binding() { Source = this, Path = new PropertyPath(CaretBrushProperty) });
-            
+
 
             factory.SetValue(TextBox.TextWrappingProperty, TextWrapping.Wrap);
             factory.SetValue(TextBox.AcceptsReturnProperty, true);//Enterで改行入力
@@ -2377,6 +2387,73 @@ namespace Pixtack3rd
 
 
     #region コンバーター
+    //Thickness
+    public class ConverterThickness : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            double d = (double)(decimal)value;
+            return new Thickness(d);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            Thickness thickness=(Thickness)value;
+            return thickness.Top;
+        }
+    }
+
+    //フォントの斜体
+    public class ConverterFontStyleIsItalic : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            bool b = (bool)value;
+            if (b) { return FontStyles.Italic; }
+            else { return FontStyles.Normal; }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            FontStyle style = (FontStyle)value;
+            return style == FontStyles.Italic;
+        }
+    }
+
+    //フォントの太字
+    public class ConverterFontWeightIsBold : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            bool b = (bool)value;
+            if (b) { return FontWeights.Bold; }
+            else { return FontWeights.Normal; }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            FontWeight weight=(FontWeight)value;
+            return weight == FontWeights.Bold;
+        }
+    }
+
+    //ARGB各値からSolidBrush作成
+    public class ConverterArgbNumericToBrush : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            byte a = (byte)(decimal)values[0];
+            byte r = (byte)(decimal)values[1];
+            byte g = (byte)(decimal)values[2];
+            byte b = (byte)(decimal)values[3];
+            return new SolidColorBrush(Color.FromArgb(a, r, g, b));
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 
     //ColorとSolidBrushの変換＋色反転、テキストボックスのカーソルの色に使用
     public class ConverterColorSolidBrushNegative : IValueConverter
@@ -2416,8 +2493,12 @@ namespace Pixtack3rd
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             string name = (string)value;
-            FontFamily font = new(name);
-            return font;
+            FontFamilyConverter ffc = new();
+            if(ffc.ConvertFromString(name) is FontFamily font)
+            {
+                return font;
+            }
+            else { return Application.Current.MainWindow.FontFamily; }            
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
