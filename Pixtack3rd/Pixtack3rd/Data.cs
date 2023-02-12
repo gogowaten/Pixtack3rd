@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 
 
@@ -18,6 +19,7 @@ namespace Pixtack3rd
 
 
     [DataContract]
+    [KnownType(typeof(FontFamily)),KnownType(typeof(KeyValuePair<string,FontFamily>))]
     public class Data : IExtensibleDataObject, INotifyPropertyChanged
     {
         #region 必要
@@ -54,52 +56,78 @@ namespace Pixtack3rd
         #region 共通
 
 
-        [DataMember] public TType Type { get; set; }
         //[DataMember] public WakuVisibleType WakuVisibleType { get; set; }
 
         //private WakuVisibleType _wakuVisibleType;
         //[DataMember] public WakuVisibleType WakuVisibleType { get => _wakuVisibleType; set => SetProperty(ref _wakuVisibleType, value); }
 
 
-        private double _x = 0.0;
-        [DataMember] public double X { get => _x; set => SetProperty(ref _x, value); }
-
-        private double _y;
-        [DataMember] public double Y { get => _y; set => SetProperty(ref _y, value); }
-
+        [DataMember] public TType Type { get; set; }
         //シリアライズ時の画像ファイル名に使用、Guidで一意の名前作成している
         [DataMember] public string Guid { get; set; } = System.Guid.NewGuid().ToString();
+
+        private double _x = 0.0;
+        private double _y = 0.0;
+        private Color _foreColor = Color.FromArgb(255, 0, 0, 0);
+        private Color _backColor = Color.FromArgb(0, 0, 0, 0);
+
+        [DataMember] public double X { get => _x; set => SetProperty(ref _x, value); }
+        [DataMember] public double Y { get => _y; set => SetProperty(ref _y, value); }
+        [DataMember] public Color ForeColor { get => _foreColor; set => SetProperty(ref _foreColor, value); }
+        [DataMember] public Color BackColor { get => _backColor; set => SetProperty(ref _backColor, value); }
+
+        //枠の太さ
+        private Thickness _borderThickness = new(0.0);
+        [DataMember] public Thickness BorderThickness { get => _borderThickness; set => SetProperty(ref _borderThickness, value); }
+
+        private Color _borderColor = Colors.LightGray;
+        [DataMember] public Color BorderColor { get => _borderColor; set => SetProperty(ref _borderColor, value); }
+
+        ////Thumb自体の枠の太さ
+        //private Thickness _thumbWakuThickness = new(0.0);
+        //[DataMember] public Thickness ThumbWakuThickness { get => _thumbWakuThickness; set => SetProperty(ref _thumbWakuThickness, value); }
+
+        ////Thumb自体の枠の色
+        //private Color _thumbWakuColor = Color.FromArgb(0, 0, 0, 0);
+        //[DataMember] public Color ThumbWakuColor { get => _thumbWakuColor; set => SetProperty(ref _thumbWakuColor, value); }
+
+
         #endregion 共通
 
 
         #region 固有
 
+        #region テキスト
 
         private string _text = string.Empty;
+        private string _fontName = SystemFonts.MessageFontFamily.Source;
+        private double _fontSize = SystemFonts.MessageFontSize;
+        private bool _isBold;
+        private bool _isItalic;
+        
         [DataMember] public string Text { get => _text; set => SetProperty(ref _text, value); }
 
-        //private FontFamily _fontFamily = SystemFonts.MessageFontFamily;
-        //[IgnoreDataMember] public FontFamily FontFamily { get => _fontFamily; set => SetProperty(ref _fontFamily, value); }
-
-        private string _fontName = SystemFonts.MessageFontFamily.Source;
         [DataMember] public string FontName { get => _fontName; set => SetProperty(ref _fontName, value); }
 
-        private double _fontSize = SystemFonts.MessageFontSize;
+        //フォントファミリーはシリアル化できない
+        //private FontFamily _fontFamily;
+        //[DataMember] public FontFamily FontFamily { get => _fontFamily; set => SetProperty(ref _fontFamily, value); }
+
         [DataMember] public double FontSize { get => _fontSize; set => SetProperty(ref _fontSize, value); }
+        [DataMember] public bool IsBold { get => _isBold; set => SetProperty(ref _isBold, value); }
+        [DataMember] public bool IsItalic { get => _isItalic; set => SetProperty(ref _isItalic, value); }
 
-        
-        private FontStyle _fontStyle = FontStyles.Normal;
-       [DataMember] public FontStyle FontStyle { get => _fontStyle; set => SetProperty(ref _fontStyle, value); }
 
-        private FontWeight _fontWeight = FontWeights.Normal;
-        public FontWeight FontWeight { get => _fontWeight; set => SetProperty(ref _fontWeight, value); }
+        #endregion テキスト
 
+        #region 画像
 
         //画像、それ自体は直接シリアライズしないので[IgnoreDataMember]
         //        [IgnoreDataMember] public BitmapSource? BitmapSource { get; set; }
 
         [IgnoreDataMember] private BitmapSource? _bitmapSource;
         [IgnoreDataMember] public BitmapSource? BitmapSource { get => _bitmapSource; set => SetProperty(ref _bitmapSource, value); }
+        #endregion 画像
 
         #endregion 固有
 

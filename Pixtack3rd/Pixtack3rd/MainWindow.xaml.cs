@@ -156,7 +156,7 @@ namespace Pixtack3rd
                     break;
                 case ModifierKeys.Control:
                     if (e.Key == Key.S) { SaveRootDataWithConfig(CurrentFileFullPath, MyRoot.Data, true); }
-                    else if (e.Key == Key.D) { DuplicateDataSelectedThumbs(); }
+                    //else if (e.Key == Key.D) { DuplicateDataSelectedThumbs(); }
                     break;
                 case ModifierKeys.Shift:
                     break;
@@ -175,10 +175,12 @@ namespace Pixtack3rd
         {
             ComboBoxSaveFileType.ItemsSource = Enum.GetValues(typeof(ImageType));
             MyCombBoxFontFmilyNames.ItemsSource = GetFontFamilies();
+            MyCombBoxFontFmilyNames.SelectedValue = this.FontFamily;
             //MyComboBoxFontStretchs.ItemsSource = MakeFontStretchDictionary();
-            MyComboBoxFontStyle.ItemsSource = MakeFontStylesDictionary();
-            MyComboBoxFontWeight.ItemsSource = MakeFontWeightDictionary();
-
+            //MyComboBoxFontStyle.ItemsSource = MakeFontStylesDictionary();
+            //MyComboBoxFontStyle.SelectedValue = this.FontStyle;
+            //MyComboBoxFontWeight.ItemsSource = MakeFontWeightDictionary();
+            //MyComboBoxFontWeight.SelectedValue = this.FontWeight;
 
             //List<double> vs = new() { 0, 1.5, 2.5, 3.5, 5 };
             //MyComboBoxFileNameDateOrder.ItemsSource = vs;
@@ -1933,7 +1935,7 @@ namespace Pixtack3rd
 
         private void ButtonTest_Click(object sender, RoutedEventArgs e)
         {
-            var fn = MyRoot.ActiveThumb.Data.FontName;
+            var fn = MyRoot.ActiveThumb?.Data.FontName;
         }
 
         private void GroupBox_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -1981,6 +1983,34 @@ namespace Pixtack3rd
 
         }
 
+        private void ButtonRenderText_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(MyTextBox.Text)) { return; }
+
+
+            Data data = new(TType.TextBox)
+            {
+                Text = MyTextBox.Text,
+                FontSize = (double)NumeFontSize.MyValue,
+            };
+            if (MyCombBoxFontFmilyNames.SelectedItem is KeyValuePair<string, FontFamily> kvp)
+            {
+                data.FontName = kvp.Key;
+            }
+
+
+            data.ForeColor = Color.FromArgb((byte)MyNumeFontA.MyValue,
+                (byte)MyNumeFontR.MyValue, (byte)MyNumeFontG.MyValue, (byte)MyNumeFontB.MyValue);
+            data.BackColor = Color.FromArgb((byte)MyNumeBackA.MyValue,
+                (byte)MyNumeBackR.MyValue, (byte)MyNumeBackG.MyValue, (byte)MyNumeBackB.MyValue);
+            data.BorderColor = Color.FromArgb((byte)MyNumeWakuA.MyValue,
+                (byte)MyNumeWakuR.MyValue, (byte)MyNumeWakuG.MyValue, (byte)MyNumeWakuB.MyValue);
+            data.BorderThickness = new Thickness((double)NumeWakuThickness.MyValue);
+            if (MyCheckIsBold.IsChecked == true) { data.IsBold = true; }
+            if (MyCheckIsItalic.IsChecked == true) { data.IsItalic = true; }
+
+            MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
+        }
     }
 
 
