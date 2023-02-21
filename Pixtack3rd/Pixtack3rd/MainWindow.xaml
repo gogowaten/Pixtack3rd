@@ -250,7 +250,10 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             TTText="TextBox" TTLeft="152" TTTop="152" FontSize="30"/>-->
         <local:TTTextBox x:Name="MyTextBox1" BorderBrush="Red" BorderThickness="2"
             TTText="TextBox" TTLeft="152" TTTop="160" FontSize="30"/>
-
+        <local:TTPolylineZ x:Name="MyPolylineZ" TTLeft="200" TTTop="50"
+                           MyPoints="0,0 100,100" StrokeThickness="10" HeadAngle="30"
+                           HeadBeginType="Arrow" HeadEndType="Arrow"
+                           Stroke="Red" TTFill="Red"/>
 
       </local:TTRoot>
 
