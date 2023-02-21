@@ -14,7 +14,7 @@ using System.Windows.Media.Imaging;
 
 namespace Pixtack3rd
 {
-    public enum TType { None = 0, Root, Group, TextBlock, TextBox, Image, Rectangle }
+    public enum TType { None = 0, Root, Group, TextBlock, TextBox, Image, Rectangle ,Polyline}
 
 
 
@@ -128,6 +128,28 @@ namespace Pixtack3rd
         [IgnoreDataMember] private BitmapSource? _bitmapSource;
         [IgnoreDataMember] public BitmapSource? BitmapSource { get => _bitmapSource; set => SetProperty(ref _bitmapSource, value); }
         #endregion 画像
+
+        #region 図形
+        [DataMember] public PointCollection PointCollection { get; set; } = new();
+
+        private double _strokeThickness;
+        [DataMember] public double StrokeThickness { get => _strokeThickness; set => SetProperty(ref _strokeThickness, value); }
+
+        private Brush _stroke = Brushes.Red;
+        [DataMember] public Brush Stroke { get => _stroke; set => SetProperty(ref _stroke, value); }
+
+        private Brush _fill = Brushes.DarkOrange;
+        [DataMember] public Brush Fill { get => _fill; set => SetProperty(ref _fill, value); }
+
+        private HeadType _beginHeadType;
+        [DataMember] public HeadType HeadBeginType { get => _beginHeadType; set => SetProperty(ref _beginHeadType, value); }
+
+        private HeadType _endHeadType;
+        [DataMember] public HeadType HeadEndType { get => _endHeadType; set => SetProperty(ref _endHeadType, value); }
+
+        private double _headAngle;
+        [DataMember] public double HeadAngle { get => _headAngle; set => SetProperty(ref _headAngle, value); }
+        #endregion 図形
 
         #endregion 固有
 
