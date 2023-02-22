@@ -216,50 +216,60 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
       </DockPanel>
     </StatusBar>
 
-    <ScrollViewer Grid.Row="1" Grid.Column="1"
+    <Grid Grid.Row="1" Grid.Column="1">
+      <ScrollViewer Grid.Row="1" Grid.Column="1"
                   x:Name="MyScrollViewer"
                   HorizontalScrollBarVisibility="Auto"
                   VerticalScrollBarVisibility="Auto"
                   UseLayoutRounding="True">
-      <!--<Grid KeyDown="Grid_KeyDown" PreviewKeyDown="Grid_PreviewKeyDown">-->
-      <!--<local:TTTextBlock TTText="222"/>-->
-      <local:TTRoot x:Name="MyRoot"
+        <!--<Grid KeyDown="Grid_KeyDown" PreviewKeyDown="Grid_PreviewKeyDown">-->
+        <!--<local:TTTextBlock TTText="222"/>-->
+        <local:TTRoot x:Name="MyRoot"
                     HorizontalAlignment="Left" VerticalAlignment="Top"
                     TTGrid="8" TTXShift="32" TTYShift="32">
 
-        <!--<local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
+          <!--<local:TTTextBlock TTText="ttttest" TTLeft="200" TTTop="20"/>
         <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection2.png"/>
         <local:TTImage x:Name="MyImage1" TTLeft="100" TTTop="100"
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection3.png"/>
         <local:TTImage x:Name="MyImage2" TTLeft="120" TTTop="120"
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection4.png"/>-->
-        <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
+          <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect000.png"/>
-        <local:TTImage x:Name="MyImage1" TTLeft="24" TTTop="24"
+          <local:TTImage x:Name="MyImage1" TTLeft="24" TTTop="24"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect030.png"/>
-        <local:TTImage x:Name="MyImage2" TTLeft="48" TTTop="48"
+          <local:TTImage x:Name="MyImage2" TTLeft="48" TTTop="48"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect060.png"/>
-        <local:TTImage x:Name="MyImage3" TTLeft="72" TTTop="72"
+          <local:TTImage x:Name="MyImage3" TTLeft="72" TTTop="72"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect090.png"/>
-        <local:TTImage x:Name="MyImage4" TTLeft="96" TTTop="96"
+          <local:TTImage x:Name="MyImage4" TTLeft="96" TTTop="96"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect135.png"/>
-        <!--<local:TTTextBox x:Name="MyTextBox1" FontFamily="Bahnschrift SemiBold Condensed"
+          <!--<local:TTTextBox x:Name="MyTextBox1" FontFamily="Bahnschrift SemiBold Condensed"
             TTText="TextBox" TTLeft="152" TTTop="152" FontSize="30" FontStretch="Medium"/>-->
-        <!--<local:TTTextBox x:Name="MyTextBox1" FontFamily="ＭＳ 明朝" FontStyle="Italic"
+          <!--<local:TTTextBox x:Name="MyTextBox1" FontFamily="ＭＳ 明朝" FontStyle="Italic"
             TTText="TextBox" TTLeft="152" TTTop="152" FontSize="30"/>-->
-        <local:TTTextBox x:Name="MyTextBox1" BorderBrush="Red" BorderThickness="2"
+          <local:TTTextBox x:Name="MyTextBox1" BorderBrush="Red" BorderThickness="2"
             TTText="TextBox" TTLeft="152" TTTop="160" FontSize="30"/>
-        <local:TTPolylineZ x:Name="MyPolylineZ" TTLeft="200" TTTop="50"
-                           MyPoints="0,0 100,100 200,50" StrokeThickness="10" HeadAngle="30"
-                           HeadBeginType="Arrow" HeadEndType="Arrow"
+          <local:TTPolylineZ x:Name="MyPolylineZ" TTLeft="200" TTTop="0"
+                           MyPoints="0,0 0,100" StrokeThickness="30" HeadAngle="30"
+                           HeadBeginType="None" HeadEndType="None"
                            Stroke="OliveDrab" TTFill="OliveDrab"/>
+          <!--<local:TTPolylineZ x:Name="MyPolylineZ2" TTLeft="200" TTTop="20"
+                           MyPoints="0,0 200,20" StrokeThickness="10" HeadAngle="30"
+                           HeadBeginType="Arrow" HeadEndType="Arrow"
+                           Stroke="OliveDrab" TTFill="OliveDrab"/>-->
 
-      </local:TTRoot>
-
-      <!--</Grid>-->
-    </ScrollViewer>
-
+        </local:TTRoot>
+        <!--</Grid>-->
+      </ScrollViewer>
+      <Canvas x:Name="MyDrawCanvas" Visibility="Collapsed"
+              Cursor="Cross" Background="Transparent">
+        <!--<local:PolylineZ Canvas.Top="20" Canvas.Left="10"
+          MyPoints="0,0 200,20" StrokeThickness="20" Stroke="Red" Fill="Red"
+                         HeadBeginType="Arrow" HeadEndType="Arrow" Angle="30"/>-->
+      </Canvas>
+    </Grid>
     <TabControl Grid.Row="1" Grid.Column="0" x:Name="MyTabControl" TabStripPlacement="Top">
 
       <TabItem x:Name="MyTab1App" Header="test1">

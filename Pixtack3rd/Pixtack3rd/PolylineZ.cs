@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows;
 using System.Windows.Shapes;
+using System.Windows.Media.Imaging;
 
 //WPF Arrow and Custom Shapes - CodeProject
 //https://www.codeproject.com/Articles/23116/WPF-Arrow-and-Custom-Shapes
@@ -116,6 +117,8 @@ namespace Pixtack3rd
         {
             get
             {
+                if (MyPoints.Count < 2) { return Geometry.Empty; }
+
                 StreamGeometry geometry = new() { FillRule = FillRule.Nonzero };
                 using (var context = geometry.Open())
                 {
@@ -140,6 +143,20 @@ namespace Pixtack3rd
                     DrawLine(context, begin, end);
                 }
                 geometry.Freeze();
+                var bound = geometry.Bounds;
+                var render = geometry.GetRenderBounds(new Pen(Brushes.Red, 1.0));
+                var aw = ActualWidth;
+                var ah = ActualHeight;
+                var fgeo = geometry.GetFlattenedPathGeometry();
+                var outgeo = geometry.GetOutlinedPathGeometry();
+                var widgeo = geometry.GetWidenedPathGeometry(new Pen(Brushes.Red, 1.0));
+                var bgeo = fgeo.Bounds;
+                var bout = outgeo.Bounds;
+                var bwid = widgeo.Bounds;
+                GeometryDrawing draw=new(Brushes.Red,new Pen(Brushes.Blue, 1.0),geometry);
+                RenderTargetBitmap bitmap = new(300, 300, 96, 96, PixelFormats.Pbgra32);
+
+               var rensize = this.RenderSize;
                 return geometry;
             }
         }

@@ -1153,7 +1153,7 @@ namespace Pixtack3rd
         /// </summary>
         /// <param name="data"></param>
         /// <param name="addUpper">trueで上層に追加、falseで下層に追加</param>
-        /// <param name="locateFix">追加位置修正、通常はtrue。複製時にはfalse</param>
+        /// <param name="locateFix">追加位置修正、通常はtrue。複製時や図形追加時はfalse</param>
         public TThumb? AddThumbDataToActiveGroup(Data data, bool addUpper, bool locateFix = true)
         {
 
@@ -1229,6 +1229,9 @@ namespace Pixtack3rd
                     throw new NotImplementedException();
                 case TType.TextBox:
                     result = new TTTextBox(data);
+                    break;
+                case TType.Polyline:
+                    result = new TTPolylineZ(data);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -2213,11 +2216,11 @@ namespace Pixtack3rd
             MyTemplateElement.SetBinding(HutaTextBox.CaretBrushProperty, b);
 
             b = new(nameof(data.IsBold));
-            b.Converter = new ConverterFontWeightIsBold();            
+            b.Converter = new ConverterFontWeightIsBold();
             MyTemplateElement.SetBinding(FontWeightProperty, b);
-            
+
             b = new(nameof(data.IsItalic));
-            b.Converter = new ConverterFontStyleIsItalic();            
+            b.Converter = new ConverterFontStyleIsItalic();
             MyTemplateElement.SetBinding(FontStyleProperty, b);
 
 
@@ -2349,7 +2352,7 @@ namespace Pixtack3rd
 
     public class TTPolylineZ : TThumb
     {
-          #region 依存プロパティ
+        #region 依存プロパティ
 
         /// <summary>
         /// 終点のヘッドタイプ
@@ -2460,11 +2463,17 @@ namespace Pixtack3rd
         private void MySetBinding()
         {
             //Points同士の連携はBindingより=(イコール)でしたほうが楽
-            //連携の方向は
-            //mydata <- this <- polyz、で右側がSource
-            //mydata <- this ここをイコール
-            //this < -polyz ここはBinding
-            Loaded += (a, b) => { Data.PointCollection = MyPoints; };
+            //連携の方向はXAMLとDataの優先順位で決める
+            if (Data.PointCollection.Count == 0)
+            {
+                //Data優先
+                Loaded += (a, b) => { Data.PointCollection = MyPoints; };
+            }
+            else
+            {
+                //XAML優先
+                Loaded += (a, b) => { MyPoints = Data.PointCollection; };
+            }
             this.SetBinding(MyPointsProperty, new Binding() { Source = MyTemplateElement, Path = new PropertyPath(PolylineZ.MyPointsProperty) });
 
             ////以下だと値の更新はされるけど、見た目の更新がされない。
@@ -2475,12 +2484,12 @@ namespace Pixtack3rd
 
             //Bindingの方向、Dataの各プロパティは依存プロパティではないのでTargetにはできないので
             //mydata <- this や mydata <- polyz とかにはできない
-            //なのでできるのは以下の3種類
+            //なのでできるのは以下の3種類、target <- Source
             //polyz <- this & this <- mydata 今回はこれ
             //this <- polyz & polyz <- mydata
             //this <- mydata & polyz <- mydata
 
-
+            
             //polyz <- this
             MyTemplateElement.DataContext = this;
             MyTemplateElement.SetBinding(Shape.StrokeThicknessProperty, nameof(StrokeThickness));
@@ -2501,7 +2510,7 @@ namespace Pixtack3rd
         }
     }
 
-    
+
     public class TTImage : TThumb
     {
         //画像ファイルのフルパス、変更時にコールバックでBitmapSourceを作成して表示する
@@ -2555,7 +2564,7 @@ namespace Pixtack3rd
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            Thickness thickness=(Thickness)value;
+            Thickness thickness = (Thickness)value;
             return thickness.Top;
         }
     }
@@ -2589,7 +2598,7 @@ namespace Pixtack3rd
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            FontWeight weight=(FontWeight)value;
+            FontWeight weight = (FontWeight)value;
             return weight == FontWeights.Bold;
         }
     }
@@ -2651,11 +2660,11 @@ namespace Pixtack3rd
         {
             string name = (string)value;
             FontFamilyConverter ffc = new();
-            if(ffc.ConvertFromString(name) is FontFamily font)
+            if (ffc.ConvertFromString(name) is FontFamily font)
             {
                 return font;
             }
-            else { return Application.Current.MainWindow.FontFamily; }            
+            else { return Application.Current.MainWindow.FontFamily; }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
