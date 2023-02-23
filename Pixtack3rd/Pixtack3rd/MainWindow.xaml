@@ -259,10 +259,10 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                            MyPoints="0,0 0,100" StrokeThickness="30" HeadAngle="30"
                            HeadBeginType="None" HeadEndType="None"
                            Stroke="OliveDrab" TTFill="OliveDrab"/>
-          <!--<local:TTPolylineZ x:Name="MyPolylineZ2" TTLeft="200" TTTop="20"
-                           MyPoints="0,0 200,20" StrokeThickness="10" HeadAngle="30"
+          <local:TTPolylineZ x:Name="MyPolylineZ2" TTLeft="200" TTTop="20"
+                           MyPoints="30,0 200,20 100,50" StrokeThickness="10" HeadAngle="30"
                            HeadBeginType="Arrow" HeadEndType="Arrow"
-                           Stroke="OliveDrab" TTFill="OliveDrab"/>-->
+                           Stroke="Crimson" TTFill="Crimson"/>
 
         </local:TTRoot>
         <!--</Grid>-->

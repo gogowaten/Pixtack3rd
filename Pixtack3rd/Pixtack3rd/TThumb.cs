@@ -1800,9 +1800,6 @@ namespace Pixtack3rd
             using (DrawingContext context = dVisual.RenderOpen())
             {
                 VisualBrush vBrush = new(el) { Stretch = Stretch.None };
-                //context.DrawRectangle(vBrush, null, new Rect(0, 0, bounds.Width, bounds.Height));
-                //context.DrawRectangle(vBrush, null, bounds);
-
                 context.DrawRectangle(vBrush, null, new Rect(bounds.Size));
             }
             RenderTargetBitmap bitmap
