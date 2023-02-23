@@ -84,6 +84,7 @@ namespace Pixtack3rd
 
         #endregion 通知プロパティ
 
+
         protected readonly string TEMPLATE_NAME = "NEMO";
 
         public TTGroup? TTParent { get; set; } = null;//親Group
@@ -91,7 +92,7 @@ namespace Pixtack3rd
         public Data Data { get; set; }// = new(TType.None);
         protected List<Brush> WakuBrush { get; set; }
 
-
+        public FrameworkElement MyTemplateElement { get; set; } = new FrameworkElement();
 
         public TThumb() : this(new Data(TType.None)) { }
         public TThumb(Data data)
@@ -425,7 +426,7 @@ namespace Pixtack3rd
         public bool IsGroup { get => _isGroup; set => SetProperty(ref _isGroup, value); }
 
 
-        private ItemsControl MyTemplateElement;
+        //public ItemsControl MyTemplateElement;
         public ObservableCollection<TThumb> Thumbs { get; private set; } = new();
 
 
@@ -1738,19 +1739,23 @@ namespace Pixtack3rd
         #region 画像として取得
         public BitmapSource? GetBitmapRoot()
         {
-            return MakeBitmapFromThumb(this, this);
+            return MakeBitmapFromThumb2(this);
+            //return MakeBitmapFromThumb(this, this);
         }
         public BitmapSource? GetBitmapActiveThumb()
         {
-            return MakeBitmapFromThumb(ActiveThumb, ActiveThumb?.TTParent);
+            return MakeBitmapFromThumb2(ActiveThumb);
+            //return MakeBitmapFromThumb(ActiveThumb, ActiveThumb?.TTParent);
         }
         public BitmapSource? GetBitmapClickedThumb()
         {
-            return MakeBitmapFromThumb(ClickedThumb, ClickedThumb?.TTParent);
+            return MakeBitmapFromThumb2(ClickedThumb);
+            //return MakeBitmapFromThumb(ClickedThumb, ClickedThumb?.TTParent);
         }
         public BitmapSource? GetBitmapThumb(TThumb thumb)
         {
-            return MakeBitmapFromThumb(thumb, thumb?.TTParent);
+            return MakeBitmapFromThumb2(thumb);
+            //return MakeBitmapFromThumb(thumb, thumb?.TTParent);
         }
         /// <summary>
         /// 指定Thumbを画像として取得
@@ -1774,21 +1779,20 @@ namespace Pixtack3rd
         /// <param name="el">Bitmapにする要素</param>
         /// <param name="parentPanel">Bitmapにする要素の親要素</param>
         /// <returns></returns>
-        private BitmapSource? MakeBitmapFromThumb(FrameworkElement? el, FrameworkElement? parentPanel)
+        private BitmapSource? MakeBitmapFromThumb2(TThumb? el)
         {
-            if (el == null || parentPanel == null) { return null; }
+            if (el == null) { return null; }
             if (el.ActualHeight == 0 || el.ActualWidth == 0) { return null; }
 
             //枠を一時的に非表示にする
             WakuVisibleType waku = TTWakuVisibleType;
             TTWakuVisibleType = WakuVisibleType.None;
-            UpdateLayout();//再描画？これで枠が消える
-
-
-            GeneralTransform gt = el.TransformToVisual(parentPanel);
-            Rect bounds = gt.TransformBounds(new Rect(0, 0, el.ActualWidth, el.ActualHeight));
+            UpdateLayout();//再描画？これで枠が消える;
+            
+            //Rect bounds = el.RenderTransform.TransformBounds(new Rect(el.RenderSize));
+            Rect bounds = VisualTreeHelper.GetDescendantBounds(el);
+            bounds = el.RenderTransform.TransformBounds(bounds);
             DrawingVisual dVisual = new();
-            //var debounds = VisualTreeHelper.GetDescendantBounds(parentPanel);
             //四捨五入しているけど、UselayoutRoundingをtrueにしていたら必要なさそう
             bounds.Width = (int)(bounds.Width + 0.5);
             bounds.Height = (int)(bounds.Height + 0.5);
@@ -1810,6 +1814,49 @@ namespace Pixtack3rd
 
             return bitmap;
         }
+        /// <summary>
+        /// 要素をBitmapに変換したものを返す
+        /// </summary>
+        /// <param name="el">Bitmapにする要素</param>
+        /// <param name="parentPanel">Bitmapにする要素の親要素</param>
+        /// <returns></returns>
+        //private BitmapSource? MakeBitmapFromThumb(FrameworkElement? el, FrameworkElement? parentPanel)
+        //{
+        //    if (el == null || parentPanel == null) { return null; }
+        //    if (el.ActualHeight == 0 || el.ActualWidth == 0) { return null; }
+
+        //    //枠を一時的に非表示にする
+        //    WakuVisibleType waku = TTWakuVisibleType;
+        //    TTWakuVisibleType = WakuVisibleType.None;
+        //    UpdateLayout();//再描画？これで枠が消える
+
+
+        //    GeneralTransform gt = el.TransformToVisual(parentPanel);
+        //    Rect bounds = gt.TransformBounds(new Rect(0, 0, el.ActualWidth, el.ActualHeight));
+        //    DrawingVisual dVisual = new();
+        //    //var debounds = VisualTreeHelper.GetDescendantBounds(parentPanel);
+        //    //四捨五入しているけど、UselayoutRoundingをtrueにしていたら必要なさそう
+        //    bounds.Width = (int)(bounds.Width + 0.5);
+        //    bounds.Height = (int)(bounds.Height + 0.5);
+
+        //    using (DrawingContext context = dVisual.RenderOpen())
+        //    {
+        //        VisualBrush vBrush = new(el) { Stretch = Stretch.None };
+        //        //context.DrawRectangle(vBrush, null, new Rect(0, 0, bounds.Width, bounds.Height));
+        //        //context.DrawRectangle(vBrush, null, bounds);
+
+        //        context.DrawRectangle(vBrush, null, new Rect(bounds.Size));
+        //    }
+        //    RenderTargetBitmap bitmap
+        //        = new((int)bounds.Width, (int)bounds.Height, 96.0, 96.0, PixelFormats.Pbgra32);
+        //    bitmap.Render(dVisual);
+
+        //    //枠表示を元に戻す
+        //    TTWakuVisibleType = waku;
+
+        //    return bitmap;
+        //}
+
         #endregion 画像として取得
 
         #region クリップボード系
@@ -2092,7 +2139,7 @@ namespace Pixtack3rd
         #endregion 依存プロパティ
 
 
-        private readonly TextBlock MyTemplateElement;
+        //public readonly TextBlock MyTemplateElement;
 
         public TTTextBlock() : this(new Data(TType.TextBlock)) { }
 
@@ -2154,7 +2201,7 @@ namespace Pixtack3rd
         #endregion 依存プロパティ
 
 
-        private readonly HutaTextBox MyTemplateElement;
+        //public readonly HutaTextBox MyTemplateElement;
 
         public TTTextBox() : this(new Data(TType.TextBox)) { }
 
@@ -2250,7 +2297,7 @@ namespace Pixtack3rd
     /// 編集可能状態を切り替えるTextBox、Gridの蓋の取り外しをIsEditプロパティで切り替える
     /// TTTextBoxのテンプレート用
     /// </summary>
-    class HutaTextBox : ContentControl
+    public class HutaTextBox : ContentControl
     {
         private readonly string HUTA = "huta";
         private readonly string TEXTBOX = "mytextbox";
@@ -2447,7 +2494,7 @@ namespace Pixtack3rd
 
         #endregion 依存プロパティ
 
-        private readonly PolylineZ MyTemplateElement;
+        //public readonly PolylineZ MyTemplateElement;
 
 
         public TTPolylineZ() : this(new Data(TType.Polyline)) { }
@@ -2489,7 +2536,7 @@ namespace Pixtack3rd
             //this <- polyz & polyz <- mydata
             //this <- mydata & polyz <- mydata
 
-            
+
             //polyz <- this
             MyTemplateElement.DataContext = this;
             MyTemplateElement.SetBinding(Shape.StrokeThicknessProperty, nameof(StrokeThickness));
@@ -2507,6 +2554,7 @@ namespace Pixtack3rd
             this.SetBinding(HeadEndTypeProperty, nameof(Data.HeadEndType));
             this.SetBinding(HeadBeginTypeProperty, nameof(Data.HeadBeginType));
             this.SetBinding(HeadAngleProperty, nameof(Data.HeadAngle));
+
         }
     }
 
@@ -2531,7 +2579,7 @@ namespace Pixtack3rd
             }
         }
 
-        private readonly Image MyTemplateElement;
+        //public readonly Image MyTemplateElement;
 
 
         public TTImage() : this(new Data(TType.Image)) { }

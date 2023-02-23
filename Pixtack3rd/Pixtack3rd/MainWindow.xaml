@@ -243,8 +243,12 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect060.png"/>
           <local:TTImage x:Name="MyImage3" TTLeft="72" TTTop="72"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect090.png"/>
-          <local:TTImage x:Name="MyImage4" TTLeft="96" TTTop="96"
-                       TTSourcePath="D:\ブログ用\テスト用画像\hueRect135.png"/>
+          <local:TTImage x:Name="MyImage4" TTLeft="96" TTTop="96" RenderTransformOrigin="0.5,0.5"
+                       TTSourcePath="D:\ブログ用\テスト用画像\hueRect135.png">
+            <local:TTImage.RenderTransform>
+              <RotateTransform Angle="20"/>
+            </local:TTImage.RenderTransform>
+          </local:TTImage>
           <!--<local:TTTextBox x:Name="MyTextBox1" FontFamily="Bahnschrift SemiBold Condensed"
             TTText="TextBox" TTLeft="152" TTTop="152" FontSize="30" FontStretch="Medium"/>-->
           <!--<local:TTTextBox x:Name="MyTextBox1" FontFamily="ＭＳ 明朝" FontStyle="Italic"

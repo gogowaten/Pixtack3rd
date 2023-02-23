@@ -91,7 +91,41 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.AffectsMeasure));
 
         #endregion 依存プロパティ
+        protected override Size MeasureOverride(Size constraint)
+        {
+            //var draw = VisualTreeHelper.GetDrawing(this);
+            //var drect = this.RenderSize;
+            //var degeo = this.DefiningGeometry;
+            //var wideeo = degeo.GetWidenedPathGeometry(new Pen(Brushes.Red, this.StrokeThickness));
+            //var wrect = wideeo.Bounds;
+            //var renrect = wideeo.GetRenderBounds(null);
+            //return base.MeasureOverride(wrect.Size);
 
+            return base.MeasureOverride(constraint);
+        }
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            //var draw = VisualTreeHelper.GetDrawing(this);
+            //var drect = this.RenderSize;
+            //var degeo = this.DefiningGeometry;
+            //var wideeo = degeo.GetWidenedPathGeometry(new Pen(Brushes.Red, this.StrokeThickness));
+            //var wrect = wideeo.Bounds;
+            //var renrect = wideeo.GetRenderBounds(null);
+            //return base.ArrangeOverride(wrect.Size);
+
+            return base.ArrangeOverride(finalSize);
+        }
+        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+        {
+            base.OnRenderSizeChanged(sizeInfo);
+            var draw = VisualTreeHelper.GetDrawing(this);
+            var drect = this.RenderSize;
+            var degeo = this.DefiningGeometry;
+            var wideeo = degeo.GetWidenedPathGeometry(new Pen(Brushes.Red, this.StrokeThickness));
+            var wrect = wideeo.Bounds;
+            var renrect = wideeo.GetRenderBounds(null);
+
+        }
         private static double DegreeToRadian(double degree)
         {
             return degree / 360.0 * (Math.PI * 2.0);
@@ -143,20 +177,10 @@ namespace Pixtack3rd
                     DrawLine(context, begin, end);
                 }
                 geometry.Freeze();
-                var bound = geometry.Bounds;
-                var render = geometry.GetRenderBounds(new Pen(Brushes.Red, 1.0));
-                var aw = ActualWidth;
-                var ah = ActualHeight;
-                var fgeo = geometry.GetFlattenedPathGeometry();
-                var outgeo = geometry.GetOutlinedPathGeometry();
-                var widgeo = geometry.GetWidenedPathGeometry(new Pen(Brushes.Red, 1.0));
-                var bgeo = fgeo.Bounds;
-                var bout = outgeo.Bounds;
-                var bwid = widgeo.Bounds;
-                GeometryDrawing draw=new(Brushes.Red,new Pen(Brushes.Blue, 1.0),geometry);
-                RenderTargetBitmap bitmap = new(300, 300, 96, 96, PixelFormats.Pbgra32);
+                var drect = VisualTreeHelper.GetDrawing(this);
+                var goe = geometry.Bounds;
+                var neko = geometry.GetRenderBounds(null);
 
-               var rensize = this.RenderSize;
                 return geometry;
             }
         }
