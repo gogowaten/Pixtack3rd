@@ -13,9 +13,11 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 using System.Xml;
 
 namespace Pixtack3rd
@@ -51,16 +53,19 @@ namespace Pixtack3rd
         private const string DATE_TIME_STRING_FORMAT = "yyyyMMdd'_'HHmmss'_'fff";
         private const string APP_ROOT_DATA_FILENAME = "TTRoot" + EXTENSION_NAME_DATA;
 
+        //マウスクリックでPolyline描画するときの一時的なもの
+        private readonly PointCollection MyTempPoints = new();
+        private Shape? MyTempShape;
+
+        //
+        private List<AnchorThumb> MyAnchoredThumbs { get; set; } = new();
+
         public MainWindow()
         {
             InitializeComponent();
-            FontFamily ff = this.FontFamily;
-            LanguageSpecificStringDictionary fff = ff.FamilyNames;
-            string fssou = ff.Source;
-            FontFamilyMapCollection fffmap = ff.FamilyMaps;
-            FamilyTypefaceCollection famtype = ff.FamilyTypefaces;
-            FontFamilyConverter ffc = new();
-
+            AnchorThumb at = new();
+            MyAnchoredThumbs.Add(at);
+            MyDrawCanvas.Children.Add(at);
 
             MyAppConfig = GetAppConfig(APP_CONFIG_FILE_NAME);
 
@@ -68,10 +73,6 @@ namespace Pixtack3rd
             AppLastEndTimeDataFilePath = System.IO.Path.Combine(
                 Environment.CurrentDirectory, APP_LAST_END_TIME_FILE_NAME);
 
-            //DataContext = MyAppConfig;
-            //MyStackPanel.DataContext = MyAppConfig;
-            //MyWrap.DataContext = MyAppConfig;
-            //MyTab1App.DataContext = MyAppConfig;
 
             AppVersion = GetAppVersion();
             MyInitialize();
@@ -81,7 +82,7 @@ namespace Pixtack3rd
             Drop += MainWindow_Drop;
             Closed += MainWindow_Closed;
 
-            MyTabControl.SelectedIndex = 2;
+            MyTabControl.SelectedIndex = 0;
 
             //string imagePath = "D:\\ブログ用\\テスト用画像\\collection5.png";
             //string imagePath1 = "D:\\ブログ用\\テスト用画像\\collection4.png";
@@ -92,8 +93,74 @@ namespace Pixtack3rd
             //{
             //    var neko = b.Source;
             //};
+
+            // マウスクリックでPolyline描画
+            MyDrawCanvas.MouseLeftButtonDown += MyDrawCanvas_MouseLeftButtonDown;
+            MyDrawCanvas.MouseMove += MyDrawCanvas_MouseMove;
+            MyDrawCanvas.MouseRightButtonDown += MyDrawCanvas_MouseRightButtonDown;
+
         }
 
+        #region マウスクリックでPolyline描画
+
+        private void MyDrawCanvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            Data data = new(TType.Polyline)
+            {
+                HeadAngle = 30,
+                Stroke = Brushes.OliveDrab,
+                StrokeThickness = 10,
+                Fill = Brushes.OliveDrab,
+                PointCollection = new(MyTempPoints),
+                HeadEndType = HeadType.Arrow,
+            };
+            FixTopLeftPointCollectionData(data);
+            MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper, false);
+            MyTempShape = null;
+            MyDrawCanvas.Children.Clear();
+            MyDrawCanvas.Visibility = Visibility.Collapsed;
+            MyTabControl.IsEnabled = true;
+
+        }
+        private void FixTopLeftPointCollectionData(Data data)
+        {
+            PointCollection points = data.PointCollection;
+            double x = double.MaxValue;
+            double y = double.MaxValue;
+            foreach (var item in points)
+            {
+                if (x > item.X) x = item.X;
+                if (y > item.Y) y = item.Y;
+            }
+            for (int i = 0; i < points.Count; i++)
+            {
+                points[i] = new Point(points[i].X - x, points[i].Y - y);
+            }
+            data.X = x; data.Y = y;
+        }
+
+        private void MyDrawCanvas_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (MyTempPoints.Count < 2) { return; }
+            Point pp = Mouse.GetPosition(MyDrawCanvas);
+            MyTempPoints[^1] = pp;
+        }
+
+        private void MyDrawCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            Point pp = Mouse.GetPosition(MyDrawCanvas);
+            if (MyTempPoints.Count == 0)
+            {
+                MyTempPoints.Add(pp);
+                MyTempPoints.Add(pp);
+            }
+            else
+            {
+                MyTempPoints.Add(pp);
+            }
+
+        }
+        #endregion マウスクリックでPolyline描画
 
         #region 初期設定
         /// <summary>
@@ -141,6 +208,8 @@ namespace Pixtack3rd
 
             //ショートカットキー
             this.PreviewKeyDown += MainWindow_PreviewKeyDown;
+
+
         }
 
 
@@ -1663,7 +1732,7 @@ namespace Pixtack3rd
             if (MyRoot.Thumbs.Count == 0) { return; }
             if (GetSaveDataFilePath("Dataとアプリ設定|*.p3|Dataのみ|*.p3d") is string path)
             {
-                if (Path.GetExtension(path) == EXTENSION_NAME_APP)
+                if (System.IO.Path.GetExtension(path) == EXTENSION_NAME_APP)
                 {
                     SaveRootDataWithConfig(path, MyRoot.Data, true);
                 }
@@ -1935,7 +2004,29 @@ namespace Pixtack3rd
 
         private void ButtonTest_Click(object sender, RoutedEventArgs e)
         {
-            var fn = MyRoot.ActiveThumb?.Data.FontName;
+            DrawPolylineFromClick();
+        }
+        private void DrawPolylineFromClick()
+        {
+            MyTabControl.IsEnabled = false;
+            MyDrawCanvas.Visibility = Visibility.Visible;
+
+            MyTempPoints.Clear();
+            PolylineZ polyZ = new()
+            {
+                Angle = 30,
+                Fill = Brushes.OliveDrab,
+                Stroke = Brushes.OliveDrab,
+                StrokeThickness = 10,
+                HeadEndType = HeadType.Arrow,
+                MyPoints = MyTempPoints,
+            };
+
+            //data.PointCollection.Add(new Point(100, 100));
+            //data.PointCollection.Add(new Point(200, 200));
+
+            MyTempShape = polyZ;
+            MyDrawCanvas.Children.Add(MyTempShape);
         }
 
         private void GroupBox_MouseWheel(object sender, MouseWheelEventArgs e)

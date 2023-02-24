@@ -14,12 +14,13 @@ using System.Windows.Media.Imaging;
 
 namespace Pixtack3rd
 {
-    public enum TType { None = 0, Root, Group, TextBlock, TextBox, Image, Rectangle ,Polyline}
+    public enum TType { None = 0, Root, Group, TextBlock, TextBox, Image, Rectangle, Polyline }
 
 
 
     [DataContract]
-    [KnownType(typeof(FontFamily)),KnownType(typeof(KeyValuePair<string,FontFamily>))]
+    [KnownType(typeof(FontFamily)), KnownType(typeof(KeyValuePair<string, FontFamily>)), KnownType(typeof(SolidColorBrush)),
+        KnownType(typeof(MatrixTransform))]
     public class Data : IExtensibleDataObject, INotifyPropertyChanged
     {
         #region 必要
@@ -104,7 +105,7 @@ namespace Pixtack3rd
         private double _fontSize = SystemFonts.MessageFontSize;
         private bool _isBold;
         private bool _isItalic;
-        
+
         [DataMember] public string Text { get => _text; set => SetProperty(ref _text, value); }
 
         [DataMember] public string FontName { get => _fontName; set => SetProperty(ref _fontName, value); }
@@ -175,6 +176,8 @@ namespace Pixtack3rd
                 case TType.Rectangle:
                     break;
                 case TType.TextBox:
+                    break;
+                case TType.Polyline:
                     break;
                 default:
                     break;

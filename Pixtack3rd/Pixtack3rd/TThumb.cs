@@ -84,6 +84,7 @@ namespace Pixtack3rd
 
         #endregion 通知プロパティ
 
+
         protected readonly string TEMPLATE_NAME = "NEMO";
 
         public TTGroup? TTParent { get; set; } = null;//親Group
@@ -91,7 +92,7 @@ namespace Pixtack3rd
         public Data Data { get; set; }// = new(TType.None);
         protected List<Brush> WakuBrush { get; set; }
 
-
+        public FrameworkElement MyTemplateElement { get; set; } = new FrameworkElement();
 
         public TThumb() : this(new Data(TType.None)) { }
         public TThumb(Data data)
@@ -425,7 +426,7 @@ namespace Pixtack3rd
         public bool IsGroup { get => _isGroup; set => SetProperty(ref _isGroup, value); }
 
 
-        private ItemsControl MyTemplateElement;
+        //public ItemsControl MyTemplateElement;
         public ObservableCollection<TThumb> Thumbs { get; private set; } = new();
 
 
@@ -702,6 +703,8 @@ namespace Pixtack3rd
 
         //クリック前の選択状態、クリックUp時の選択Thumb削除に使う
         private bool IsSelectedPreviewMouseDown { get; set; }
+
+
 
         #region コンストラクタ、初期化
 
@@ -1153,7 +1156,7 @@ namespace Pixtack3rd
         /// </summary>
         /// <param name="data"></param>
         /// <param name="addUpper">trueで上層に追加、falseで下層に追加</param>
-        /// <param name="locateFix">追加位置修正、通常はtrue。複製時にはfalse</param>
+        /// <param name="locateFix">追加位置修正、通常はtrue。複製時や図形追加時はfalse</param>
         public TThumb? AddThumbDataToActiveGroup(Data data, bool addUpper, bool locateFix = true)
         {
 
@@ -1229,6 +1232,9 @@ namespace Pixtack3rd
                     throw new NotImplementedException();
                 case TType.TextBox:
                     result = new TTTextBox(data);
+                    break;
+                case TType.Polyline:
+                    result = new TTPolylineZ(data);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -1735,19 +1741,23 @@ namespace Pixtack3rd
         #region 画像として取得
         public BitmapSource? GetBitmapRoot()
         {
-            return MakeBitmapFromThumb(this, this);
+            return MakeBitmapFromThumb2(this);
+            //return MakeBitmapFromThumb(this, this);
         }
         public BitmapSource? GetBitmapActiveThumb()
         {
-            return MakeBitmapFromThumb(ActiveThumb, ActiveThumb?.TTParent);
+            return MakeBitmapFromThumb2(ActiveThumb);
+            //return MakeBitmapFromThumb(ActiveThumb, ActiveThumb?.TTParent);
         }
         public BitmapSource? GetBitmapClickedThumb()
         {
-            return MakeBitmapFromThumb(ClickedThumb, ClickedThumb?.TTParent);
+            return MakeBitmapFromThumb2(ClickedThumb);
+            //return MakeBitmapFromThumb(ClickedThumb, ClickedThumb?.TTParent);
         }
         public BitmapSource? GetBitmapThumb(TThumb thumb)
         {
-            return MakeBitmapFromThumb(thumb, thumb?.TTParent);
+            return MakeBitmapFromThumb2(thumb);
+            //return MakeBitmapFromThumb(thumb, thumb?.TTParent);
         }
         /// <summary>
         /// 指定Thumbを画像として取得
@@ -1771,21 +1781,20 @@ namespace Pixtack3rd
         /// <param name="el">Bitmapにする要素</param>
         /// <param name="parentPanel">Bitmapにする要素の親要素</param>
         /// <returns></returns>
-        private BitmapSource? MakeBitmapFromThumb(FrameworkElement? el, FrameworkElement? parentPanel)
+        private BitmapSource? MakeBitmapFromThumb2(TThumb? el)
         {
-            if (el == null || parentPanel == null) { return null; }
+            if (el == null) { return null; }
             if (el.ActualHeight == 0 || el.ActualWidth == 0) { return null; }
 
             //枠を一時的に非表示にする
             WakuVisibleType waku = TTWakuVisibleType;
             TTWakuVisibleType = WakuVisibleType.None;
-            UpdateLayout();//再描画？これで枠が消える
+            UpdateLayout();//再描画？これで枠が消える;
 
-
-            GeneralTransform gt = el.TransformToVisual(parentPanel);
-            Rect bounds = gt.TransformBounds(new Rect(0, 0, el.ActualWidth, el.ActualHeight));
+            //Rect bounds = el.RenderTransform.TransformBounds(new Rect(el.RenderSize));
+            Rect bounds = VisualTreeHelper.GetDescendantBounds(el);
+            bounds = el.RenderTransform.TransformBounds(bounds);
             DrawingVisual dVisual = new();
-            //var debounds = VisualTreeHelper.GetDescendantBounds(parentPanel);
             //四捨五入しているけど、UselayoutRoundingをtrueにしていたら必要なさそう
             bounds.Width = (int)(bounds.Width + 0.5);
             bounds.Height = (int)(bounds.Height + 0.5);
@@ -1793,9 +1802,6 @@ namespace Pixtack3rd
             using (DrawingContext context = dVisual.RenderOpen())
             {
                 VisualBrush vBrush = new(el) { Stretch = Stretch.None };
-                //context.DrawRectangle(vBrush, null, new Rect(0, 0, bounds.Width, bounds.Height));
-                //context.DrawRectangle(vBrush, null, bounds);
-
                 context.DrawRectangle(vBrush, null, new Rect(bounds.Size));
             }
             RenderTargetBitmap bitmap
@@ -1807,6 +1813,49 @@ namespace Pixtack3rd
 
             return bitmap;
         }
+        /// <summary>
+        /// 要素をBitmapに変換したものを返す
+        /// </summary>
+        /// <param name="el">Bitmapにする要素</param>
+        /// <param name="parentPanel">Bitmapにする要素の親要素</param>
+        /// <returns></returns>
+        //private BitmapSource? MakeBitmapFromThumb(FrameworkElement? el, FrameworkElement? parentPanel)
+        //{
+        //    if (el == null || parentPanel == null) { return null; }
+        //    if (el.ActualHeight == 0 || el.ActualWidth == 0) { return null; }
+
+        //    //枠を一時的に非表示にする
+        //    WakuVisibleType waku = TTWakuVisibleType;
+        //    TTWakuVisibleType = WakuVisibleType.None;
+        //    UpdateLayout();//再描画？これで枠が消える
+
+
+        //    GeneralTransform gt = el.TransformToVisual(parentPanel);
+        //    Rect bounds = gt.TransformBounds(new Rect(0, 0, el.ActualWidth, el.ActualHeight));
+        //    DrawingVisual dVisual = new();
+        //    //var debounds = VisualTreeHelper.GetDescendantBounds(parentPanel);
+        //    //四捨五入しているけど、UselayoutRoundingをtrueにしていたら必要なさそう
+        //    bounds.Width = (int)(bounds.Width + 0.5);
+        //    bounds.Height = (int)(bounds.Height + 0.5);
+
+        //    using (DrawingContext context = dVisual.RenderOpen())
+        //    {
+        //        VisualBrush vBrush = new(el) { Stretch = Stretch.None };
+        //        //context.DrawRectangle(vBrush, null, new Rect(0, 0, bounds.Width, bounds.Height));
+        //        //context.DrawRectangle(vBrush, null, bounds);
+
+        //        context.DrawRectangle(vBrush, null, new Rect(bounds.Size));
+        //    }
+        //    RenderTargetBitmap bitmap
+        //        = new((int)bounds.Width, (int)bounds.Height, 96.0, 96.0, PixelFormats.Pbgra32);
+        //    bitmap.Render(dVisual);
+
+        //    //枠表示を元に戻す
+        //    TTWakuVisibleType = waku;
+
+        //    return bitmap;
+        //}
+
         #endregion 画像として取得
 
         #region クリップボード系
@@ -2089,7 +2138,7 @@ namespace Pixtack3rd
         #endregion 依存プロパティ
 
 
-        private readonly TextBlock MyTemplateElement;
+        //public readonly TextBlock MyTemplateElement;
 
         public TTTextBlock() : this(new Data(TType.TextBlock)) { }
 
@@ -2151,7 +2200,7 @@ namespace Pixtack3rd
         #endregion 依存プロパティ
 
 
-        private readonly HutaTextBox MyTemplateElement;
+        //public readonly HutaTextBox MyTemplateElement;
 
         public TTTextBox() : this(new Data(TType.TextBox)) { }
 
@@ -2213,11 +2262,11 @@ namespace Pixtack3rd
             MyTemplateElement.SetBinding(HutaTextBox.CaretBrushProperty, b);
 
             b = new(nameof(data.IsBold));
-            b.Converter = new ConverterFontWeightIsBold();            
+            b.Converter = new ConverterFontWeightIsBold();
             MyTemplateElement.SetBinding(FontWeightProperty, b);
-            
+
             b = new(nameof(data.IsItalic));
-            b.Converter = new ConverterFontStyleIsItalic();            
+            b.Converter = new ConverterFontStyleIsItalic();
             MyTemplateElement.SetBinding(FontStyleProperty, b);
 
 
@@ -2247,7 +2296,7 @@ namespace Pixtack3rd
     /// 編集可能状態を切り替えるTextBox、Gridの蓋の取り外しをIsEditプロパティで切り替える
     /// TTTextBoxのテンプレート用
     /// </summary>
-    class HutaTextBox : ContentControl
+    public class HutaTextBox : ContentControl
     {
         private readonly string HUTA = "huta";
         private readonly string TEXTBOX = "mytextbox";
@@ -2349,7 +2398,7 @@ namespace Pixtack3rd
 
     public class TTPolylineZ : TThumb
     {
-          #region 依存プロパティ
+        #region 依存プロパティ
 
         /// <summary>
         /// 終点のヘッドタイプ
@@ -2444,7 +2493,7 @@ namespace Pixtack3rd
 
         #endregion 依存プロパティ
 
-        private readonly PolylineZ MyTemplateElement;
+        //public readonly PolylineZ MyTemplateElement;
 
 
         public TTPolylineZ() : this(new Data(TType.Polyline)) { }
@@ -2460,11 +2509,19 @@ namespace Pixtack3rd
         private void MySetBinding()
         {
             //Points同士の連携はBindingより=(イコール)でしたほうが楽
-            //連携の方向は
-            //mydata <- this <- polyz、で右側がSource
-            //mydata <- this ここをイコール
-            //this < -polyz ここはBinding
-            Loaded += (a, b) => { Data.PointCollection = MyPoints; };
+            //連携の方向はXAMLとDataの優先順位で決める
+            //DataのPointCollectionとthisのPointCollectionの連携
+            if (Data.PointCollection.Count == 0)
+            {
+                //Data優先
+                Loaded += (a, b) => { Data.PointCollection = MyPoints; };
+            }
+            else
+            {
+                //XAML優先
+                Loaded += (a, b) => { MyPoints = Data.PointCollection; };
+            }
+            //thisのPointCollectionとTemplateのPolylineのPointCollectionの連携
             this.SetBinding(MyPointsProperty, new Binding() { Source = MyTemplateElement, Path = new PropertyPath(PolylineZ.MyPointsProperty) });
 
             ////以下だと値の更新はされるけど、見た目の更新がされない。
@@ -2475,7 +2532,7 @@ namespace Pixtack3rd
 
             //Bindingの方向、Dataの各プロパティは依存プロパティではないのでTargetにはできないので
             //mydata <- this や mydata <- polyz とかにはできない
-            //なのでできるのは以下の3種類
+            //なのでできるのは以下の3種類、target <- Source
             //polyz <- this & this <- mydata 今回はこれ
             //this <- polyz & polyz <- mydata
             //this <- mydata & polyz <- mydata
@@ -2498,10 +2555,11 @@ namespace Pixtack3rd
             this.SetBinding(HeadEndTypeProperty, nameof(Data.HeadEndType));
             this.SetBinding(HeadBeginTypeProperty, nameof(Data.HeadBeginType));
             this.SetBinding(HeadAngleProperty, nameof(Data.HeadAngle));
+
         }
     }
 
-    
+
     public class TTImage : TThumb
     {
         //画像ファイルのフルパス、変更時にコールバックでBitmapSourceを作成して表示する
@@ -2522,7 +2580,7 @@ namespace Pixtack3rd
             }
         }
 
-        private readonly Image MyTemplateElement;
+        //public readonly Image MyTemplateElement;
 
 
         public TTImage() : this(new Data(TType.Image)) { }
@@ -2555,7 +2613,7 @@ namespace Pixtack3rd
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            Thickness thickness=(Thickness)value;
+            Thickness thickness = (Thickness)value;
             return thickness.Top;
         }
     }
@@ -2589,7 +2647,7 @@ namespace Pixtack3rd
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            FontWeight weight=(FontWeight)value;
+            FontWeight weight = (FontWeight)value;
             return weight == FontWeights.Bold;
         }
     }
@@ -2651,11 +2709,11 @@ namespace Pixtack3rd
         {
             string name = (string)value;
             FontFamilyConverter ffc = new();
-            if(ffc.ConvertFromString(name) is FontFamily font)
+            if (ffc.ConvertFromString(name) is FontFamily font)
             {
                 return font;
             }
-            else { return Application.Current.MainWindow.FontFamily; }            
+            else { return Application.Current.MainWindow.FontFamily; }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
