@@ -704,6 +704,8 @@ namespace Pixtack3rd
         //クリック前の選択状態、クリックUp時の選択Thumb削除に使う
         private bool IsSelectedPreviewMouseDown { get; set; }
 
+
+
         #region コンストラクタ、初期化
 
         public TTRoot() : base(new Data(TType.Root))
@@ -1788,7 +1790,7 @@ namespace Pixtack3rd
             WakuVisibleType waku = TTWakuVisibleType;
             TTWakuVisibleType = WakuVisibleType.None;
             UpdateLayout();//再描画？これで枠が消える;
-            
+
             //Rect bounds = el.RenderTransform.TransformBounds(new Rect(el.RenderSize));
             Rect bounds = VisualTreeHelper.GetDescendantBounds(el);
             bounds = el.RenderTransform.TransformBounds(bounds);

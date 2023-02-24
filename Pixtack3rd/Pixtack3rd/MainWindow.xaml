@@ -267,11 +267,12 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
         </local:TTRoot>
         <!--</Grid>-->
       </ScrollViewer>
-      <Canvas x:Name="MyDrawCanvas" Visibility="Collapsed"
+      <Canvas x:Name="MyDrawCanvas" Visibility="Visible"
               Cursor="Cross" Background="Transparent">
         <!--<local:PolylineZ Canvas.Top="20" Canvas.Left="10"
           MyPoints="0,0 200,20" StrokeThickness="20" Stroke="Red" Fill="Red"
-                         HeadBeginType="Arrow" HeadEndType="Arrow" Angle="30"/>-->
+                         HeadBeginType="Arrow" HeadEndType="Arrow" Angle="30"/>
+        <ItemsControl x:Name="MyItemsControlForAnchor"/>-->
       </Canvas>
     </Grid>
     <TabControl Grid.Row="1" Grid.Column="0" x:Name="MyTabControl" TabStripPlacement="Top">

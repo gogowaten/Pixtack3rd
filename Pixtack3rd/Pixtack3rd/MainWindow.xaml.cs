@@ -71,11 +71,7 @@ namespace Pixtack3rd
             AppLastEndTimeDataFilePath = System.IO.Path.Combine(
                 Environment.CurrentDirectory, APP_LAST_END_TIME_FILE_NAME);
 
-            //DataContext = MyAppConfig;
-            //MyStackPanel.DataContext = MyAppConfig;
-            //MyWrap.DataContext = MyAppConfig;
-            //MyTab1App.DataContext = MyAppConfig;
-
+           
             AppVersion = GetAppVersion();
             MyInitialize();
 
@@ -207,7 +203,7 @@ namespace Pixtack3rd
             //ショートカットキー
             this.PreviewKeyDown += MainWindow_PreviewKeyDown;
 
-            //
+
         }
 
 
