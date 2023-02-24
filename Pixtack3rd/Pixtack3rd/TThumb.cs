@@ -2510,6 +2510,7 @@ namespace Pixtack3rd
         {
             //Points同士の連携はBindingより=(イコール)でしたほうが楽
             //連携の方向はXAMLとDataの優先順位で決める
+            //DataのPointCollectionとthisのPointCollectionの連携
             if (Data.PointCollection.Count == 0)
             {
                 //Data優先
@@ -2520,6 +2521,7 @@ namespace Pixtack3rd
                 //XAML優先
                 Loaded += (a, b) => { MyPoints = Data.PointCollection; };
             }
+            //thisのPointCollectionとTemplateのPolylineのPointCollectionの連携
             this.SetBinding(MyPointsProperty, new Binding() { Source = MyTemplateElement, Path = new PropertyPath(PolylineZ.MyPointsProperty) });
 
             ////以下だと値の更新はされるけど、見た目の更新がされない。

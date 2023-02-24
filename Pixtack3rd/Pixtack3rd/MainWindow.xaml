@@ -268,7 +268,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
         <!--</Grid>-->
       </ScrollViewer>
       <Canvas x:Name="MyDrawCanvas" Visibility="Visible"
-              Cursor="Cross" Background="Transparent">
+              Cursor="Cross" Background="Transparent" Margin="0,0,0,10">
         <!--<local:PolylineZ Canvas.Top="20" Canvas.Left="10"
           MyPoints="0,0 200,20" StrokeThickness="20" Stroke="Red" Fill="Red"
                          HeadBeginType="Arrow" HeadEndType="Arrow" Angle="30"/>

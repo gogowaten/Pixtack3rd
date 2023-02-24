@@ -13,6 +13,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -52,18 +53,19 @@ namespace Pixtack3rd
         private const string DATE_TIME_STRING_FORMAT = "yyyyMMdd'_'HHmmss'_'fff";
         private const string APP_ROOT_DATA_FILENAME = "TTRoot" + EXTENSION_NAME_DATA;
 
+        //マウスクリックでPolyline描画するときの一時的なもの
         private readonly PointCollection MyTempPoints = new();
         private Shape? MyTempShape;
+
+        //
+        private List<AnchorThumb> MyAnchoredThumbs { get; set; } = new();
+
         public MainWindow()
         {
             InitializeComponent();
-            FontFamily ff = this.FontFamily;
-            LanguageSpecificStringDictionary fff = ff.FamilyNames;
-            string fssou = ff.Source;
-            FontFamilyMapCollection fffmap = ff.FamilyMaps;
-            FamilyTypefaceCollection famtype = ff.FamilyTypefaces;
-            FontFamilyConverter ffc = new();
-
+            AnchorThumb at = new();
+            MyAnchoredThumbs.Add(at);
+            MyDrawCanvas.Children.Add(at);
 
             MyAppConfig = GetAppConfig(APP_CONFIG_FILE_NAME);
 
@@ -71,7 +73,7 @@ namespace Pixtack3rd
             AppLastEndTimeDataFilePath = System.IO.Path.Combine(
                 Environment.CurrentDirectory, APP_LAST_END_TIME_FILE_NAME);
 
-           
+
             AppVersion = GetAppVersion();
             MyInitialize();
 
@@ -91,14 +93,18 @@ namespace Pixtack3rd
             //{
             //    var neko = b.Source;
             //};
+
+            // マウスクリックでPolyline描画
             MyDrawCanvas.MouseLeftButtonDown += MyDrawCanvas_MouseLeftButtonDown;
             MyDrawCanvas.MouseMove += MyDrawCanvas_MouseMove;
             MyDrawCanvas.MouseRightButtonDown += MyDrawCanvas_MouseRightButtonDown;
 
         }
 
+        #region マウスクリックでPolyline描画
+
         private void MyDrawCanvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
-        {            
+        {
             Data data = new(TType.Polyline)
             {
                 HeadAngle = 30,
@@ -109,12 +115,12 @@ namespace Pixtack3rd
                 HeadEndType = HeadType.Arrow,
             };
             FixTopLeftPointCollectionData(data);
-            MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper,false);
+            MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper, false);
             MyTempShape = null;
             MyDrawCanvas.Children.Clear();
             MyDrawCanvas.Visibility = Visibility.Collapsed;
             MyTabControl.IsEnabled = true;
-            
+
         }
         private void FixTopLeftPointCollectionData(Data data)
         {
@@ -123,12 +129,12 @@ namespace Pixtack3rd
             double y = double.MaxValue;
             foreach (var item in points)
             {
-                if(x>item.X) x = item.X;
-                if(y>item.Y) y = item.Y;
+                if (x > item.X) x = item.X;
+                if (y > item.Y) y = item.Y;
             }
             for (int i = 0; i < points.Count; i++)
             {
-                points[i]=new Point(points[i].X - x, points[i].Y-y);
+                points[i] = new Point(points[i].X - x, points[i].Y - y);
             }
             data.X = x; data.Y = y;
         }
@@ -154,7 +160,7 @@ namespace Pixtack3rd
             }
 
         }
-
+        #endregion マウスクリックでPolyline描画
 
         #region 初期設定
         /// <summary>
