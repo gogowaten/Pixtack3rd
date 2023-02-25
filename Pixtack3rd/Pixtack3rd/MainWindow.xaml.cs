@@ -19,6 +19,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Xml;
+using System.Windows.Controls.Primitives;
 
 namespace Pixtack3rd
 {
@@ -63,9 +64,6 @@ namespace Pixtack3rd
         public MainWindow()
         {
             InitializeComponent();
-            AnchorThumb at = new();
-            MyAnchoredThumbs.Add(at);
-            MyDrawCanvas.Children.Add(at);
 
             MyAppConfig = GetAppConfig(APP_CONFIG_FILE_NAME);
 
@@ -102,29 +100,63 @@ namespace Pixtack3rd
         }
 
         #region マウスクリックでPolyline描画
-
-        private void MyDrawCanvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        /// <summary>
+        /// マウスクリックでPolyline描画開始
+        /// </summary>
+        private void DrawPolylineFromClick()
         {
-            Data data = new(TType.Polyline)
+            MyTabControl.IsEnabled = false;
+            MyDrawCanvas.Visibility = Visibility.Visible;
+
+            MyTempPoints.Clear();
+            PolylineZ polyZ = new()
             {
-                HeadAngle = 30,
+                Angle = 30,
+                Fill = Brushes.OliveDrab,
                 Stroke = Brushes.OliveDrab,
                 StrokeThickness = 10,
-                Fill = Brushes.OliveDrab,
-                PointCollection = new(MyTempPoints),
                 HeadEndType = HeadType.Arrow,
+                MyPoints = MyTempPoints,
             };
-            FixTopLeftPointCollectionData(data);
-            MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper, false);
+
+            MyTempShape = polyZ;
+            MyDrawCanvas.Children.Add(MyTempShape);
+        }
+
+        //右クリックで終了
+        private void MyDrawCanvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            //MyTempPointsからData作成してRootに追加
+            if (MyTempPoints.Count >= 2)
+            {
+                Data data = new(TType.Polyline)
+                {
+                    HeadAngle = 30,
+                    Stroke = Brushes.OliveDrab,
+                    StrokeThickness = 10,
+                    Fill = Brushes.OliveDrab,
+                    PointCollection = new(MyTempPoints),
+                    HeadEndType = HeadType.Arrow,
+                };
+                FixTopLeftPointCollectionData(data);
+                MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper, false);
+            }
+            //後片付け
             MyTempShape = null;
             MyDrawCanvas.Children.Clear();
             MyDrawCanvas.Visibility = Visibility.Collapsed;
             MyTabControl.IsEnabled = true;
 
         }
+
+        /// <summary>
+        /// DrawCanvas上の座標と追加する位置の差を修正する＆追加位置の決定
+        /// </summary>
+        /// <param name="data"></param>
         private void FixTopLeftPointCollectionData(Data data)
         {
             PointCollection points = data.PointCollection;
+            //左上座標を計算
             double x = double.MaxValue;
             double y = double.MaxValue;
             foreach (var item in points)
@@ -132,10 +164,12 @@ namespace Pixtack3rd
                 if (x > item.X) x = item.X;
                 if (y > item.Y) y = item.Y;
             }
+            //修正
             for (int i = 0; i < points.Count; i++)
             {
                 points[i] = new Point(points[i].X - x, points[i].Y - y);
             }
+            //決定
             data.X = x; data.Y = y;
         }
 
@@ -2004,31 +2038,66 @@ namespace Pixtack3rd
 
         private void ButtonTest_Click(object sender, RoutedEventArgs e)
         {
-            DrawPolylineFromClick();
-        }
-        private void DrawPolylineFromClick()
-        {
-            MyTabControl.IsEnabled = false;
-            MyDrawCanvas.Visibility = Visibility.Visible;
-
-            MyTempPoints.Clear();
-            PolylineZ polyZ = new()
+            //MyTabControl.IsEnabled = false;
+            MyAnchorPointEditCanvas.Cursor = Cursors.Hand;
+            MyAnchorPointEditCanvas.Visibility = Visibility.Visible;
+            if (MyRoot.ClickedThumb is TTPolylineZ pt)
             {
-                Angle = 30,
-                Fill = Brushes.OliveDrab,
-                Stroke = Brushes.OliveDrab,
-                StrokeThickness = 10,
-                HeadEndType = HeadType.Arrow,
-                MyPoints = MyTempPoints,
-            };
-
-            //data.PointCollection.Add(new Point(100, 100));
-            //data.PointCollection.Add(new Point(200, 200));
-
-            MyTempShape = polyZ;
-            MyDrawCanvas.Children.Add(MyTempShape);
+                foreach (var item in pt.MyPoints)
+                {
+                    Point fixP = new(item.X + pt.TTLeft, item.Y + pt.TTTop);
+                    AnchorThumb at = new(fixP);
+                    at.DragDelta += At_DragDelta;
+                    at.DragCompleted += At_DragCompleted;
+                    MyAnchoredThumbs.Add(at);
+                    MyAnchorPointEditCanvas.Children.Add(at);
+                }
+            }
         }
 
+        private void At_DragCompleted(object sender, DragCompletedEventArgs e)
+        {
+            if (sender is AnchorThumb at && MyRoot.ClickedThumb is TTPolylineZ poly)
+            {
+
+                double x = double.MaxValue;
+                double y = double.MaxValue;
+                foreach (var item in poly.MyPoints)
+                {
+                    if (x > item.X) { x = item.X; }
+                    if (y > item.Y) { y = item.Y; }
+                }
+                for (int i = 0; i < poly.MyPoints.Count; i++)
+                {
+                    poly.MyPoints[i]=new Point(poly.MyPoints[i].X - x, poly.MyPoints[i].Y-y);
+                }
+                poly.TTLeft += x;
+                poly.TTTop += y;
+            }
+        }
+
+        private void At_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+            if (sender is AnchorThumb at)
+            {
+                at.X += e.HorizontalChange;
+                at.Y += e.VerticalChange;
+                if (MyRoot.ClickedThumb is TTPolylineZ pt)
+                {
+                    int ii = MyAnchoredThumbs.IndexOf(at);
+                    pt.MyPoints[ii] = new Point(at.X - pt.TTLeft, at.Y - pt.TTTop);
+                }
+            }
+        }
+
+        private void ButtonTest2_Click(object sender, RoutedEventArgs e)
+        {
+            MyAnchorPointEditCanvas.Cursor = Cursors.Arrow;
+            MyAnchorPointEditCanvas.Visibility = Visibility.Collapsed;
+            MyAnchoredThumbs.Clear();
+            MyAnchorPointEditCanvas.Children.Clear();
+
+        }
         private void GroupBox_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             if (e.Delta > 0)
@@ -2102,6 +2171,13 @@ namespace Pixtack3rd
 
             MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
         }
+
+        //TestDrawPolyline
+        private void ButtonTestDrawPolyline_Click(object sender, RoutedEventArgs e)
+        {
+            DrawPolylineFromClick();
+        }
+
     }
 
 

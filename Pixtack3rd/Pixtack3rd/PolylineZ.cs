@@ -91,41 +91,7 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.AffectsMeasure));
 
         #endregion 依存プロパティ
-        protected override Size MeasureOverride(Size constraint)
-        {
-            //var draw = VisualTreeHelper.GetDrawing(this);
-            //var drect = this.RenderSize;
-            //var degeo = this.DefiningGeometry;
-            //var wideeo = degeo.GetWidenedPathGeometry(new Pen(Brushes.Red, this.StrokeThickness));
-            //var wrect = wideeo.Bounds;
-            //var renrect = wideeo.GetRenderBounds(null);
-            //return base.MeasureOverride(wrect.Size);
-
-            return base.MeasureOverride(constraint);
-        }
-        protected override Size ArrangeOverride(Size finalSize)
-        {
-            //var draw = VisualTreeHelper.GetDrawing(this);
-            //var drect = this.RenderSize;
-            //var degeo = this.DefiningGeometry;
-            //var wideeo = degeo.GetWidenedPathGeometry(new Pen(Brushes.Red, this.StrokeThickness));
-            //var wrect = wideeo.Bounds;
-            //var renrect = wideeo.GetRenderBounds(null);
-            //return base.ArrangeOverride(wrect.Size);
-
-            return base.ArrangeOverride(finalSize);
-        }
-        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
-        {
-            base.OnRenderSizeChanged(sizeInfo);
-            var draw = VisualTreeHelper.GetDrawing(this);
-            var drect = this.RenderSize;
-            var degeo = this.DefiningGeometry;
-            var wideeo = degeo.GetWidenedPathGeometry(new Pen(Brushes.Red, this.StrokeThickness));
-            var wrect = wideeo.Bounds;
-            var renrect = wideeo.GetRenderBounds(null);
-
-        }
+       
         private static double DegreeToRadian(double degree)
         {
             return degree / 360.0 * (Math.PI * 2.0);
@@ -177,10 +143,6 @@ namespace Pixtack3rd
                     DrawLine(context, begin, end);
                 }
                 geometry.Freeze();
-                var drect = VisualTreeHelper.GetDrawing(this);
-                var goe = geometry.Bounds;
-                var neko = geometry.GetRenderBounds(null);
-
                 return geometry;
             }
         }
