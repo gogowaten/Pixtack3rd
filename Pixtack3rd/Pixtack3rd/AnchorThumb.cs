@@ -9,29 +9,58 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Windows.Data;
 
 namespace Pixtack3rd
 {
     public class AnchorThumb : Thumb
     {
+
+        public double X
+        {
+            get { return (double)GetValue(XProperty); }
+            set { SetValue(XProperty, value); }
+        }
+        public static readonly DependencyProperty XProperty =
+            DependencyProperty.Register(nameof(X), typeof(double), typeof(AnchorThumb),
+                new FrameworkPropertyMetadata(0.0,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public double Y
+        {
+            get { return (double)GetValue(YProperty); }
+            set { SetValue(YProperty, value); }
+        }
+        public static readonly DependencyProperty YProperty =
+            DependencyProperty.Register(nameof(Y), typeof(double), typeof(AnchorThumb),
+                new FrameworkPropertyMetadata(0.0,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure|
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
         public Rectangle MyTemplateElement { get; private set; }
-        private Point MyPoint;
+        //public Point MyPoint;
         public AnchorThumb(Point point)
         {
+            DataContext = this;
             MyTemplateElement = SetTemplate();
-            Canvas.SetLeft(this, point.X);
-            Canvas.SetTop(this, point.Y);
+            SetBinding(Canvas.LeftProperty, nameof(X));
+            SetBinding(Canvas.TopProperty, nameof(Y));
+            X = point.X;
+            Y = point.Y;
             Width = 20;
             Height = 20;
-            DragDelta += AnchorThumb_DragDelta;
+            //DragDelta += AnchorThumb_DragDelta;
         }
 
         private void AnchorThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
             if (sender is AnchorThumb at)
             {
-                Canvas.SetLeft(at, Canvas.GetLeft(at) + e.HorizontalChange);
-                Canvas.SetTop(at, Canvas.GetTop(at) + e.VerticalChange);
+                X += e.HorizontalChange;
+                Y += e.VerticalChange;
             }
         }
 
