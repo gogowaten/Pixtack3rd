@@ -255,10 +255,10 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             TTText="TextBox" TTLeft="152" TTTop="152" FontSize="30"/>-->
           <local:TTTextBox x:Name="MyTextBox1" BorderBrush="Red" BorderThickness="2"
             TTText="TextBox" TTLeft="152" TTTop="160" FontSize="30"/>
-          <local:TTPolylineZ x:Name="MyPolylineZ" TTLeft="200" TTTop="0"
+          <!--<local:TTPolylineZ x:Name="MyPolylineZ" TTLeft="200" TTTop="0"
                            MyPoints="0,0 0,100" StrokeThickness="30" HeadAngle="30"
                            HeadBeginType="None" HeadEndType="None"
-                           Stroke="OliveDrab" TTFill="OliveDrab"/>
+                           Stroke="OliveDrab" TTFill="OliveDrab"/>-->
           <local:TTPolylineZ x:Name="MyPolylineZ2" TTLeft="200" TTTop="20"
                            MyPoints="30,0 200,20 100,50" StrokeThickness="10" HeadAngle="30"
                            HeadBeginType="Arrow" HeadEndType="Arrow"
@@ -267,13 +267,22 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
         </local:TTRoot>
         <!--</Grid>-->
       </ScrollViewer>
+      <Canvas>
       <Canvas Grid.Row="1" Grid.Column="1"
               x:Name="MyDrawCanvas" Visibility="Collapsed"
               Cursor="Cross" Background="Transparent">
       </Canvas>
       <Canvas Grid.Row="1" Grid.Column="1"
               x:Name="MyAnchorPointEditCanvas" Visibility="Collapsed"
-              Background="Transparent"/>
+              Background="Transparent">
+        <Canvas.ContextMenu>
+          <ContextMenu>
+            <MenuItem x:Name="ContextAddAnchor" Header="中間点追加" Click="ContextAddAnchor_Click"/>
+            <MenuItem x:Name="ContextAddAnchorExtend" Header="端点追加" Click="ContextAddAnchorExtend_Click"/>
+          </ContextMenu>
+        </Canvas.ContextMenu>
+        </Canvas>
+      </Canvas>
     </Grid>
     <TabControl Grid.Row="1" Grid.Column="0" x:Name="MyTabControl" TabStripPlacement="Top">
 
@@ -289,6 +298,9 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <ComboBox x:Name="ComboBoxSaveFileType" SelectedItem="{Binding ImageType}"/>
             <Button x:Name="ButtonTest" Content="test!!!!!!!!!!" Click="ButtonTest_Click"/>
             <Button x:Name="ButtonTest2" Content="test2" Click="ButtonTest2_Click"/>
+            <Button x:Name="ButtonTestDrawPolyline" Content="TestPolyline" Click="ButtonTestDrawPolyline_Click"/>
+            <Button x:Name="ButtonStartEditAnchor" Content="頂点編集開始" Click="ButtonStartEditAnchor_Click"/>
+            <Button x:Name="ButtonEndEditAnchor" Content="頂点編集終了" Click="ButtonEndEditAnchor_Click"/>
             <GroupBox Header="画像ファイルとして保存">
               <WrapPanel>
                 <Button x:Name="ButtonSaveToImage" Content="Root" Click="ButtonSaveToImage_Click"/>
@@ -385,7 +397,6 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               </UniformGrid>
             </GroupBox>-->
 
-            <Button x:Name="ButtonTestDrawPolyline" Content="TestPolyline" Click="ButtonTestDrawPolyline_Click"/>
           </StackPanel>
         </StackPanel>
       </TabItem>

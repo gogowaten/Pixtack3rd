@@ -20,6 +20,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Xml;
 using System.Windows.Controls.Primitives;
+using System.Reflection;
 
 namespace Pixtack3rd
 {
@@ -89,7 +90,7 @@ namespace Pixtack3rd
             //Data dataImg2 = new(TType.Image) { BitmapSource = TTRoot.GetBitmap(imagePath1), X = 100, Y = 100 };
             //MyTextBox1.KeyDown += (a, b) =>
             //{
-            //    var neko = b.Source;
+            //    var maiX = b.Source;
             //};
 
             // マウスクリックでPolyline描画
@@ -107,8 +108,8 @@ namespace Pixtack3rd
         {
             MyTabControl.IsEnabled = false;
             MyDrawCanvas.Visibility = Visibility.Visible;
-
             MyTempPoints.Clear();
+
             PolylineZ polyZ = new()
             {
                 Angle = 30,
@@ -180,9 +181,15 @@ namespace Pixtack3rd
             MyTempPoints[^1] = pp;
         }
 
+        /// <summary>
+        /// 左クリックで頂点追加
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MyDrawCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             Point pp = Mouse.GetPosition(MyDrawCanvas);
+            //最初だけは同時に2点追加
             if (MyTempPoints.Count == 0)
             {
                 MyTempPoints.Add(pp);
@@ -2039,44 +2046,146 @@ namespace Pixtack3rd
         private void ButtonTest_Click(object sender, RoutedEventArgs e)
         {
             //MyTabControl.IsEnabled = false;
-            MyAnchorPointEditCanvas.Cursor = Cursors.Hand;
-            MyAnchorPointEditCanvas.Visibility = Visibility.Visible;
-            if (MyRoot.ClickedThumb is TTPolylineZ pt)
+
+        }
+        #region 図形のアンカーポイント編集開始、終了
+
+        private void ContextAddAnchor_Click(object sender, RoutedEventArgs e)
+        {
+            if (MyRoot.ClickedThumb is TThumb tShape)
             {
-                foreach (var item in pt.MyPoints)
+                Point thumbMP = Mouse.GetPosition(tShape);
+                Point canvasMP = Mouse.GetPosition(MyAnchorPointEditCanvas);
+
+                AnchorThumb anchor = new(canvasMP);
+                anchor.DragDelta += AnchorThumb_DragDelta;
+                anchor.DragCompleted += AnchorThumb_DragCompleted;
+
+                double beginD = TwoPointDistance(tShape.Data.PointCollection[0], thumbMP);
+                double endD = TwoPointDistance(tShape.Data.PointCollection[^1], thumbMP);
+                if (beginD > endD)
                 {
-                    Point fixP = new(item.X + pt.TTLeft, item.Y + pt.TTTop);
+                    tShape.Data.PointCollection.Add(thumbMP);//頂点追加
+                    MyAnchoredThumbs.Add(anchor);//アンカーThumb追加
+                    MyAnchorPointEditCanvas.Children.Add(anchor);//アンカーThumb追加
+                }
+                else
+                {
+                    tShape.Data.PointCollection.Insert(0, thumbMP);
+                    MyAnchoredThumbs.Insert(0, anchor);//アンカーThumb追加
+                    MyAnchorPointEditCanvas.Children.Insert(0, anchor);//アンカーThumb追加
+                }
+
+
+
+            }
+        }
+        public double TwoPointDistance(Point p1, Point p2)
+        {
+            return Math.Sqrt((p2.X - p1.X) * (p2.X - p1.X) + (p2.Y - p1.Y) * (p2.Y - p2.Y));
+        }
+        private void ContextAddAnchorExtend_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void ButtonStartEditAnchor_Click(object sender, RoutedEventArgs e)
+        {
+            EditStartAnchor();
+        }
+
+        private void ButtonEndEditAnchor_Click(object sender, RoutedEventArgs e)
+        {
+            EditEndAnchor();
+        }
+        //アンカーポイントの編集開始
+        private void EditStartAnchor()
+        {
+            if (MyRoot.ClickedThumb is TTPolylineZ thumb)
+            {
+                MyAnchorPointEditCanvas.Cursor = Cursors.Hand;
+                MyAnchorPointEditCanvas.Visibility = Visibility.Visible;
+                //AnchorThumb作成、表示
+                //Anchorの座標はThumb座標 + Point座標
+                foreach (var item in thumb.MyPoints)
+                {
+                    Point fixP = new(item.X + thumb.TTLeft, item.Y + thumb.TTTop);
                     AnchorThumb at = new(fixP);
-                    at.DragDelta += At_DragDelta;
-                    at.DragCompleted += At_DragCompleted;
+                    at.DragDelta += AnchorThumb_DragDelta;
+                    at.DragCompleted += AnchorThumb_DragCompleted;
                     MyAnchoredThumbs.Add(at);
                     MyAnchorPointEditCanvas.Children.Add(at);
                 }
+                MyAnchorPointEditCanvas.DataContext = thumb;
+                MyAnchorPointEditCanvas.SetBinding(WidthProperty, new Binding() { Path = new PropertyPath(ActualWidthProperty) });
+                MyAnchorPointEditCanvas.SetBinding(HeightProperty, new Binding() { Path = new PropertyPath(ActualHeightProperty) });
+                MyAnchorPointEditCanvas.SetBinding(Canvas.LeftProperty, new Binding() { Path = new PropertyPath(TThumb.TTLeftProperty) });
+                MyAnchorPointEditCanvas.SetBinding(Canvas.TopProperty, new Binding() { Path = new PropertyPath(TThumb.TTTopProperty) });
+                MyAnchorPointEditCanvas.Background = new SolidColorBrush(Color.FromArgb(100, 0, 0, 0));
             }
         }
 
-        private void At_DragCompleted(object sender, DragCompletedEventArgs e)
+        //アンカーポイントの編集終了
+        private void EditEndAnchor()
         {
-            if (sender is AnchorThumb at && MyRoot.ClickedThumb is TTPolylineZ poly)
-            {
+            MyAnchorPointEditCanvas.Cursor = Cursors.Arrow;
+            MyAnchorPointEditCanvas.Visibility = Visibility.Collapsed;
+            MyAnchoredThumbs.Clear();
+            MyAnchorPointEditCanvas.Children.Clear();
 
-                double x = double.MaxValue;
-                double y = double.MaxValue;
-                foreach (var item in poly.MyPoints)
-                {
-                    if (x > item.X) { x = item.X; }
-                    if (y > item.Y) { y = item.Y; }
-                }
-                for (int i = 0; i < poly.MyPoints.Count; i++)
-                {
-                    poly.MyPoints[i]=new Point(poly.MyPoints[i].X - x, poly.MyPoints[i].Y-y);
-                }
-                poly.TTLeft += x;
-                poly.TTTop += y;
-            }
         }
+        //アンカーポイント移動後、マイナス座標を修正
+        private void AnchorThumb_DragCompleted(object sender, DragCompletedEventArgs e)
+        {
+            FixAnchorPoint(MyRoot.ClickedThumb?.Data);
+            //if (sender is AnchorThumb thumb)
+            //{
+            //    var maiX = thumb.X;
+            //    var maiY = thumb.Y;
+            //    if (maiX < 0)
+            //    {
+            //        foreach (var item in MyAnchoredThumbs)
+            //        {
+            //            item.X -= maiX;
+            //        }
+            //    }
+            //    if (maiY < 0)
+            //    {
+            //        foreach (var item in MyAnchoredThumbs)
+            //        {
+            //            item.Y -= maiY;
+            //        }
+            //    }
+            //}
+        }
+        private void FixAnchorPoint(Data? thumbData)
+        {
+            if (thumbData == null) return;
+            double x = double.MaxValue;
+            double y = double.MaxValue;
+            foreach (var item in thumbData.PointCollection)
+            {
+                if (x > item.X) { x = item.X; }
+                if (y > item.Y) { y = item.Y; }
+            }
+            for (int i = 0; i < thumbData.PointCollection.Count; i++)
+            {
+                thumbData.PointCollection[i]
+                    = new Point(
+                        thumbData.PointCollection[i].X - x,
+                        thumbData.PointCollection[i].Y - y);
+            }
+            thumbData.X += x;
+            thumbData.Y += y;
 
-        private void At_DragDelta(object sender, DragDeltaEventArgs e)
+            //for (int i = 0; i < MyAnchoredThumbs.Count; i++)
+            //{
+            //    MyAnchoredThumbs[i].X = thumbData.X + thumbData.PointCollection[i].X;
+            //    MyAnchoredThumbs[i].Y = thumbData.Y + thumbData.PointCollection[i].Y;
+            //}
+        }
+        //アンカーポイント移動、対象Pointの更新
+        private void AnchorThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
             if (sender is AnchorThumb at)
             {
@@ -2089,13 +2198,10 @@ namespace Pixtack3rd
                 }
             }
         }
+        #endregion 図形のアンカーポイント編集開始、終了
 
         private void ButtonTest2_Click(object sender, RoutedEventArgs e)
         {
-            MyAnchorPointEditCanvas.Cursor = Cursors.Arrow;
-            MyAnchorPointEditCanvas.Visibility = Visibility.Collapsed;
-            MyAnchoredThumbs.Clear();
-            MyAnchorPointEditCanvas.Children.Clear();
 
         }
         private void GroupBox_MouseWheel(object sender, MouseWheelEventArgs e)
