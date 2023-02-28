@@ -263,7 +263,8 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                            MyPoints="30,0 200,20 100,50" StrokeThickness="10" HeadAngle="30"
                            HeadBeginType="Arrow" HeadEndType="Arrow"
                            Stroke="Crimson" TTFill="Crimson"/>
-
+          <local:TTPolyline2 x:Name="MyPolyline2" MyPoints="0,0 100,30" TTLeft="100" TTTop="50"
+                             />
         </local:TTRoot>
         <!--</Grid>-->
       </ScrollViewer>
@@ -301,6 +302,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <Button x:Name="ButtonTestDrawPolyline" Content="TestPolyline" Click="ButtonTestDrawPolyline_Click"/>
             <Button x:Name="ButtonStartEditAnchor" Content="頂点編集開始" Click="ButtonStartEditAnchor_Click"/>
             <Button x:Name="ButtonEndEditAnchor" Content="頂点編集終了" Click="ButtonEndEditAnchor_Click"/>
+            
             <GroupBox Header="画像ファイルとして保存">
               <WrapPanel>
                 <Button x:Name="ButtonSaveToImage" Content="Root" Click="ButtonSaveToImage_Click"/>

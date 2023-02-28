@@ -14,7 +14,7 @@ using System.Windows.Media.Imaging;
 
 namespace Pixtack3rd
 {
-    public enum TType { None = 0, Root, Group, TextBlock, TextBox, Image, Rectangle, Polyline }
+    public enum TType { None = 0, Root, Group, TextBlock, TextBox, Image, Rectangle, Polyline,Polyline2 }
 
 
 

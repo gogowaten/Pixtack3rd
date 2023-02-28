@@ -652,16 +652,16 @@ namespace Pixtack3rd
         //        try
         //        {
         //            //BMP
-        //            DataObject data = new();
-        //            data.SetData(typeof(BitmapSource), bitmap);
+        //            DataObject tData = new();
+        //            tData.SetData(typeof(BitmapSource), bitmap);
         //            //PNG
         //            PngBitmapEncoder enc = new();
         //            enc.Frames.Add(BitmapFrame.Create(bitmap));
         //            using var ms = new System.IO.MemoryStream();
         //            enc.Save(ms);
-        //            data.SetData("PNG", ms);
+        //            tData.SetData("PNG", ms);
 
-        //            Clipboard.SetDataObject(data, true);//true必須
+        //            Clipboard.SetDataObject(tData, true);//true必須
         //            isSuccess = true;
 
         //            ////コピーだけのときは連番に加算
@@ -924,8 +924,8 @@ namespace Pixtack3rd
                     break;
                 case ImageType.gif:
                     data = new BitmapMetadata("Gif");
-                    //data.SetQuery("/xmp/xmp:CreatorTool", "Pixtrim2");
-                    //data.SetQuery("/XMP/XMP:CreatorTool", "Pixtrim2");
+                    //tData.SetQuery("/xmp/xmp:CreatorTool", "Pixtrim2");
+                    //tData.SetQuery("/XMP/XMP:CreatorTool", "Pixtrim2");
                     data.SetQuery("/XMP/XMP:CreatorTool", software);
                     break;
                 case ImageType.tiff:
@@ -960,8 +960,8 @@ namespace Pixtack3rd
                     break;
                 case 4:
                     data = new BitmapMetadata("Gif");
-                    //data.SetQuery("/xmp/xmp:CreatorTool", "Pixtrim2");
-                    //data.SetQuery("/XMP/XMP:CreatorTool", "Pixtrim2");
+                    //tData.SetQuery("/xmp/xmp:CreatorTool", "Pixtrim2");
+                    //tData.SetQuery("/XMP/XMP:CreatorTool", "Pixtrim2");
                     data.SetQuery("/XMP/XMP:CreatorTool", software);
                     break;
                 case 5:
@@ -1026,8 +1026,8 @@ namespace Pixtack3rd
                     return (new BmpBitmapEncoder(), meta);
                 case 4:
                     meta = new BitmapMetadata("Gif");
-                    //data.SetQuery("/xmp/xmp:CreatorTool", "Pixtrim2");
-                    //data.SetQuery("/XMP/XMP:CreatorTool", "Pixtrim2");
+                    //tData.SetQuery("/xmp/xmp:CreatorTool", "Pixtrim2");
+                    //tData.SetQuery("/XMP/XMP:CreatorTool", "Pixtrim2");
                     meta.SetQuery("/XMP/XMP:CreatorTool", software);
 
                     return (new GifBitmapEncoder(), meta);
@@ -1144,10 +1144,10 @@ namespace Pixtack3rd
         //    MyNumericUpDownFileNameSerial.MyValue += MyNumericUpDownFileNameSerialIncreace.MyValue;
         //}
 
-        //private bool SaveBitmapFromThumb(TThumb? thumb)
+        //private bool SaveBitmapFromThumb(TThumb? anchor)
         //{
-        //    if (thumb == null) return false;
-        //    if (MyRoot.GetBitmap(thumb) is BitmapSource bitmap)
+        //    if (anchor == null) return false;
+        //    if (MyRoot.GetBitmap(anchor) is BitmapSource bitmap)
         //    {
 
         //        Microsoft.Win32.SaveFileDialog dialog = new()
@@ -1653,10 +1653,10 @@ namespace Pixtack3rd
         ////前回終了時を読み込み
         //private void ButtonLoadLastEndTime_Click(object sender, RoutedEventArgs e)
         //{
-        //    (Data? data, AppConfig? config) = LoadDataFromFile(AppLastEndTimeDataFilePath);
-        //    if (data is not null)
+        //    (Data? tData, AppConfig? config) = LoadDataFromFile(AppLastEndTimeDataFilePath);
+        //    if (tData is not null)
         //    {
-        //        MyRoot.SetRootData(data);
+        //        MyRoot.SetRootData(tData);
         //    }
         //    if (config is not null)
         //    {
@@ -2101,47 +2101,121 @@ namespace Pixtack3rd
         //アンカーポイントの編集開始
         private void EditStartAnchor()
         {
-            if (MyRoot.ClickedThumb is TTPolylineZ thumb)
+            if (MyRoot.ClickedThumb is TTPolyline2 thumb)
             {
-                MyAnchorPointEditCanvas.Cursor = Cursors.Hand;
-                MyAnchorPointEditCanvas.Visibility = Visibility.Visible;
-                //AnchorThumb作成、表示
-                //Anchorの座標はThumb座標 + Point座標
-                foreach (var item in thumb.MyPoints)
-                {
-                    Point fixP = new(item.X + thumb.TTLeft, item.Y + thumb.TTTop);
-                    AnchorThumb at = new(fixP);
-                    at.DragDelta += AnchorThumb_DragDelta;
-                    at.DragCompleted += AnchorThumb_DragCompleted;
-                    MyAnchoredThumbs.Add(at);
-                    MyAnchorPointEditCanvas.Children.Add(at);
-                }
-                MyAnchorPointEditCanvas.DataContext = thumb;
-                MyAnchorPointEditCanvas.SetBinding(WidthProperty, new Binding() { Path = new PropertyPath(ActualWidthProperty) });
-                MyAnchorPointEditCanvas.SetBinding(HeightProperty, new Binding() { Path = new PropertyPath(ActualHeightProperty) });
-                MyAnchorPointEditCanvas.SetBinding(Canvas.LeftProperty, new Binding() { Path = new PropertyPath(TThumb.TTLeftProperty) });
-                MyAnchorPointEditCanvas.SetBinding(Canvas.TopProperty, new Binding() { Path = new PropertyPath(TThumb.TTTopProperty) });
-                MyAnchorPointEditCanvas.Background = new SolidColorBrush(Color.FromArgb(100, 0, 0, 0));
+                //MyAnchorPointEditCanvas.Cursor = Cursors.Hand;
+                //MyAnchorPointEditCanvas.Visibility = Visibility.Visible;
+                thumb.MyAnchorVisible = Visibility.Visible;
+                
             }
         }
+        ////アンカーポイントの編集開始
+        //private void EditStartAnchor()
+        //{
+        //    if (MyRoot.ClickedThumb is TTPolylineZ thumb)
+        //    {
+        //        MyAnchorPointEditCanvas.Cursor = Cursors.Hand;
+        //        MyAnchorPointEditCanvas.Visibility = Visibility.Visible;
+        //        //AnchorThumb作成、表示
+        //        //Anchorの座標はThumb座標 + Point座標
+        //        foreach (var item in thumb.MyPoints)
+        //        {
+        //            //Point fixP = new(item.X + anchor.TTLeft, item.Y + anchor.TTTop);
+        //            //AnchorThumb anchor = new(fixP);
+        //            AnchorThumb at = new(item);
+        //            at.DragDelta += AnchorThumb_DragDelta;
+        //            at.DragCompleted += AnchorThumb_DragCompleted;
+        //            MyAnchoredThumbs.Add(at);
+        //            MyAnchorPointEditCanvas.Children.Add(at);
+        //        }
+        //        MyAnchorPointEditCanvas.DataContext = thumb;
+        //        MyAnchorPointEditCanvas.SetBinding(WidthProperty, new Binding() { Path = new PropertyPath(ActualWidthProperty) });
+        //        MyAnchorPointEditCanvas.SetBinding(HeightProperty, new Binding() { Path = new PropertyPath(ActualHeightProperty) });
+        //        MyAnchorPointEditCanvas.SetBinding(Canvas.LeftProperty, new Binding() { Path = new PropertyPath(TThumb.TTLeftProperty) });
+        //        MyAnchorPointEditCanvas.SetBinding(Canvas.TopProperty, new Binding() { Path = new PropertyPath(TThumb.TTTopProperty) });
+        //        MyAnchorPointEditCanvas.Background = new SolidColorBrush(Color.FromArgb(100, 0, 0, 0));
+        //    }
+        //}
 
         //アンカーポイントの編集終了
         private void EditEndAnchor()
         {
-            MyAnchorPointEditCanvas.Cursor = Cursors.Arrow;
-            MyAnchorPointEditCanvas.Visibility = Visibility.Collapsed;
-            MyAnchoredThumbs.Clear();
-            MyAnchorPointEditCanvas.Children.Clear();
-
+            if(MyRoot.ClickedThumb is TTPolyline2 thumb)
+            {
+                thumb.MyAnchorVisible = Visibility.Collapsed;
+            }
         }
+        //private void EditEndAnchor()
+        //{
+        //    MyAnchorPointEditCanvas.Cursor = Cursors.Arrow;
+        //    MyAnchorPointEditCanvas.Visibility = Visibility.Collapsed;
+        //    MyAnchoredThumbs.Clear();
+        //    MyAnchorPointEditCanvas.Children.Clear();
+
+        //}
+        
+        //アンカーポイント移動中、対象Pointの更新
+        private void AnchorThumb_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+            if (sender is AnchorThumb anchor && MyRoot.ClickedThumb?.Data is Data tData)
+            {
+                double x = anchor.X + e.HorizontalChange;
+                double y = anchor.Y + e.VerticalChange;
+                if (x < 0 || y < 0)
+                {
+                    if (x < 0)
+                    {
+                        tData.X += x;
+                        anchor.X = x;
+                        foreach (var item in MyAnchoredThumbs)
+                        {
+                            item.X -= x;
+                        }
+                    }
+                    if (y < 0)
+                    {
+                        tData.Y += y;
+                        anchor.Y = y;
+                        foreach (var item in MyAnchoredThumbs)
+                        {
+                            item.Y -= y;
+                        }
+                    }
+
+                    //DataPointCollection全体をオフセット
+                    for (int i = 0; i < tData.PointCollection.Count; i++)
+                    {
+                        tData.PointCollection[i] = new Point(MyAnchoredThumbs[i].X, MyAnchoredThumbs[i].Y);
+                    }
+                }
+                else
+                {
+                    anchor.X = x; anchor.Y = y;
+                    tData.PointCollection[MyAnchoredThumbs.IndexOf(anchor)] = new Point(x, y);
+                }
+                //anchor.X += e.HorizontalChange;
+                //anchor.Y += e.VerticalChange;
+                //tData.PointCollection[MyAnchoredThumbs.IndexOf(anchor)] = new Point(x, y);
+
+                //if (MyRoot.ClickedThumb is TTPolylineZ pt)
+                //{
+                //    int ii = MyAnchoredThumbs.IndexOf(anchor);
+                //    //pt.MyPoints[ii] = new Point(anchor.X - pt.TTLeft, anchor.Y - pt.TTTop);
+                //    pt.MyPoints[ii] = new Point(anchor.X, anchor.Y);
+                //}
+            }
+        }
+
+
         //アンカーポイント移動後、マイナス座標を修正
         private void AnchorThumb_DragCompleted(object sender, DragCompletedEventArgs e)
         {
-            FixAnchorPoint(MyRoot.ClickedThumb?.Data);
-            //if (sender is AnchorThumb thumb)
+            //FixAnchorPoint(MyRoot.ClickedThumb?.Data);
+
+            //if (sender is AnchorThumb anchor)
             //{
-            //    var maiX = thumb.X;
-            //    var maiY = thumb.Y;
+            //    var maiX = anchor.X;
+            //    var maiY = anchor.Y;
             //    if (maiX < 0)
             //    {
             //        foreach (var item in MyAnchoredThumbs)
@@ -2184,20 +2258,10 @@ namespace Pixtack3rd
             //    MyAnchoredThumbs[i].Y = thumbData.Y + thumbData.PointCollection[i].Y;
             //}
         }
-        //アンカーポイント移動、対象Pointの更新
-        private void AnchorThumb_DragDelta(object sender, DragDeltaEventArgs e)
-        {
-            if (sender is AnchorThumb at)
-            {
-                at.X += e.HorizontalChange;
-                at.Y += e.VerticalChange;
-                if (MyRoot.ClickedThumb is TTPolylineZ pt)
-                {
-                    int ii = MyAnchoredThumbs.IndexOf(at);
-                    pt.MyPoints[ii] = new Point(at.X - pt.TTLeft, at.Y - pt.TTTop);
-                }
-            }
-        }
+
+
+
+
         #endregion 図形のアンカーポイント編集開始、終了
 
         private void ButtonTest2_Click(object sender, RoutedEventArgs e)
