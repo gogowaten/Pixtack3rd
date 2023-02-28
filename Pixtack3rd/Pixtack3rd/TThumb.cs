@@ -831,8 +831,9 @@ namespace Pixtack3rd
             }
         }
 
-        private void Thumb_DragDelta(object seneer, DragDeltaEventArgs e)
+        private void Thumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
+            if(e.OriginalSource is not TThumb) { return; }
             //複数選択時は全てを移動
             foreach (TThumb item in SelectedThumbs)
             {
@@ -896,13 +897,17 @@ namespace Pixtack3rd
                 {
                     return GetClickedThumbFromMouseEvent(dObj);
                 }
+                else if(element.Parent is DependencyObject parentObj)
+                {
+                    return GetClickedThumbFromMouseEvent(parentObj);
+                }
             }
             return null;
         }
         //クリックしたとき、ClickedThumbの更新とActiveThumbの更新、SelectedThumbsの更新
         protected override void OnPreviewMouseLeftButtonDown(MouseButtonEventArgs e)
         {
-            base.OnPreviewMouseLeftButtonDown(e);//要る？
+            base.OnPreviewMouseLeftButtonDown(e);
 
             //OriginalSourceにテンプレートに使っている要素が入っているので、
             //そのTemplateParentプロパティから目的のThumbが取得できる
@@ -2555,6 +2560,69 @@ namespace Pixtack3rd
             this.SetBinding(HeadEndTypeProperty, nameof(Data.HeadEndType));
             this.SetBinding(HeadBeginTypeProperty, nameof(Data.HeadBeginType));
             this.SetBinding(HeadAngleProperty, nameof(Data.HeadAngle));
+
+        }
+    }
+
+
+    public class TTPolyline2 : TThumb
+    {
+        #region 依存プロパティ
+
+        public PointCollection MyPoints
+        {
+            get { return (PointCollection)GetValue(MyPointsProperty); }
+            set { SetValue(MyPointsProperty, value); }
+        }
+        public static readonly DependencyProperty MyPointsProperty =
+            DependencyProperty.Register(nameof(MyPoints), typeof(PointCollection), typeof(TTPolyline2),
+                new FrameworkPropertyMetadata(new PointCollection(),
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure));
+
+        public Visibility MyAnchorVisible
+        {
+            get { return (Visibility)GetValue(MyAnchorVisibleProperty); }
+            set { SetValue(MyAnchorVisibleProperty, value); }
+        }
+        public static readonly DependencyProperty MyAnchorVisibleProperty =
+            DependencyProperty.Register(nameof(MyAnchorVisible), typeof(Visibility), typeof(TTPolyline2),
+                new FrameworkPropertyMetadata(Visibility.Collapsed,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure));
+
+        #endregion 依存プロパティ
+
+        public TTPolyline2() : this(new Data(TType.Polyline2)) { }
+        public TTPolyline2(Data data) : base(data)
+        {
+            Data = data;
+            this.DataContext = Data;
+            if (MakeTemplate<PolylineCanvas>() is PolylineCanvas element)
+            {
+                MyTemplateElement = element;
+            }
+            else { throw new ArgumentException("テンプレート作成できんかった"); }
+
+
+
+            Loaded += TTPolyline2_Loaded;
+            MyTemplateElement.DataContext = this;
+            MyTemplateElement.SetBinding(PolylineCanvas.MyAnchorVisibleProperty, nameof(MyAnchorVisible));
+
+            MyTemplateElement.SetBinding(BackgroundProperty, new Binding(nameof(Data.Fill)) {Source=this.Data });
+            //MyTemplateElement.SetBinding(PolylineCanvas.MyPointsProperty , nameof(MyPoints));
+
+
+           
+        }
+
+        private void TTPolyline2_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (MyTemplateElement is PolylineCanvas canvas)
+            {
+                canvas.MyPoints = MyPoints;
+            }
 
         }
     }
