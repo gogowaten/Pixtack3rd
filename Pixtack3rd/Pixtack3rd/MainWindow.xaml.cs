@@ -2045,12 +2045,20 @@ namespace Pixtack3rd
 
         private void ButtonTest_Click(object sender, RoutedEventArgs e)
         {
-            //var neko = MyRoot.ClickedThumb.Data.PointCollection;
-            ////MyRoot.ClickedThumb.Data.PointCollection[0] = new Point(200,200);
-            //if(MyRoot.ClickedThumb.MyTemplateElement is PolylineCanvas p2)
-            //{
-            //    p2.MyPoints[0] = new Point(200, 200);
-            //}
+            var neko = MyRoot.ClickedThumb.Data.PointCollection;
+            var neko2 = MyRoot.ClickedThumb.Data.Stroke;
+            //MyRoot.ClickedThumb.Data.PointCollection[0] = new Point(200,200);
+            if (MyRoot.ClickedThumb.MyTemplateElement is PolyCanvas p2)
+            {
+                //p2.MyPoints[0] = new Point(200, 200);
+                var inu = p2.MyPoints;
+                var inu2 = p2.Stroke;
+                if (MyRoot.ClickedThumb is TTPolyline poly)
+                {
+                    var uma = poly.MyPoints;
+                    var uma2= poly.Stroke;
+                }
+            }
         }
         #region 図形のアンカーポイント編集開始、終了
 
@@ -2105,11 +2113,11 @@ namespace Pixtack3rd
         //アンカーポイントの編集開始
         private void EditStartAnchor()
         {
-            if (MyRoot.ClickedThumb is TTPolyline2 thumb)
+            if (MyRoot.ClickedThumb is TTPolyline thumb)
             {
                 //MyAnchorPointEditCanvas.Cursor = Cursors.Hand;             
                 thumb.MyAnchorVisible = Visibility.Visible;
-                
+
             }
         }
         ////アンカーポイントの編集開始
@@ -2143,7 +2151,7 @@ namespace Pixtack3rd
         //アンカーポイントの編集終了
         private void EditEndAnchor()
         {
-            if(MyRoot.ClickedThumb is TTPolyline2 thumb)
+            if (MyRoot.ClickedThumb is TTPolyline thumb)
             {
                 thumb.MyAnchorVisible = Visibility.Collapsed;
             }
@@ -2156,7 +2164,7 @@ namespace Pixtack3rd
         //    MyAnchorPointEditCanvas.Children.Clear();
 
         //}
-        
+
         //アンカーポイント移動中、対象Pointの更新
         private void AnchorThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {

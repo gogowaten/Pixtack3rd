@@ -38,7 +38,8 @@ namespace Pixtack3rd
             DependencyProperty.Register(nameof(HeadEndType), typeof(HeadType), typeof(PolylineZ),
                 new FrameworkPropertyMetadata(HeadType.None,
                     FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure));
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
         /// <summary>
         /// 始点のヘッドタイプ
         /// </summary>
@@ -51,7 +52,8 @@ namespace Pixtack3rd
             DependencyProperty.Register(nameof(HeadBeginType), typeof(HeadType), typeof(PolylineZ),
                 new FrameworkPropertyMetadata(HeadType.None,
                     FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure));
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         /// <summary>
         /// 矢印角度、初期値は30.0にしている。30～40くらいが適当
@@ -65,7 +67,8 @@ namespace Pixtack3rd
             DependencyProperty.Register(nameof(Angle), typeof(double), typeof(PolylineZ),
                 new FrameworkPropertyMetadata(30.0,
                     FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure));
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         //[TypeConverter(typeof(MyTypeConverterPoints))]
         //public ObservableCollection<Point> MyPoints
@@ -86,12 +89,17 @@ namespace Pixtack3rd
 
         public static readonly DependencyProperty MyPointsProperty =
             DependencyProperty.Register(nameof(MyPoints), typeof(PointCollection), typeof(PolylineZ),
-                new FrameworkPropertyMetadata(new PointCollection() { new Point(0, 0), new Point(100, 100) },
+                new FrameworkPropertyMetadata(new PointCollection(),
                     FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure));
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         #endregion 依存プロパティ
-       
+
+        public PolylineZ()
+        {
+
+        }
         private static double DegreeToRadian(double degree)
         {
             return degree / 360.0 * (Math.PI * 2.0);

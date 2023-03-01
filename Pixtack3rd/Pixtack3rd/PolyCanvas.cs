@@ -12,17 +12,12 @@ using System.Collections.ObjectModel;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 
-namespace Pixtack3rd
-{
-
-
-    //2023WPF/20230301_PolylineAnchorCanvas2 at main · gogowaten/2023WPF
+//2023WPF/20230301_PolylineAnchorCanvas2 at main · gogowaten/2023WPF
 //https://github.com/gogowaten/2023WPF/tree/main/20230301_PolylineAnchorCanvas2
 
-
-    //未使用、テスト用
-    //PolylineとアンカーThumbを表示、移動でPolyline変更
-    public class PolylineCanvas : Canvas
+namespace Pixtack3rd
+{
+    public class PolyCanvas : Canvas
     {
         #region 依存プロパティ
 
@@ -32,7 +27,7 @@ namespace Pixtack3rd
             set { SetValue(MyPointsProperty, value); }
         }
         public static readonly DependencyProperty MyPointsProperty =
-            DependencyProperty.Register(nameof(MyPoints), typeof(PointCollection), typeof(PolylineCanvas),
+            DependencyProperty.Register(nameof(MyPoints), typeof(PointCollection), typeof(PolyCanvas),
                 new FrameworkPropertyMetadata(new PointCollection(),
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
@@ -44,7 +39,7 @@ namespace Pixtack3rd
             set { SetValue(MyAnchorVisibleProperty, value); }
         }
         public static readonly DependencyProperty MyAnchorVisibleProperty =
-            DependencyProperty.Register(nameof(MyAnchorVisible), typeof(Visibility), typeof(PolylineCanvas),
+            DependencyProperty.Register(nameof(MyAnchorVisible), typeof(Visibility), typeof(PolyCanvas),
                 new FrameworkPropertyMetadata(Visibility.Collapsed,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure));
@@ -55,7 +50,7 @@ namespace Pixtack3rd
             set { SetValue(XProperty, value); }
         }
         public static readonly DependencyProperty XProperty =
-            DependencyProperty.Register(nameof(X), typeof(double), typeof(PolylineCanvas),
+            DependencyProperty.Register(nameof(X), typeof(double), typeof(PolyCanvas),
                 new FrameworkPropertyMetadata(0.0,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
@@ -67,31 +62,119 @@ namespace Pixtack3rd
             set { SetValue(YProperty, value); }
         }
         public static readonly DependencyProperty YProperty =
-            DependencyProperty.Register(nameof(Y), typeof(double), typeof(PolylineCanvas),
+            DependencyProperty.Register(nameof(Y), typeof(double), typeof(PolyCanvas),
                 new FrameworkPropertyMetadata(0.0,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+
+        /// <summary>
+        /// 終点のヘッドタイプ
+        /// </summary>
+        public HeadType HeadEndType
+        {
+            get { return (HeadType)GetValue(HeadEndTypeProperty); }
+            set { SetValue(HeadEndTypeProperty, value); }
+        }
+        public static readonly DependencyProperty HeadEndTypeProperty =
+            DependencyProperty.Register(nameof(HeadEndType), typeof(HeadType), typeof(PolyCanvas),
+                new FrameworkPropertyMetadata(HeadType.None,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+        /// <summary>
+        /// 始点のヘッドタイプ
+        /// </summary>
+        public HeadType HeadBeginType
+        {
+            get { return (HeadType)GetValue(HeadBeginTypeProperty); }
+            set { SetValue(HeadBeginTypeProperty, value); }
+        }
+        public static readonly DependencyProperty HeadBeginTypeProperty =
+            DependencyProperty.Register(nameof(HeadBeginType), typeof(HeadType), typeof(PolyCanvas),
+                new FrameworkPropertyMetadata(HeadType.None,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        /// <summary>
+        /// 矢印角度、初期値は30.0にしている。30～40くらいが適当
+        /// </summary>
+        public double Angle
+        {
+            get { return (double)GetValue(AngleProperty); }
+            set { SetValue(AngleProperty, value); }
+        }
+        public static readonly DependencyProperty AngleProperty =
+            DependencyProperty.Register(nameof(Angle), typeof(double), typeof(PolyCanvas),
+                new FrameworkPropertyMetadata(30.0,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public Brush Stroke
+        {
+            get { return (Brush)GetValue(StrokeProperty); }
+            set { SetValue(StrokeProperty, value); }
+        }
+        public static readonly DependencyProperty StrokeProperty =
+            DependencyProperty.Register(nameof(Stroke), typeof(Brush), typeof(PolyCanvas),
+                new FrameworkPropertyMetadata(Brushes.Red,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public Brush TTFill
+        {
+            get { return (Brush)GetValue(TTFillProperty); }
+            set { SetValue(TTFillProperty, value); }
+        }
+        public static readonly DependencyProperty TTFillProperty =
+            DependencyProperty.Register(nameof(TTFill), typeof(Brush), typeof(PolyCanvas),
+                new FrameworkPropertyMetadata(Brushes.Red,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public double StrokeThickness
+        {
+            get { return (double)GetValue(StrokeThicknessProperty); }
+            set { SetValue(StrokeThicknessProperty, value); }
+        }
+        public static readonly DependencyProperty StrokeThicknessProperty =
+            DependencyProperty.Register(nameof(StrokeThickness), typeof(double), typeof(PolyCanvas),
+                new FrameworkPropertyMetadata(5.0,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+
+
+
+
         #endregion 依存プロパティ
+
         public ObservableCollection<AnchorThumb> MyAnchorThumbs { get; set; } = new();
 
-        public Polyline MyShape { get; set; }
+        public PolylineZ MyShape { get; set; }
         public ContextMenu MyAnchorMenu { get; set; } = new();
         public ContextMenu MyMenu { get; set; } = new();
         public AnchorThumb? MyCurrentAnchorThumb { get; set; }
         public int MyCurrentAnchorIndex;//操作中のアンカー点(Thumb)のインデックス、マウス移動で使う
         public Point MyClickedPoint;//クリックした座標、アンカー点追加時に使う
 
-        public PolylineCanvas()
+
+        public PolyCanvas()
         {
             //背景色は透明色、色を指定しないとクリックが無視される
             this.Background = Brushes.Transparent;
 
             //表示するPolyline、色と太さは決め打ちしてる、したくないときは依存プロパティをつける
-            MyShape = new Polyline();
+            MyShape = new PolylineZ();
             Children.Add(MyShape);
-            MyShape.Stroke = Brushes.MediumAquamarine;
-            MyShape.StrokeThickness = 20;
+            //MyShape.Stroke = Brushes.MediumAquamarine;
+            //MyShape.StrokeThickness = 20;
 
             //Loaded時にXAMLで指定されているPointsを使ってアンカーThumb作成追加と関連付けする
             Loaded += PolylinCanvas_Loaded;
@@ -99,9 +182,28 @@ namespace Pixtack3rd
             //CanvasのサイズはPolylineのActualに追従
             SetBinding(WidthProperty, new Binding() { Source = MyShape, Path = new PropertyPath(ActualWidthProperty) });
             SetBinding(HeightProperty, new Binding() { Source = MyShape, Path = new PropertyPath(ActualHeightProperty) });
-            SetBinding(MyPointsProperty, new Binding() { Source = MyShape, Path = new PropertyPath(Polyline.PointsProperty) });
-            SetBinding(LeftProperty, new Binding() { Source = this, Path = new PropertyPath(XProperty) });
-            SetBinding(TopProperty, new Binding() { Source = this, Path = new PropertyPath(YProperty) });
+            //SetBinding(LeftProperty, new Binding() { Source = this, Path = new PropertyPath(XProperty) });
+            //SetBinding(TopProperty, new Binding() { Source = this, Path = new PropertyPath(YProperty) });
+            //SetBinding(AngleProperty, new Binding() { Source = MyShape, Path = new PropertyPath(PolylineZ.AngleProperty) });
+            //SetBinding(StrokeProperty, new Binding() { Source = MyShape, Path = new PropertyPath(PolylineZ.StrokeProperty) });
+            //SetBinding(StrokeThicknessProperty, new Binding() { Source = MyShape, Path = new PropertyPath(PolylineZ.StrokeThicknessProperty) });
+            //SetBinding(TTFillProperty, new Binding() { Source = MyShape, Path = new PropertyPath(PolylineZ.FillProperty) });
+            //SetBinding(HeadBeginTypeProperty, new Binding() { Source = MyShape, Path = new PropertyPath(PolylineZ.HeadBeginTypeProperty) });
+            //SetBinding(HeadEndTypeProperty, new Binding() { Source = MyShape, Path = new PropertyPath(PolylineZ.HeadEndTypeProperty) });
+            //SetBinding(MyPointsProperty, new Binding() { Source = MyShape, Path = new PropertyPath(PolylineZ.MyPointsProperty) });
+
+            MyShape.SetBinding(PolylineZ.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeProperty) });
+            MyShape.SetBinding(PolylineZ.StrokeThicknessProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeThicknessProperty) });
+            MyShape.SetBinding(PolylineZ.FillProperty, new Binding() { Source = this, Path = new PropertyPath(TTFillProperty) });
+            MyShape.SetBinding(PolylineZ.AngleProperty, new Binding() { Source = this, Path = new PropertyPath(AngleProperty) });
+            MyShape.SetBinding(PolylineZ.HeadBeginTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadBeginTypeProperty) });
+            MyShape.SetBinding(PolylineZ.HeadEndTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadEndTypeProperty) });
+            MyShape.SetBinding(PolylineZ.MyPointsProperty, new Binding() { Source = this, Path = new PropertyPath(MyPointsProperty) });
+            //MyShape.SetBinding(LeftProperty, new Binding() { Source = this, Path = new PropertyPath(XProperty) });
+            //MyShape.SetBinding(TopProperty, new Binding() { Source = this, Path = new PropertyPath(YProperty) });
+
+
+
 
             //アンカーThumbの右クリックメニュー
             MenuItem item = new() { Header = "削除" };
@@ -113,15 +215,9 @@ namespace Pixtack3rd
             item = new() { Header = "ここに追加" };
             item.Click += (o, e) => { AddPoint(MyClickedPoint); };
             MyMenu.Items.Add(item);
-        }
 
-        //マウスクリック時にクリックされたPoint記録
-        protected override void OnMouseDown(MouseButtonEventArgs e)
-        {
-            base.OnMouseDown(e);
-            MyClickedPoint = Mouse.GetPosition(this);
-        }
 
+        }
 
         private void PolylinCanvas_Loaded(object sender, RoutedEventArgs e)
         {
@@ -132,7 +228,16 @@ namespace Pixtack3rd
             }
         }
 
-        #region アンカー点追加と削除
+
+        //マウスクリック時にクリックされたPoint記録
+        protected override void OnMouseDown(MouseButtonEventArgs e)
+        {
+            base.OnMouseDown(e);
+            MyClickedPoint = Mouse.GetPosition(this);
+        }
+
+        #region アンカー点追加
+
 
         //アンカー点追加時には同時にアンカーThumbも追加する
         public void AddPoint(Point point)
@@ -164,8 +269,9 @@ namespace Pixtack3rd
             });
             thumb.ContextMenu = MyAnchorMenu;
         }
+        #endregion アンカー点追加
 
-
+        #region アンカー点削除
         //アンカー点削除、関連するアンカーThumbも削除する
         public void RemovePoint(int pointIndex)
         {
@@ -182,7 +288,8 @@ namespace Pixtack3rd
             if (thumb == null) { return; }
             RemovePoint(MyCurrentAnchorIndex);
         }
-        #endregion アンカー点追加と削除
+        #endregion アンカー点削除
+
 
         //アンカーThumbをクリックしたときIndexの更新
         private void Thumb_PreviewMouseDown(object sender, MouseButtonEventArgs e)
@@ -194,51 +301,6 @@ namespace Pixtack3rd
             }
             else { MyCurrentAnchorIndex = -1; }
         }
-
-        ///// <summary>
-        ///// 移動中常に本体の座標修正する版
-        ///// </summary>
-        ///// <param name="sender"></param>
-        ///// <param name="e"></param>
-        //private void Thumb_DragDelta(object sender, DragDeltaEventArgs e)
-        //{
-        //    if (e.OriginalSource is AnchorThumb anchorT)
-        //    {
-        //        //該当のアンカーThumbの座標修正
-        //        anchorT.X += e.HorizontalChange;
-        //        anchorT.Y += e.VerticalChange;
-
-        //        //全体のアンカー点から左上座標取得
-        //        double minX = anchorT.X;
-        //        double minY = anchorT.Y;
-        //        foreach (var item in MyAnchorThumbs)
-        //        {
-        //            if (minX > item.X) { minX = item.X; }
-        //            if (minY > item.Y) { minY = item.Y; }
-        //        }
-
-        //        //左上座標が0なら該当Pointだけ変更、
-        //        //違う場合は本体と全アンカー点を修正
-        //        if (minX == 0 && minY == 0)
-        //        {
-        //            MyPoints[MyCurrentAnchorIndex] = new Point(anchorT.X, anchorT.Y);
-        //        }
-        //        else
-        //        {
-        //            //SetLeft(this, GetLeft(this) + minX);
-        //            //SetTop(this, GetTop(this) + minY);
-        //            X += minX; Y += minY;
-
-        //            for (int i = 0; i < MyPoints.Count; i++)
-        //            {
-        //                MyAnchorThumbs[i].X -= minX;
-        //                MyAnchorThumbs[i].Y -= minY;
-        //                MyPoints[i] = new Point(MyAnchorThumbs[i].X, MyAnchorThumbs[i].Y);
-        //            }
-        //        }
-        //    }
-        //}
-
 
         private void Thumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
@@ -284,5 +346,6 @@ namespace Pixtack3rd
                 }
             }
         }
+
     }
 }
