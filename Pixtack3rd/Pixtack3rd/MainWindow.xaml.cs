@@ -2045,8 +2045,12 @@ namespace Pixtack3rd
 
         private void ButtonTest_Click(object sender, RoutedEventArgs e)
         {
-            //MyTabControl.IsEnabled = false;
-
+            //var neko = MyRoot.ClickedThumb.Data.PointCollection;
+            ////MyRoot.ClickedThumb.Data.PointCollection[0] = new Point(200,200);
+            //if(MyRoot.ClickedThumb.MyTemplateElement is PolylineCanvas p2)
+            //{
+            //    p2.MyPoints[0] = new Point(200, 200);
+            //}
         }
         #region 図形のアンカーポイント編集開始、終了
 
@@ -2103,8 +2107,7 @@ namespace Pixtack3rd
         {
             if (MyRoot.ClickedThumb is TTPolyline2 thumb)
             {
-                //MyAnchorPointEditCanvas.Cursor = Cursors.Hand;
-                //MyAnchorPointEditCanvas.Visibility = Visibility.Visible;
+                //MyAnchorPointEditCanvas.Cursor = Cursors.Hand;             
                 thumb.MyAnchorVisible = Visibility.Visible;
                 
             }

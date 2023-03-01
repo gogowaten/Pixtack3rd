@@ -263,7 +263,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                            MyPoints="30,0 200,20 100,50" StrokeThickness="10" HeadAngle="30"
                            HeadBeginType="Arrow" HeadEndType="Arrow"
                            Stroke="Crimson" TTFill="Crimson"/>
-          <local:TTPolyline2 x:Name="MyPolyline2" MyPoints="0,0 100,30" TTLeft="100" TTTop="50"
+          <local:TTPolyline2 x:Name="MyPolyline2" MyPoints="0,0 0,50 150,30" TTLeft="100" TTTop="50"
                              />
         </local:TTRoot>
         <!--</Grid>-->

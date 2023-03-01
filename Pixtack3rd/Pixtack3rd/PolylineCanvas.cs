@@ -16,6 +16,8 @@ namespace Pixtack3rd
 {
     public class PolylineCanvas : Canvas
     {
+        #region 依存プロパティ
+
         public PointCollection MyPoints
         {
             get { return (PointCollection)GetValue(MyPointsProperty); }
@@ -39,6 +41,30 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure));
 
+        public double X
+        {
+            get { return (double)GetValue(XProperty); }
+            set { SetValue(XProperty, value); }
+        }
+        public static readonly DependencyProperty XProperty =
+            DependencyProperty.Register(nameof(X), typeof(double), typeof(PolylineCanvas),
+                new FrameworkPropertyMetadata(0.0,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public double Y
+        {
+            get { return (double)GetValue(YProperty); }
+            set { SetValue(YProperty, value); }
+        }
+        public static readonly DependencyProperty YProperty =
+            DependencyProperty.Register(nameof(Y), typeof(double), typeof(PolylineCanvas),
+                new FrameworkPropertyMetadata(0.0,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+        #endregion 依存プロパティ
         public ObservableCollection<AnchorThumb> MyAnchorThumbs { get; set; } = new();
 
         public Polyline MyShape { get; set; }
@@ -65,6 +91,9 @@ namespace Pixtack3rd
             //CanvasのサイズはPolylineのActualに追従
             SetBinding(WidthProperty, new Binding() { Source = MyShape, Path = new PropertyPath(ActualWidthProperty) });
             SetBinding(HeightProperty, new Binding() { Source = MyShape, Path = new PropertyPath(ActualHeightProperty) });
+            SetBinding(MyPointsProperty, new Binding() { Source = MyShape, Path = new PropertyPath(Polyline.PointsProperty) });
+            SetBinding(LeftProperty, new Binding() { Source = this, Path = new PropertyPath(XProperty) });
+            SetBinding(TopProperty, new Binding() { Source = this, Path = new PropertyPath(YProperty) });
 
             //アンカーThumbの右クリックメニュー
             MenuItem item = new() { Header = "削除" };
@@ -88,12 +117,14 @@ namespace Pixtack3rd
 
         private void PolylinCanvas_Loaded(object sender, RoutedEventArgs e)
         {
-            MyShape.Points = MyPoints;
+            //MyShape.Points = MyPoints;
             foreach (var item in MyPoints)
             {
                 AddAnchorThumb(item);
             }
         }
+
+        #region アンカー点追加と削除
 
         //アンカー点追加時には同時にアンカーThumbも追加する
         public void AddPoint(Point point)
@@ -140,6 +171,7 @@ namespace Pixtack3rd
             if (thumb == null) { return; }
             RemovePoint(MyCurrentAnchorIndex);
         }
+        #endregion アンカー点追加と削除
 
         //アンカーThumbをクリックしたときIndexの更新
         private void Thumb_PreviewMouseDown(object sender, MouseButtonEventArgs e)
@@ -155,17 +187,49 @@ namespace Pixtack3rd
 
         private void Thumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
-            if(e.OriginalSource is AnchorThumb thumb)
+            if (e.OriginalSource is AnchorThumb anchorT)
             {
-                thumb.X += e.HorizontalChange;
-                thumb.Y += e.VerticalChange;
-                MyPoints[MyCurrentAnchorIndex] = new Point(thumb.X, thumb.Y);
-            }
+                //該当のアンカーThumbの座標修正
+                anchorT.X += e.HorizontalChange;
+                anchorT.Y += e.VerticalChange;
 
-            //if (sender is AnchorThumb thumb)
+                //全体のアンカー点から左上座標取得
+                double minX = anchorT.X;
+                double minY = anchorT.Y;
+                foreach (var item in MyAnchorThumbs)
+                {
+                    if (minX > item.X) { minX = item.X; }
+                    if (minY > item.Y) { minY = item.Y; }
+                }
+
+                //左上座標が0なら該当Pointだけ変更、
+                //違う場合は本体と全アンカー点を修正
+                if (minX == 0 && minY == 0)
+                {
+                    MyPoints[MyCurrentAnchorIndex] = new Point(anchorT.X, anchorT.Y);
+                }
+                else
+                {
+                    //SetLeft(this, GetLeft(this) + minX);
+                    //SetTop(this, GetTop(this) + minY);
+                    X += minX; Y += minY;
+
+                    for (int i = 0; i < MyPoints.Count; i++)
+                    {
+                        MyAnchorThumbs[i].X -= minX;
+                        MyAnchorThumbs[i].Y -= minY;
+                        MyPoints[i] = new Point(MyAnchorThumbs[i].X, MyAnchorThumbs[i].Y);
+                    }
+                }
+            }
+            //if (e.OriginalSource is AnchorThumb anchorT)
             //{
-                
+            //    anchorT.X += e.HorizontalChange;
+            //    anchorT.Y += e.VerticalChange;
+            //    MyPoints[MyCurrentAnchorIndex] = new Point(anchorT.X, anchorT.Y);
             //}
+
+
         }
     }
 }

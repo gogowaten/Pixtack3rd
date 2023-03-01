@@ -833,7 +833,7 @@ namespace Pixtack3rd
 
         private void Thumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
-            if(e.OriginalSource is not TThumb) { return; }
+            if (e.OriginalSource is not TThumb) { return; }
             //複数選択時は全てを移動
             foreach (TThumb item in SelectedThumbs)
             {
@@ -897,7 +897,7 @@ namespace Pixtack3rd
                 {
                     return GetClickedThumbFromMouseEvent(dObj);
                 }
-                else if(element.Parent is DependencyObject parentObj)
+                else if (element.Parent is DependencyObject parentObj)
                 {
                     return GetClickedThumbFromMouseEvent(parentObj);
                 }
@@ -1240,6 +1240,9 @@ namespace Pixtack3rd
                     break;
                 case TType.Polyline:
                     result = new TTPolylineZ(data);
+                    break;
+                case TType.Polyline2:
+                    result = new TTPolyline2(data);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -2609,19 +2612,27 @@ namespace Pixtack3rd
             Loaded += TTPolyline2_Loaded;
             MyTemplateElement.DataContext = this;
             MyTemplateElement.SetBinding(PolylineCanvas.MyAnchorVisibleProperty, nameof(MyAnchorVisible));
-
-            MyTemplateElement.SetBinding(BackgroundProperty, new Binding(nameof(Data.Fill)) {Source=this.Data });
-            //MyTemplateElement.SetBinding(PolylineCanvas.MyPointsProperty , nameof(MyPoints));
-
-
-           
+            MyTemplateElement.SetBinding(BackgroundProperty, new Binding(nameof(Data.Fill)) { Source = this.Data });
+            MyTemplateElement.SetBinding(PolylineCanvas.XProperty, nameof(TTLeft));
+            MyTemplateElement.SetBinding(PolylineCanvas.YProperty, nameof(TTTop));
+            //MyTemplateElement.SetBinding(PolylineCanvas.MyPointsProperty, new Binding(nameof(Data.PointCollection)) { Source = this.Data });
+            //SetBinding(MyPointsProperty, new Binding() { Source = MyTemplateElement, Path = new PropertyPath(PolylineCanvas.MyPointsProperty) });
         }
 
         private void TTPolyline2_Loaded(object sender, RoutedEventArgs e)
         {
-            if (MyTemplateElement is PolylineCanvas canvas)
+            if (MyTemplateElement is PolylineCanvas tempPoly)
             {
-                canvas.MyPoints = MyPoints;
+                if (Data.PointCollection.Count == 0)
+                {
+                    tempPoly.MyPoints = MyPoints;
+                    Data.PointCollection = MyPoints;
+                }
+                else
+                {
+                    tempPoly.MyPoints = Data.PointCollection;
+                    MyPoints = Data.PointCollection;
+                }
             }
 
         }
