@@ -15,6 +15,8 @@ using System.Windows.Input;
 //2023WPF/20230301_PolylineAnchorCanvas2 at main · gogowaten/2023WPF
 //https://github.com/gogowaten/2023WPF/tree/main/20230301_PolylineAnchorCanvas2
 
+//ShapeのPolylineZとアンカー点を表示してマウスドラッグ移動するクラス
+
 namespace Pixtack3rd
 {
     public class PolyCanvas : Canvas
@@ -42,7 +44,8 @@ namespace Pixtack3rd
             DependencyProperty.Register(nameof(MyAnchorVisible), typeof(Visibility), typeof(PolyCanvas),
                 new FrameworkPropertyMetadata(Visibility.Collapsed,
                     FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure));
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public double X
         {
@@ -182,15 +185,6 @@ namespace Pixtack3rd
             //CanvasのサイズはPolylineのActualに追従
             SetBinding(WidthProperty, new Binding() { Source = MyShape, Path = new PropertyPath(ActualWidthProperty) });
             SetBinding(HeightProperty, new Binding() { Source = MyShape, Path = new PropertyPath(ActualHeightProperty) });
-            //SetBinding(LeftProperty, new Binding() { Source = this, Path = new PropertyPath(XProperty) });
-            //SetBinding(TopProperty, new Binding() { Source = this, Path = new PropertyPath(YProperty) });
-            //SetBinding(AngleProperty, new Binding() { Source = MyShape, Path = new PropertyPath(PolylineZ.AngleProperty) });
-            //SetBinding(StrokeProperty, new Binding() { Source = MyShape, Path = new PropertyPath(PolylineZ.StrokeProperty) });
-            //SetBinding(StrokeThicknessProperty, new Binding() { Source = MyShape, Path = new PropertyPath(PolylineZ.StrokeThicknessProperty) });
-            //SetBinding(TTFillProperty, new Binding() { Source = MyShape, Path = new PropertyPath(PolylineZ.FillProperty) });
-            //SetBinding(HeadBeginTypeProperty, new Binding() { Source = MyShape, Path = new PropertyPath(PolylineZ.HeadBeginTypeProperty) });
-            //SetBinding(HeadEndTypeProperty, new Binding() { Source = MyShape, Path = new PropertyPath(PolylineZ.HeadEndTypeProperty) });
-            //SetBinding(MyPointsProperty, new Binding() { Source = MyShape, Path = new PropertyPath(PolylineZ.MyPointsProperty) });
 
             MyShape.SetBinding(PolylineZ.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeProperty) });
             MyShape.SetBinding(PolylineZ.StrokeThicknessProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeThicknessProperty) });
@@ -199,9 +193,6 @@ namespace Pixtack3rd
             MyShape.SetBinding(PolylineZ.HeadBeginTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadBeginTypeProperty) });
             MyShape.SetBinding(PolylineZ.HeadEndTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadEndTypeProperty) });
             MyShape.SetBinding(PolylineZ.MyPointsProperty, new Binding() { Source = this, Path = new PropertyPath(MyPointsProperty) });
-            //MyShape.SetBinding(LeftProperty, new Binding() { Source = this, Path = new PropertyPath(XProperty) });
-            //MyShape.SetBinding(TopProperty, new Binding() { Source = this, Path = new PropertyPath(YProperty) });
-
 
 
 
@@ -259,8 +250,9 @@ namespace Pixtack3rd
             AnchorThumb thumb = new(point);
             MyAnchorThumbs.Insert(i, thumb);
             Children.Add(thumb);
-            thumb.DragDelta += Thumb_DragDelta;
-            thumb.DragCompleted += Thumb_DragCompleted;
+            //thumb.DragDelta += Thumb_DragDelta;
+            //thumb.DragCompleted += Thumb_DragCompleted;
+            thumb.DragDelta += Thumb_DragDelta2;
             thumb.PreviewMouseDown += Thumb_PreviewMouseDown;
             thumb.SetBinding(VisibilityProperty, new Binding()
             {
@@ -302,6 +294,10 @@ namespace Pixtack3rd
             else { MyCurrentAnchorIndex = -1; }
         }
 
+        #region ドラッグ移動
+        //未使用
+        //Delta時には動かしているPointだけの更新にとどめて
+        //本体の座標や全体Pointの修正はCompleted時に行う版
         private void Thumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
             if (e.OriginalSource is AnchorThumb anchorT)
@@ -346,6 +342,55 @@ namespace Pixtack3rd
                 }
             }
         }
+        #endregion ドラッグ移動
+
+        #region ドラッグ移動2
+        //負荷が高そうだと思ったけど誤差程度なのでこっちのほうがいいかも
+        //移動終了後の処理はないので、DragCompleatedは必要ない
+        /// <summary>
+        /// 移動中常に本体の座標修正する版
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Thumb_DragDelta2(object sender, DragDeltaEventArgs e)
+        {
+            if (e.OriginalSource is AnchorThumb anchorT)
+            {
+                //該当のアンカーThumbの座標修正
+                anchorT.X += e.HorizontalChange;
+                anchorT.Y += e.VerticalChange;
+
+                //全体のアンカー点から左上座標取得
+                double minX = anchorT.X;
+                double minY = anchorT.Y;
+                foreach (var item in MyAnchorThumbs)
+                {
+                    if (minX > item.X) { minX = item.X; }
+                    if (minY > item.Y) { minY = item.Y; }
+                }
+
+                //左上座標が0なら該当Pointだけ変更、
+                //違う場合は本体と全アンカー点を修正
+                if (minX == 0 && minY == 0)
+                {
+                    MyPoints[MyCurrentAnchorIndex] = new Point(anchorT.X, anchorT.Y);
+                }
+                else
+                {
+                    //SetLeft(this, GetLeft(this) + minX);
+                    //SetTop(this, GetTop(this) + minY);
+                    X += minX; Y += minY;
+
+                    for (int i = 0; i < MyPoints.Count; i++)
+                    {
+                        MyAnchorThumbs[i].X -= minX;
+                        MyAnchorThumbs[i].Y -= minY;
+                        MyPoints[i] = new Point(MyAnchorThumbs[i].X, MyAnchorThumbs[i].Y);
+                    }
+                }
+            }
+        }
+        #endregion ドラッグ移動2
 
     }
 }

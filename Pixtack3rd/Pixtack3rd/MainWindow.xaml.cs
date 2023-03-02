@@ -81,7 +81,7 @@ namespace Pixtack3rd
             Drop += MainWindow_Drop;
             Closed += MainWindow_Closed;
 
-            MyTabControl.SelectedIndex = 0;
+            MyTabControl.SelectedIndex = 3;
 
             //string imagePath = "D:\\ブログ用\\テスト用画像\\collection5.png";
             //string imagePath1 = "D:\\ブログ用\\テスト用画像\\collection4.png";
@@ -100,108 +100,6 @@ namespace Pixtack3rd
 
         }
 
-        #region マウスクリックでPolyline描画
-        /// <summary>
-        /// マウスクリックでPolyline描画開始
-        /// </summary>
-        private void DrawPolylineFromClick()
-        {
-            MyTabControl.IsEnabled = false;
-            MyDrawCanvas.Visibility = Visibility.Visible;
-            MyTempPoints.Clear();
-
-            PolylineZ polyZ = new()
-            {
-                Angle = 30,
-                Fill = Brushes.OliveDrab,
-                Stroke = Brushes.OliveDrab,
-                StrokeThickness = 10,
-                HeadEndType = HeadType.Arrow,
-                MyPoints = MyTempPoints,
-            };
-
-            MyTempShape = polyZ;
-            MyDrawCanvas.Children.Add(MyTempShape);
-        }
-
-        //右クリックで終了
-        private void MyDrawCanvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            //MyTempPointsからData作成してRootに追加
-            if (MyTempPoints.Count >= 2)
-            {
-                Data data = new(TType.Polyline)
-                {
-                    HeadAngle = 30,
-                    Stroke = Brushes.OliveDrab,
-                    StrokeThickness = 10,
-                    Fill = Brushes.OliveDrab,
-                    PointCollection = new(MyTempPoints),
-                    HeadEndType = HeadType.Arrow,
-                };
-                FixTopLeftPointCollectionData(data);
-                MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper, false);
-            }
-            //後片付け
-            MyTempShape = null;
-            MyDrawCanvas.Children.Clear();
-            MyDrawCanvas.Visibility = Visibility.Collapsed;
-            MyTabControl.IsEnabled = true;
-
-        }
-
-        /// <summary>
-        /// DrawCanvas上の座標と追加する位置の差を修正する＆追加位置の決定
-        /// </summary>
-        /// <param name="data"></param>
-        private void FixTopLeftPointCollectionData(Data data)
-        {
-            PointCollection points = data.PointCollection;
-            //左上座標を計算
-            double x = double.MaxValue;
-            double y = double.MaxValue;
-            foreach (var item in points)
-            {
-                if (x > item.X) x = item.X;
-                if (y > item.Y) y = item.Y;
-            }
-            //修正
-            for (int i = 0; i < points.Count; i++)
-            {
-                points[i] = new Point(points[i].X - x, points[i].Y - y);
-            }
-            //決定
-            data.X = x; data.Y = y;
-        }
-
-        private void MyDrawCanvas_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (MyTempPoints.Count < 2) { return; }
-            Point pp = Mouse.GetPosition(MyDrawCanvas);
-            MyTempPoints[^1] = pp;
-        }
-
-        /// <summary>
-        /// 左クリックで頂点追加
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void MyDrawCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            Point pp = Mouse.GetPosition(MyDrawCanvas);
-            //最初だけは同時に2点追加
-            if (MyTempPoints.Count == 0)
-            {
-                MyTempPoints.Add(pp);
-                MyTempPoints.Add(pp);
-            }
-            else
-            {
-                MyTempPoints.Add(pp);
-            }
-
-        }
-        #endregion マウスクリックでPolyline描画
 
         #region 初期設定
         /// <summary>
@@ -286,6 +184,10 @@ namespace Pixtack3rd
             ComboBoxSaveFileType.ItemsSource = Enum.GetValues(typeof(ImageType));
             MyCombBoxFontFmilyNames.ItemsSource = GetFontFamilies();
             MyCombBoxFontFmilyNames.SelectedValue = this.FontFamily;
+            MyComboBoxLineHeadBeginType.ItemsSource = Enum.GetValues(typeof(HeadType));
+            MyComboBoxLineHeadBeginType.SelectedValue = HeadType.None;
+            MyComboBoxLineHeadEndType.ItemsSource = Enum.GetValues(typeof(HeadType));
+            MyComboBoxLineHeadEndType.SelectedValue = HeadType.Arrow;
             //MyComboBoxFontStretchs.ItemsSource = MakeFontStretchDictionary();
             //MyComboBoxFontStyle.ItemsSource = MakeFontStylesDictionary();
             //MyComboBoxFontStyle.SelectedValue = this.FontStyle;
@@ -2056,42 +1958,158 @@ namespace Pixtack3rd
                 if (MyRoot.ClickedThumb is TTPolyline poly)
                 {
                     var uma = poly.MyPoints;
-                    var uma2= poly.Stroke;
+                    var uma2 = poly.Stroke;
                 }
             }
         }
+
+
+        #region 図形関連
+
+        #region マウスクリックでPolyline描画
+        /// <summary>
+        /// マウスクリックでPolyline描画開始
+        /// </summary>
+        private void DrawPolylineFromClick()
+        {
+            MyTabControl.IsEnabled = false;
+            MyDrawCanvas.Visibility = Visibility.Visible;
+            MyTempPoints.Clear();
+
+            PolylineZ polyZ = new()
+            {
+                Angle = (double)MyNumeArrowHeadAngle.MyValue,
+                Fill = GetBrush(),
+                Stroke = GetBrush(),
+                StrokeThickness = (double)MyNumeStrokeThickness.MyValue,
+                HeadEndType = (HeadType)MyComboBoxLineHeadEndType.SelectedValue,
+                HeadBeginType = (HeadType)MyComboBoxLineHeadBeginType.SelectedValue,
+                MyPoints = MyTempPoints,
+            };
+
+            MyTempShape = polyZ;
+            MyDrawCanvas.Children.Add(MyTempShape);
+        }
+        private SolidColorBrush GetBrush()
+        {
+            return new SolidColorBrush(Color.FromArgb((byte)MyNumeShapeBackA.MyValue,
+                (byte)MyNumeShapeBackR.MyValue, (byte)MyNumeShapeBackG.MyValue, (byte)MyNumeShapeBackB.MyValue));
+        }
+        //右クリックで終了
+        //MyTempPointsからData作成してRootに追加
+        private void MyDrawCanvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (MyTempPoints.Count >= 2)
+            {
+                //    Data data = new(TType.Polyline)
+                //    {
+                //        HeadAngle = (double)MyNumeArrowHeadAngle.MyValue,
+                //        Stroke = GetBrush(),
+                //        StrokeThickness = (double)MyNumeStrokeThickness.MyValue,
+                //        Fill = GetBrush(),
+                //        PointCollection = new(MyTempPoints),
+                //        HeadEndType = (HeadType)MyComboBoxLineHeadBeginType.SelectedValue,
+                //    };
+                //    FixTopLeftPointCollectionData(data);
+                //    MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper, false);
+                AddShapePolyline(new(MyTempPoints), false);
+            }
+
+            //後片付け
+            MyTempShape = null;
+            MyDrawCanvas.Children.Clear();
+            MyDrawCanvas.Visibility = Visibility.Collapsed;
+            MyTabControl.IsEnabled = true;
+
+        }
+
+        /// <summary>
+        /// DrawCanvas上の座標と追加する位置の差を修正する＆追加位置の決定
+        /// </summary>
+        /// <param name="data"></param>
+        private void FixTopLeftPointCollectionData(Data data)
+        {
+            PointCollection points = data.PointCollection;
+            //左上座標を計算
+            double x = double.MaxValue;
+            double y = double.MaxValue;
+            foreach (var item in points)
+            {
+                if (x > item.X) x = item.X;
+                if (y > item.Y) y = item.Y;
+            }
+            //修正
+            for (int i = 0; i < points.Count; i++)
+            {
+                points[i] = new Point(points[i].X - x, points[i].Y - y);
+            }
+            //決定
+            data.X = x; data.Y = y;
+        }
+
+        private void MyDrawCanvas_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (MyTempPoints.Count < 2) { return; }
+            Point pp = Mouse.GetPosition(MyDrawCanvas);
+            MyTempPoints[^1] = pp;
+        }
+
+        /// <summary>
+        /// 左クリックで頂点追加
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MyDrawCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            Point pp = Mouse.GetPosition(MyDrawCanvas);
+            //最初だけは同時に2点追加
+            if (MyTempPoints.Count == 0)
+            {
+                MyTempPoints.Add(pp);
+                MyTempPoints.Add(pp);
+            }
+            else
+            {
+                MyTempPoints.Add(pp);
+            }
+
+        }
+        #endregion マウスクリックでPolyline描画
+
         #region 図形のアンカーポイント編集開始、終了
 
         private void ContextAddAnchor_Click(object sender, RoutedEventArgs e)
         {
-            if (MyRoot.ClickedThumb is TThumb tShape)
-            {
-                Point thumbMP = Mouse.GetPosition(tShape);
-                Point canvasMP = Mouse.GetPosition(MyAnchorPointEditCanvas);
+            //if (MyRoot.ClickedThumb is TThumb tShape)
+            //{
+            //    Point thumbMP = Mouse.GetPosition(tShape);
+            //    Point canvasMP = Mouse.GetPosition(MyAnchorPointEditCanvas);
 
-                AnchorThumb anchor = new(canvasMP);
-                anchor.DragDelta += AnchorThumb_DragDelta;
-                anchor.DragCompleted += AnchorThumb_DragCompleted;
+            //    AnchorThumb anchor = new(canvasMP);
+            //    anchor.DragDelta += AnchorThumb_DragDelta;
+            //    anchor.DragCompleted += AnchorThumb_DragCompleted;
 
-                double beginD = TwoPointDistance(tShape.Data.PointCollection[0], thumbMP);
-                double endD = TwoPointDistance(tShape.Data.PointCollection[^1], thumbMP);
-                if (beginD > endD)
-                {
-                    tShape.Data.PointCollection.Add(thumbMP);//頂点追加
-                    MyAnchoredThumbs.Add(anchor);//アンカーThumb追加
-                    MyAnchorPointEditCanvas.Children.Add(anchor);//アンカーThumb追加
-                }
-                else
-                {
-                    tShape.Data.PointCollection.Insert(0, thumbMP);
-                    MyAnchoredThumbs.Insert(0, anchor);//アンカーThumb追加
-                    MyAnchorPointEditCanvas.Children.Insert(0, anchor);//アンカーThumb追加
-                }
+            //    double beginD = TwoPointDistance(tShape.Data.PointCollection[0], thumbMP);
+            //    double endD = TwoPointDistance(tShape.Data.PointCollection[^1], thumbMP);
+            //    if (beginD > endD)
+            //    {
+            //        tShape.Data.PointCollection.Add(thumbMP);//頂点追加
+            //        MyAnchoredThumbs.Add(anchor);//アンカーThumb追加
+            //        MyAnchorPointEditCanvas.Children.Add(anchor);//アンカーThumb追加
+            //    }
+            //    else
+            //    {
+            //        tShape.Data.PointCollection.Insert(0, thumbMP);
+            //        MyAnchoredThumbs.Insert(0, anchor);//アンカーThumb追加
+            //        MyAnchorPointEditCanvas.Children.Insert(0, anchor);//アンカーThumb追加
+            //    }
 
 
 
-            }
+            //}
         }
+
+
         public double TwoPointDistance(Point p1, Point p2)
         {
             return Math.Sqrt((p2.X - p1.X) * (p2.X - p1.X) + (p2.Y - p1.Y) * (p2.Y - p2.Y));
@@ -2275,6 +2293,26 @@ namespace Pixtack3rd
 
         #endregion 図形のアンカーポイント編集開始、終了
 
+        #region 追加
+        private void AddShapePolyline(PointCollection points, bool locateFix = true)
+        {
+            Data data = new(TType.Polyline)
+            {
+                HeadAngle = (double)MyNumeArrowHeadAngle.MyValue,
+                Stroke = GetBrush(),
+                StrokeThickness = (double)MyNumeStrokeThickness.MyValue,
+                Fill = GetBrush(),
+                PointCollection = points,
+                HeadBeginType = (HeadType)MyComboBoxLineHeadBeginType.SelectedValue,
+                HeadEndType = (HeadType)MyComboBoxLineHeadEndType.SelectedValue,
+            };
+            FixTopLeftPointCollectionData(data);
+            MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper, locateFix);
+        }
+        #endregion 追加
+        #endregion 図形関連
+
+
         private void ButtonTest2_Click(object sender, RoutedEventArgs e)
         {
 
@@ -2359,6 +2397,10 @@ namespace Pixtack3rd
             DrawPolylineFromClick();
         }
 
+        private void ButtonAddShape_Click(object sender, RoutedEventArgs e)
+        {
+            AddShapePolyline(new PointCollection() { new Point(0, 0), new Point(100, 100) });
+        }
     }
 
 
