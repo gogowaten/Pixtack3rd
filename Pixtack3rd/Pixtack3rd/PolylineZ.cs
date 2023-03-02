@@ -98,7 +98,7 @@ namespace Pixtack3rd
 
         public PolylineZ()
         {
-
+            
         }
         private static double DegreeToRadian(double degree)
         {
@@ -126,6 +126,10 @@ namespace Pixtack3rd
             get
             {
                 if (MyPoints.Count < 2) { return Geometry.Empty; }
+                //線はStrokeで描画、矢じりはFillで描画している
+                //色は統一するので別々に色を指定するのがめんどくさいから
+                //Strokeで指定に統一
+                Fill = Stroke;
 
                 StreamGeometry geometry = new() { FillRule = FillRule.Nonzero };
                 using (var context = geometry.Open())

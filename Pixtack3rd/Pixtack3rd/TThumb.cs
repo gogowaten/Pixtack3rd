@@ -2738,7 +2738,7 @@ namespace Pixtack3rd
             MyTemplateElement.SetBinding(PolyCanvas.StrokeThicknessProperty, nameof(StrokeThickness));
             //MyTemplateElement.SetBinding(PolyCanvas.StrokeThicknessProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeThicknessProperty) });
             MyTemplateElement.SetBinding(PolyCanvas.StrokeProperty, nameof(Stroke));
-            MyTemplateElement.SetBinding(PolyCanvas.TTFillProperty, nameof(TTFill));
+            //MyTemplateElement.SetBinding(PolyCanvas.TTFillProperty, nameof(TTFill));
             MyTemplateElement.SetBinding(PolyCanvas.HeadBeginTypeProperty, nameof(HeadBeginType));
             MyTemplateElement.SetBinding(PolyCanvas.HeadEndTypeProperty, nameof(HeadEndType));
             MyTemplateElement.SetBinding(PolyCanvas.AngleProperty, nameof(Angle));
@@ -2780,7 +2780,7 @@ namespace Pixtack3rd
 
             MyTemplateElement.SetBinding(PolyCanvas.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeProperty) });
             MyTemplateElement.SetBinding(PolyCanvas.StrokeThicknessProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeThicknessProperty) });
-            MyTemplateElement.SetBinding(PolyCanvas.TTFillProperty, new Binding() { Source = this, Path = new PropertyPath(TTFillProperty) });
+            //MyTemplateElement.SetBinding(PolyCanvas.TTFillProperty, new Binding() { Source = this, Path = new PropertyPath(TTFillProperty) });
             MyTemplateElement.SetBinding(PolyCanvas.AngleProperty, new Binding() { Source = this, Path = new PropertyPath(AngleProperty) });
             MyTemplateElement.SetBinding(PolyCanvas.HeadBeginTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadBeginTypeProperty) });
             MyTemplateElement.SetBinding(PolyCanvas.HeadEndTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadEndTypeProperty) });

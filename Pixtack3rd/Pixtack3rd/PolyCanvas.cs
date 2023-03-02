@@ -128,17 +128,17 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        public Brush TTFill
-        {
-            get { return (Brush)GetValue(TTFillProperty); }
-            set { SetValue(TTFillProperty, value); }
-        }
-        public static readonly DependencyProperty TTFillProperty =
-            DependencyProperty.Register(nameof(TTFill), typeof(Brush), typeof(PolyCanvas),
-                new FrameworkPropertyMetadata(Brushes.Red,
-                    FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure |
-                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+        //public Brush TTFill
+        //{
+        //    get { return (Brush)GetValue(TTFillProperty); }
+        //    set { SetValue(TTFillProperty, value); }
+        //}
+        //public static readonly DependencyProperty TTFillProperty =
+        //    DependencyProperty.Register(nameof(TTFill), typeof(Brush), typeof(PolyCanvas),
+        //        new FrameworkPropertyMetadata(Brushes.Red,
+        //            FrameworkPropertyMetadataOptions.AffectsRender |
+        //            FrameworkPropertyMetadataOptions.AffectsMeasure |
+        //            FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public double StrokeThickness
         {
@@ -188,7 +188,7 @@ namespace Pixtack3rd
 
             MyShape.SetBinding(PolylineZ.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeProperty) });
             MyShape.SetBinding(PolylineZ.StrokeThicknessProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeThicknessProperty) });
-            MyShape.SetBinding(PolylineZ.FillProperty, new Binding() { Source = this, Path = new PropertyPath(TTFillProperty) });
+            //MyShape.SetBinding(PolylineZ.FillProperty, new Binding() { Source = this, Path = new PropertyPath(TTFillProperty) });
             MyShape.SetBinding(PolylineZ.AngleProperty, new Binding() { Source = this, Path = new PropertyPath(AngleProperty) });
             MyShape.SetBinding(PolylineZ.HeadBeginTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadBeginTypeProperty) });
             MyShape.SetBinding(PolylineZ.HeadEndTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadEndTypeProperty) });

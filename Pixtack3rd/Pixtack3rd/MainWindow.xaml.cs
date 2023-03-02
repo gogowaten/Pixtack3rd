@@ -21,6 +21,7 @@ using System.Windows.Shapes;
 using System.Xml;
 using System.Windows.Controls.Primitives;
 using System.Reflection;
+using ControlLibraryCore20200620;
 
 namespace Pixtack3rd
 {
@@ -2136,35 +2137,21 @@ namespace Pixtack3rd
                 //MyAnchorPointEditCanvas.Cursor = Cursors.Hand;             
                 thumb.MyAnchorVisible = Visibility.Visible;
 
+                MyTabItemShape.DataContext = thumb.Data;
+                MyNumeArrowHeadAngle.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.HeadAngle));
+                MyNumeStrokeThickness.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.StrokeThickness));
+                MyComboBoxLineHeadBeginType.SetBinding(ComboBox.SelectedValueProperty, nameof(Data.HeadBeginType));
+                MyComboBoxLineHeadEndType.SetBinding(ComboBox.SelectedValueProperty, nameof(Data.HeadEndType));
+
+                MyNumeShapeBackA.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = thumb.Stroke, Converter = new MyConverterBrushColorA() });
+                MyNumeShapeBackR.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = thumb.Stroke, Converter = new MyConverterBrushColorR() });
+                MyNumeShapeBackG.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = thumb.Stroke, Converter = new MyConverterBrushColorG() });
+                MyNumeShapeBackB.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = thumb.Stroke, Converter = new MyConverterBrushColorB() });
+
+              
             }
         }
-        ////アンカーポイントの編集開始
-        //private void EditStartAnchor()
-        //{
-        //    if (MyRoot.ClickedThumb is TTPolylineZ thumb)
-        //    {
-        //        MyAnchorPointEditCanvas.Cursor = Cursors.Hand;
-        //        MyAnchorPointEditCanvas.Visibility = Visibility.Visible;
-        //        //AnchorThumb作成、表示
-        //        //Anchorの座標はThumb座標 + Point座標
-        //        foreach (var item in thumb.MyPoints)
-        //        {
-        //            //Point fixP = new(item.X + anchor.TTLeft, item.Y + anchor.TTTop);
-        //            //AnchorThumb anchor = new(fixP);
-        //            AnchorThumb at = new(item);
-        //            at.DragDelta += AnchorThumb_DragDelta;
-        //            at.DragCompleted += AnchorThumb_DragCompleted;
-        //            MyAnchoredThumbs.Add(at);
-        //            MyAnchorPointEditCanvas.Children.Add(at);
-        //        }
-        //        MyAnchorPointEditCanvas.DataContext = thumb;
-        //        MyAnchorPointEditCanvas.SetBinding(WidthProperty, new Binding() { Path = new PropertyPath(ActualWidthProperty) });
-        //        MyAnchorPointEditCanvas.SetBinding(HeightProperty, new Binding() { Path = new PropertyPath(ActualHeightProperty) });
-        //        MyAnchorPointEditCanvas.SetBinding(Canvas.LeftProperty, new Binding() { Path = new PropertyPath(TThumb.TTLeftProperty) });
-        //        MyAnchorPointEditCanvas.SetBinding(Canvas.TopProperty, new Binding() { Path = new PropertyPath(TThumb.TTTopProperty) });
-        //        MyAnchorPointEditCanvas.Background = new SolidColorBrush(Color.FromArgb(100, 0, 0, 0));
-        //    }
-        //}
+
 
         //アンカーポイントの編集終了
         private void EditEndAnchor()
@@ -2172,6 +2159,27 @@ namespace Pixtack3rd
             if (MyRoot.ClickedThumb is TTPolyline thumb)
             {
                 thumb.MyAnchorVisible = Visibility.Collapsed;
+                MyTabItemShape.DataContext = null;
+                MyNumeStrokeThickness.MyValue = (decimal)thumb.StrokeThickness;
+                MyNumeArrowHeadAngle.MyValue = (decimal)thumb.Angle;
+                MyComboBoxLineHeadBeginType.SelectedValue = thumb.HeadBeginType;
+                MyComboBoxLineHeadEndType.SelectedValue = thumb.HeadEndType;
+
+                //BindingOperations.ClearAllBindings(MyNumeShapeBackA);
+                //BindingOperations.ClearAllBindings(MyNumeShapeBackR);
+                //BindingOperations.ClearAllBindings(MyNumeShapeBackG);
+                //BindingOperations.ClearAllBindings(MyNumeShapeBackB);
+                SolidColorBrush brush = (SolidColorBrush)thumb.Stroke;
+                MyNumeShapeBackA.MyValue = (decimal)brush.Color.A;
+                MyNumeShapeBackR.MyValue = (decimal)brush.Color.R;
+                MyNumeShapeBackG.MyValue = (decimal)brush.Color.G;
+                MyNumeShapeBackB.MyValue = (decimal)brush.Color.B;
+                //MyBorderShapeColor.Background = brush;
+
+                //BindingOperations.ClearAllBindings(MyNumeArrowHeadAngle);
+                //BindingOperations.ClearAllBindings(MyNumeStrokeThickness);
+                //BindingOperations.ClearAllBindings(MyComboBoxLineHeadBeginType);
+                //BindingOperations.ClearAllBindings(MyComboBoxLineHeadEndType);
             }
         }
         //private void EditEndAnchor()
@@ -2303,8 +2311,8 @@ namespace Pixtack3rd
                 StrokeThickness = (double)MyNumeStrokeThickness.MyValue,
                 Fill = GetBrush(),
                 PointCollection = points,
-                HeadBeginType = (HeadType)MyComboBoxLineHeadBeginType.SelectedValue,
-                HeadEndType = (HeadType)MyComboBoxLineHeadEndType.SelectedValue,
+                HeadBeginType = (HeadType)MyComboBoxLineHeadBeginType.SelectedItem,
+                HeadEndType = (HeadType)MyComboBoxLineHeadEndType.SelectedItem,
             };
             FixTopLeftPointCollectionData(data);
             MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper, locateFix);
@@ -2403,6 +2411,95 @@ namespace Pixtack3rd
         }
     }
 
+    public class MyConverterBrush : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            byte a = (byte)(decimal)values[0];
+            byte r = (byte)(decimal)values[1];
+            byte g = (byte)(decimal)values[2];
+            byte b = (byte)(decimal)values[3];
+            return new SolidColorBrush(Color.FromArgb(a, r, g, b));
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            SolidColorBrush brush = (SolidColorBrush)value;
+            object[] array = new object[4];
+            array[0] = brush.Color.A;
+            array[1] = brush.Color.R;
+            array[2] = brush.Color.G;
+            array[3] = brush.Color.B;
+            return array;
+        }
+    }
+    public class MyConverterBrushColorA : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {            
+            SolidColorBrush brush = (SolidColorBrush)value;
+            return brush.Color.A;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            SolidColorBrush brush = (SolidColorBrush)parameter;
+            Color c = brush.Color;
+            byte v = (byte)(decimal)value;
+            return new SolidColorBrush(Color.FromArgb(v, c.R, c.G, c.B));
+        }
+    }
+    public class MyConverterBrushColorR : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {            
+            SolidColorBrush brush = (SolidColorBrush)value;
+            return brush.Color.R;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            SolidColorBrush brush = (SolidColorBrush)parameter;
+            Color c = brush.Color;
+            byte v = (byte)(decimal)value;
+            return new SolidColorBrush(Color.FromArgb(c.A, v, c.G, c.B));
+        }
+    }
+    public class MyConverterBrushColorG : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {            
+            SolidColorBrush brush = (SolidColorBrush)value;
+            return brush.Color.G;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            SolidColorBrush brush = (SolidColorBrush)parameter;
+            Color c = brush.Color;
+            byte v = (byte)(decimal)value;
+            return new SolidColorBrush(Color.FromArgb(c.A, c.R, v, c.B));
+        }
+    }
+    public class MyConverterBrushColorB : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {            
+            SolidColorBrush brush = (SolidColorBrush)value;
+            return brush.Color.B;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            SolidColorBrush brush = (SolidColorBrush)parameter;
+            Color c = brush.Color;
+            byte v = (byte)(decimal)value;
+            return new SolidColorBrush(Color.FromArgb(c.A, c.R, c.G, v));
+        }
+    }
+
+
+    #region アプリの設定保存用Dataクラス
 
     /// <summary>
     /// アプリの設定値用クラス
@@ -2580,7 +2677,7 @@ namespace Pixtack3rd
         }
     }
 
-
+    #endregion アプリの設定保存用Dataクラス
 
 
 
