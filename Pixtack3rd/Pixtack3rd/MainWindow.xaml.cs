@@ -1948,6 +1948,11 @@ namespace Pixtack3rd
 
         private void ButtonTest_Click(object sender, RoutedEventArgs e)
         {
+            var consize = MyPolyZ.MyContentRect;
+            var rsize = MyPolyZ.RenderSize;
+            var polybound = VisualTreeHelper.GetContentBounds(MyPolyZ);
+            var debound = VisualTreeHelper.GetDescendantBounds(MyPolyZ);
+
             var neko = MyRoot.ClickedThumb.Data.PointCollection;
             var neko2 = MyRoot.ClickedThumb.Data.Stroke;
             //MyRoot.ClickedThumb.Data.PointCollection[0] = new Point(200,200);
@@ -2148,7 +2153,7 @@ namespace Pixtack3rd
                 MyNumeShapeBackG.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = thumb.Stroke, Converter = new MyConverterBrushColorG() });
                 MyNumeShapeBackB.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = thumb.Stroke, Converter = new MyConverterBrushColorB() });
 
-              
+
             }
         }
 
@@ -2174,22 +2179,9 @@ namespace Pixtack3rd
                 MyNumeShapeBackR.MyValue = (decimal)brush.Color.R;
                 MyNumeShapeBackG.MyValue = (decimal)brush.Color.G;
                 MyNumeShapeBackB.MyValue = (decimal)brush.Color.B;
-                //MyBorderShapeColor.Background = brush;
-
-                //BindingOperations.ClearAllBindings(MyNumeArrowHeadAngle);
-                //BindingOperations.ClearAllBindings(MyNumeStrokeThickness);
-                //BindingOperations.ClearAllBindings(MyComboBoxLineHeadBeginType);
-                //BindingOperations.ClearAllBindings(MyComboBoxLineHeadEndType);
             }
         }
-        //private void EditEndAnchor()
-        //{
-        //    MyAnchorPointEditCanvas.Cursor = Cursors.Arrow;
-        //    MyAnchorPointEditCanvas.Visibility = Visibility.Collapsed;
-        //    MyAnchoredThumbs.Clear();
-        //    MyAnchorPointEditCanvas.Children.Clear();
 
-        //}
 
         //アンカーポイント移動中、対象Pointの更新
         private void AnchorThumb_DragDelta(object sender, DragDeltaEventArgs e)
@@ -2313,7 +2305,10 @@ namespace Pixtack3rd
                 PointCollection = points,
                 HeadBeginType = (HeadType)MyComboBoxLineHeadBeginType.SelectedItem,
                 HeadEndType = (HeadType)MyComboBoxLineHeadEndType.SelectedItem,
+                IsBezier = MyCheckBoxIsBezier.IsChecked == true,
             };
+
+
             FixTopLeftPointCollectionData(data);
             MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper, locateFix);
         }
@@ -2436,7 +2431,7 @@ namespace Pixtack3rd
     public class MyConverterBrushColorA : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {            
+        {
             SolidColorBrush brush = (SolidColorBrush)value;
             return brush.Color.A;
         }
@@ -2452,7 +2447,7 @@ namespace Pixtack3rd
     public class MyConverterBrushColorR : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {            
+        {
             SolidColorBrush brush = (SolidColorBrush)value;
             return brush.Color.R;
         }
@@ -2468,7 +2463,7 @@ namespace Pixtack3rd
     public class MyConverterBrushColorG : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {            
+        {
             SolidColorBrush brush = (SolidColorBrush)value;
             return brush.Color.G;
         }
@@ -2484,7 +2479,7 @@ namespace Pixtack3rd
     public class MyConverterBrushColorB : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {            
+        {
             SolidColorBrush brush = (SolidColorBrush)value;
             return brush.Color.B;
         }

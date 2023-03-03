@@ -150,6 +150,10 @@ namespace Pixtack3rd
 
         private double _headAngle;
         [DataMember] public double HeadAngle { get => _headAngle; set => SetProperty(ref _headAngle, value); }
+
+        private bool _isBezier;
+        public bool IsBezier { get => _isBezier; set => SetProperty(ref _isBezier, value); }
+
         #endregion 図形
 
         #endregion 固有

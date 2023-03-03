@@ -2598,6 +2598,18 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
+        public bool IsBezier
+        {
+            get { return (bool)GetValue(IsBezierProperty); }
+            set { SetValue(IsBezierProperty, value); }
+        }
+        public static readonly DependencyProperty IsBezierProperty =
+            DependencyProperty.Register(nameof(IsBezier), typeof(bool), typeof(TTPolyline),
+                new FrameworkPropertyMetadata(false,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
         /// <summary>
         /// 終点のヘッドタイプ
         /// </summary>
@@ -2742,7 +2754,7 @@ namespace Pixtack3rd
             MyTemplateElement.SetBinding(PolyCanvas.HeadBeginTypeProperty, nameof(HeadBeginType));
             MyTemplateElement.SetBinding(PolyCanvas.HeadEndTypeProperty, nameof(HeadEndType));
             MyTemplateElement.SetBinding(PolyCanvas.AngleProperty, nameof(Angle));
-            MyTemplateElement.SetBinding(PolyCanvas.MyAnchorVisibleProperty, nameof(MyAnchorVisible));
+            //MyTemplateElement.SetBinding(PolyCanvas.MyAnchorVisibleProperty, nameof(MyAnchorVisible));
             MyTemplateElement.SetBinding(PolyCanvas.XProperty, nameof(TTLeft));
             MyTemplateElement.SetBinding(PolyCanvas.YProperty, nameof(TTTop));
 
@@ -2782,6 +2794,7 @@ namespace Pixtack3rd
             MyTemplateElement.SetBinding(PolyCanvas.StrokeThicknessProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeThicknessProperty) });
             //MyTemplateElement.SetBinding(PolyCanvas.TTFillProperty, new Binding() { Source = this, Path = new PropertyPath(TTFillProperty) });
             MyTemplateElement.SetBinding(PolyCanvas.AngleProperty, new Binding() { Source = this, Path = new PropertyPath(AngleProperty) });
+            MyTemplateElement.SetBinding(PolyCanvas.IsBezierProperty, new Binding() { Source = this, Path = new PropertyPath(IsBezierProperty) });
             MyTemplateElement.SetBinding(PolyCanvas.HeadBeginTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadBeginTypeProperty) });
             MyTemplateElement.SetBinding(PolyCanvas.HeadEndTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadEndTypeProperty) });
             MyTemplateElement.SetBinding(PolyCanvas.MyPointsProperty, new Binding() { Source = this, Path = new PropertyPath(MyPointsProperty) });//XAML更新で必須
@@ -2798,6 +2811,8 @@ namespace Pixtack3rd
             SetBinding(AngleProperty, nameof(Data.HeadAngle));
             SetBinding(HeadBeginTypeProperty, nameof(Data.HeadBeginType));
             SetBinding(HeadEndTypeProperty, nameof(Data.HeadEndType));
+            SetBinding(IsBezierProperty, nameof(Data.IsBezier));
+
             //Loaded時にPointsを関連付け
             //起動時だと早すぎでMyPointsに値が入っていないのでloaded時
             Loaded += TTPolyline2_Loaded;

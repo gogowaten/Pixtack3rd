@@ -261,18 +261,23 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                            MyPoints="30,0 200,20 100,50" StrokeThickness="10" HeadAngle="30"
                            HeadBeginType="Arrow" HeadEndType="Arrow"
                            Stroke="Crimson" TTFill="Crimson"/>-->
-          <local:TTPolyline x:Name="MyPolyline2" MyPoints="0,0 250,0" TTLeft="100" TTTop="50"
+          <!--<local:TTPolyline x:Name="MyPolyline2" MyPoints="0,0 250,0" TTLeft="100" TTTop="50"
                              HeadBeginType="Arrow" HeadEndType="Arrow" Angle="30" Stroke="Pink" 
-                            StrokeThickness="20"/>
+                            StrokeThickness="20"/>-->
+          <local:TTPolyline x:Name="MyPolyline3" MyPoints="50,0 200,50 0,100 200,100" TTLeft="100" TTTop="130"
+                             HeadBeginType="Arrow" HeadEndType="Arrow" Angle="30" Stroke="SeaGreen" 
+                            StrokeThickness="20" IsBezier="True"/>
+
         </local:TTRoot>
         <!--</Grid>-->
       </ScrollViewer>
 
-        <Canvas Grid.Row="1" Grid.Column="1"
+      <Canvas Grid.Row="1" Grid.Column="1"
               x:Name="MyDrawCanvas" Visibility="Collapsed"
               Cursor="Cross" Background="Transparent">
-        </Canvas>
+      </Canvas>
       <Canvas Grid.Row="1" Grid.Column="1">
+        <local:PolylineZ x:Name="MyPolyZ" MyPoints="200,0 450,100 00,100 300,150" IsBezier="True" Stroke="Red" StrokeThickness="10"/>
         <!--<Canvas Grid.Row="1" Grid.Column="1"
               x:Name="MyAnchorPointEditCanvas" Visibility="Collapsed"
               Background="Transparent">
@@ -284,7 +289,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
           </Canvas.ContextMenu>
         </Canvas>-->
       </Canvas>
-      
+
     </Grid>
     <TabControl Grid.Row="1" Grid.Column="0" x:Name="MyTabControl" TabStripPlacement="Top">
 
@@ -300,7 +305,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <ComboBox x:Name="ComboBoxSaveFileType" SelectedItem="{Binding ImageType}"/>
             <Button x:Name="ButtonTest" Content="test!!!!!!!!!!" Click="ButtonTest_Click"/>
             <Button x:Name="ButtonTest2" Content="test2" Click="ButtonTest2_Click"/>
-            
+
             <GroupBox Header="画像ファイルとして保存">
               <WrapPanel>
                 <Button x:Name="ButtonSaveToImage" Content="Root" Click="ButtonSaveToImage_Click"/>
@@ -742,6 +747,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <tomato:NumericUpDown x:Name="MyNumeStrokeThickness" MyValue="10" MyStringFormat="太さ 0" MyMinValue="1" MyMaxValue="100"/>
             <ComboBox x:Name="MyComboBoxLineHeadBeginType"/>
             <ComboBox x:Name="MyComboBoxLineHeadEndType"/>
+            <CheckBox x:Name="MyCheckBoxIsBezier" Content="曲線" HorizontalAlignment="Center"/>
             <UniformGrid Rows="1">
               <UniformGrid Rows="1">
                 <TextBlock Text="色" VerticalAlignment="Center" HorizontalAlignment="Center"/>
@@ -763,8 +769,8 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               <tomato:NumericUpDown x:Name="MyNumeShapeBackG" MyMinValue="0" MyMaxValue="255" MyValue="20" MyStringFormat="G 000" BorderBrush="Transparent" Background="ForestGreen" Foreground="White" MyButtonMarkColor="White"/>
               <tomato:NumericUpDown x:Name="MyNumeShapeBackB" MyMinValue="0" MyMaxValue="255" MyValue="20" MyStringFormat="B 000" BorderBrush="Transparent" Background="RoyalBlue" Foreground="White" MyButtonMarkColor="White"/>
             </UniformGrid>
-              <Button x:Name="ButtonAddShape" Content="追加" Click="ButtonAddShape_Click"/>
-              <Button x:Name="ButtonTestDrawPolyline" Content="クリックで描画" Click="ButtonTestDrawPolyline_Click"/>
+            <Button x:Name="ButtonAddShape" Content="追加" Click="ButtonAddShape_Click"/>
+            <Button x:Name="ButtonTestDrawPolyline" Content="クリックで描画" Click="ButtonTestDrawPolyline_Click"/>
 
           </StackPanel>
         </ScrollViewer>

@@ -71,6 +71,17 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
+        public bool IsBezier
+        {
+            get { return (bool)GetValue(IsBezierProperty); }
+            set { SetValue(IsBezierProperty, value); }
+        }
+        public static readonly DependencyProperty IsBezierProperty =
+            DependencyProperty.Register(nameof(IsBezier), typeof(bool), typeof(PolyCanvas),
+                new FrameworkPropertyMetadata(false,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         /// <summary>
         /// 終点のヘッドタイプ
@@ -185,6 +196,9 @@ namespace Pixtack3rd
             //CanvasのサイズはPolylineのActualに追従
             SetBinding(WidthProperty, new Binding() { Source = MyShape, Path = new PropertyPath(ActualWidthProperty) });
             SetBinding(HeightProperty, new Binding() { Source = MyShape, Path = new PropertyPath(ActualHeightProperty) });
+            //SetBinding(WidthProperty, new Binding(nameof(PolylineZ.MyContentRect)) { Source = MyShape, Converter = new MyConverterRectToWidth() });
+            //SetBinding(HeightProperty, new Binding(nameof(PolylineZ.MyContentRect)) { Source = MyShape, Converter = new MyConverterRectToHeight() });
+            
 
             MyShape.SetBinding(PolylineZ.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeProperty) });
             MyShape.SetBinding(PolylineZ.StrokeThicknessProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeThicknessProperty) });
@@ -192,7 +206,9 @@ namespace Pixtack3rd
             MyShape.SetBinding(PolylineZ.AngleProperty, new Binding() { Source = this, Path = new PropertyPath(AngleProperty) });
             MyShape.SetBinding(PolylineZ.HeadBeginTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadBeginTypeProperty) });
             MyShape.SetBinding(PolylineZ.HeadEndTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadEndTypeProperty) });
+            MyShape.SetBinding(PolylineZ.IsBezierProperty, new Binding() { Source = this, Path = new PropertyPath(IsBezierProperty) });
             MyShape.SetBinding(PolylineZ.MyPointsProperty, new Binding() { Source = this, Path = new PropertyPath(MyPointsProperty) });
+
 
 
 
@@ -207,8 +223,10 @@ namespace Pixtack3rd
             item.Click += (o, e) => { AddPoint(MyClickedPoint); };
             MyMenu.Items.Add(item);
 
+            Background = Brushes.WhiteSmoke;
 
         }
+
 
         private void PolylinCanvas_Loaded(object sender, RoutedEventArgs e)
         {
@@ -282,6 +300,18 @@ namespace Pixtack3rd
         }
         #endregion アンカー点削除
 
+        public void AnchorVisible()
+        {
+            MyAnchorThumbs.Clear();
+        }
+        public void AnchorInvisible()
+        {
+            foreach (var item in MyPoints)
+            {
+                AddAnchorThumb(item);
+            }
+
+        }
 
         //アンカーThumbをクリックしたときIndexの更新
         private void Thumb_PreviewMouseDown(object sender, MouseButtonEventArgs e)
@@ -369,6 +399,9 @@ namespace Pixtack3rd
                     if (minY > item.Y) { minY = item.Y; }
                 }
 
+                var neko = MyShape.MyContentRect;
+                var rsize = RenderSize;
+
                 //左上座標が0なら該当Pointだけ変更、
                 //違う場合は本体と全アンカー点を修正
                 if (minX == 0 && minY == 0)
@@ -377,8 +410,6 @@ namespace Pixtack3rd
                 }
                 else
                 {
-                    //SetLeft(this, GetLeft(this) + minX);
-                    //SetTop(this, GetTop(this) + minY);
                     X += minX; Y += minY;
 
                     for (int i = 0; i < MyPoints.Count; i++)
