@@ -14,7 +14,7 @@ using System.Windows.Media.Imaging;
 
 namespace Pixtack3rd
 {
-    public enum TType { None = 0, Root, Group, TextBlock, TextBox, Image, Rectangle, Polyline,Polyline2 }
+    public enum TType { None = 0, Root, Group, TextBlock, TextBox, Image, Rectangle, Polyline, Geometric }
 
 
 
@@ -133,7 +133,7 @@ namespace Pixtack3rd
         #region 図形
         [DataMember] public PointCollection PointCollection { get; set; } = new();
 
-        private double _strokeThickness;
+        private double _strokeThickness = 1.0;
         [DataMember] public double StrokeThickness { get => _strokeThickness; set => SetProperty(ref _strokeThickness, value); }
 
         private Brush _stroke = Brushes.Red;
@@ -148,8 +148,16 @@ namespace Pixtack3rd
         private HeadType _endHeadType;
         [DataMember] public HeadType HeadEndType { get => _endHeadType; set => SetProperty(ref _endHeadType, value); }
 
-        private double _headAngle;
+        private double _headAngle = 30.0;
         [DataMember] public double HeadAngle { get => _headAngle; set => SetProperty(ref _headAngle, value); }
+
+        private bool _isBezier;
+        public bool IsBezier { get => _isBezier; set => SetProperty(ref _isBezier, value); }
+
+        private ShapeType _shapeType;
+        public ShapeType ShapeType { get => _shapeType; set => SetProperty(ref _shapeType, value); }
+
+
         #endregion 図形
 
         #endregion 固有

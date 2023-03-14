@@ -11,11 +11,9 @@
         Top="{Binding Path=Top, Mode=TwoWay}" Left="{Binding Left, Mode=TwoWay}"
         AllowDrop="True" Name="Main">
   <!--フォーカス時の点線を表示しない-->
-  <!--<Window.Resources>
-    <Style x:Key="FocusDisable" TargetType="{x:Type Button}">
-      <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-    </Style>
-  </Window.Resources>-->
+  <Window.Resources>
+    <local:ConverterArgbNumericToBrush x:Key="color"/>
+  </Window.Resources>
 
   <Grid Name="MyGrid">
     <Grid.ColumnDefinitions>
@@ -259,23 +257,32 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                            MyPoints="0,0 0,100" StrokeThickness="30" HeadAngle="30"
                            HeadBeginType="None" HeadEndType="None"
                            Stroke="OliveDrab" TTFill="OliveDrab"/>-->
-          <local:TTPolylineZ x:Name="MyPolylineZ2" TTLeft="200" TTTop="20"
+          <!--<local:TTPolylineZ x:Name="MyPolylineZ2" TTLeft="200" TTTop="20"
                            MyPoints="30,0 200,20 100,50" StrokeThickness="10" HeadAngle="30"
                            HeadBeginType="Arrow" HeadEndType="Arrow"
-                           Stroke="Crimson" TTFill="Crimson"/>
-          <local:TTPolyline x:Name="MyPolyline2" MyPoints="0,0 250,0" TTLeft="100" TTTop="50"
+                           Stroke="Crimson" TTFill="Crimson"/>-->
+          <!--<local:TTPolyline x:Name="MyPolyline2" MyPoints="0,0 250,0" TTLeft="100" TTTop="50"
                              HeadBeginType="Arrow" HeadEndType="Arrow" Angle="30" Stroke="Pink" 
-                            StrokeThickness="20" TTFill="Pink"/>
+                            StrokeThickness="20"/>-->
+          <local:TTPolyline x:Name="MyPolyline3" MyPoints="50,0 200,50 0,100 200,100" TTLeft="100" TTTop="130"
+                             HeadBeginType="Arrow" HeadEndType="Arrow" Angle="30" Stroke="SeaGreen" 
+                            StrokeThickness="20" IsBezier="True"/>
+          <local:TTGeometricShape MyPoints="50,0 0,100 150,0 20,100" StrokeThickness="10" Stroke="Crimson"
+                                  MyShapeType="Bezier" HeadBeginType="None" MyLineClose="True" TTFill="Blue"/>
+          <!--<local:TTGeometricShape MyPoints="50,0 0,100 100,100 100,0" StrokeThickness="20" Stroke="Red"
+                                  MyShapeType="Line" MyLineSmoothJoin="True" HeadBeginType="Arrow" HeadEndType="Arrow" TTFill="Blue"/>-->
         </local:TTRoot>
         <!--</Grid>-->
       </ScrollViewer>
-      
-      <Canvas>
-        <Canvas Grid.Row="1" Grid.Column="1"
+
+      <Canvas Grid.Row="1" Grid.Column="1"
               x:Name="MyDrawCanvas" Visibility="Collapsed"
               Cursor="Cross" Background="Transparent">
-        </Canvas>
-        <Canvas Grid.Row="1" Grid.Column="1"
+      </Canvas>
+      <Canvas Grid.Row="1" Grid.Column="1">
+        <local:PolylineZ x:Name="MyPolyZ" MyPoints="200,0 450,100 00,100 300,150" IsBezier="True" Stroke="Red" StrokeThickness="10"/>
+        <!--<local:GeometricShape MyPoints="50,100 200,150" HeadBeginType="Arrow" Stroke="Blue" StrokeThickness="20"/>-->
+        <!--<Canvas Grid.Row="1" Grid.Column="1"
               x:Name="MyAnchorPointEditCanvas" Visibility="Collapsed"
               Background="Transparent">
           <Canvas.ContextMenu>
@@ -284,8 +291,9 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               <MenuItem x:Name="ContextAddAnchorExtend" Header="端点追加" Click="ContextAddAnchorExtend_Click"/>
             </ContextMenu>
           </Canvas.ContextMenu>
-        </Canvas>
+        </Canvas>-->
       </Canvas>
+
     </Grid>
     <TabControl Grid.Row="1" Grid.Column="0" x:Name="MyTabControl" TabStripPlacement="Top">
 
@@ -301,9 +309,6 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <ComboBox x:Name="ComboBoxSaveFileType" SelectedItem="{Binding ImageType}"/>
             <Button x:Name="ButtonTest" Content="test!!!!!!!!!!" Click="ButtonTest_Click"/>
             <Button x:Name="ButtonTest2" Content="test2" Click="ButtonTest2_Click"/>
-            <Button x:Name="ButtonTestDrawPolyline" Content="TestPolyline" Click="ButtonTestDrawPolyline_Click"/>
-            <Button x:Name="ButtonStartEditAnchor" Content="頂点編集開始" Click="ButtonStartEditAnchor_Click"/>
-            <Button x:Name="ButtonEndEditAnchor" Content="頂点編集終了" Click="ButtonEndEditAnchor_Click"/>
 
             <GroupBox Header="画像ファイルとして保存">
               <WrapPanel>
@@ -631,7 +636,6 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               <Style TargetType="tomato:NumericUpDown">
                 <Setter Property="Margin" Value="1,0"/>
               </Style>
-              <local:ConverterArgbNumericToBrush x:Key="color"/>
               <local:ConverterFontWeightIsBold x:Key="isBold"/>
               <local:ConverterFontStyleIsItalic x:Key="isItalic"/>
               <local:ConverterThickness x:Key="thickness"/>
@@ -705,7 +709,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               <tomato:NumericUpDown x:Name="MyNumeBackA" MyMinValue="0" MyMaxValue="255" MyValue="0" MyStringFormat="A 000" BorderBrush="Transparent"/>
               <tomato:NumericUpDown x:Name="MyNumeBackR" MyMinValue="0" MyMaxValue="255" MyValue="255" MyStringFormat="R 000" BorderBrush="Transparent" Background="Crimson" Foreground="White" MyButtonMarkColor="White"/>
               <tomato:NumericUpDown x:Name="MyNumeBackG" MyMinValue="0" MyMaxValue="255" MyValue="255" MyStringFormat="G 000" BorderBrush="Transparent" Background="ForestGreen" Foreground="White" MyButtonMarkColor="White"/>
-              <tomato:NumericUpDown x:Name="MyNumeBackB" MyMinValue="0" MyMaxValue="255" MyValue="255" MyStringFormat="B 000" BorderBrush="Transparent" Background="DodgerBlue" Foreground="White" MyButtonMarkColor="White"/>
+              <tomato:NumericUpDown x:Name="MyNumeBackB" MyMinValue="0" MyMaxValue="255" MyValue="255" MyStringFormat="B 000" BorderBrush="Transparent" Background="RoyalBlue" Foreground="White" MyButtonMarkColor="White"/>
             </UniformGrid>
             <UniformGrid Rows="1">
               <!--<TextBlock Text="枠色" VerticalAlignment="Center"/>-->
@@ -733,6 +737,44 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
 
             <!--<TextBox x:Name="MyTextBoxText" AcceptsReturn="True" AcceptsTab="True" FontFamily="ＭＳ 明朝"
                    TextWrapping="Wrap" Text="testttttttttttttttttttttttt"/>-->
+
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <TabItem Header="図形" x:Name="MyTabItemShape">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <StackPanel>
+            <Button x:Name="ButtonStartEditAnchor" Content="編集開始" Click="ButtonStartEditAnchor_Click"/>
+            <Button x:Name="ButtonEndEditAnchor" Content="編集終了" Click="ButtonEndEditAnchor_Click"/>
+            <tomato:NumericUpDown x:Name="MyNumeArrowHeadAngle" MyValue="30" MyStringFormat="ヘッド角度 0" MyMinValue="0" MyMaxValue="60"/>
+            <tomato:NumericUpDown x:Name="MyNumeStrokeThickness" MyValue="10" MyStringFormat="太さ 0" MyMinValue="1" MyMaxValue="100"/>
+            <ComboBox x:Name="MyComboBoxLineHeadBeginType"/>
+            <ComboBox x:Name="MyComboBoxLineHeadEndType"/>
+            <CheckBox x:Name="MyCheckBoxIsBezier" Content="曲線" HorizontalAlignment="Center"/>
+            <UniformGrid Rows="1">
+              <UniformGrid Rows="1">
+                <TextBlock Text="色" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <Border x:Name="MyBorderShapeColor">
+                  <Border.Background>
+                    <MultiBinding Converter="{StaticResource color}">
+                      <MultiBinding.Bindings>
+                        <Binding ElementName="MyNumeShapeBackA" Path="MyValue"/>
+                        <Binding ElementName="MyNumeShapeBackR" Path="MyValue"/>
+                        <Binding ElementName="MyNumeShapeBackG" Path="MyValue"/>
+                        <Binding ElementName="MyNumeShapeBackB" Path="MyValue"/>
+                      </MultiBinding.Bindings>
+                    </MultiBinding>
+                  </Border.Background>
+                </Border>
+              </UniformGrid>
+              <tomato:NumericUpDown x:Name="MyNumeShapeBackA" MyMinValue="0" MyMaxValue="255" MyValue="255" MyStringFormat="A 000" BorderBrush="Transparent"/>
+              <tomato:NumericUpDown x:Name="MyNumeShapeBackR" MyMinValue="0" MyMaxValue="255" MyValue="200" MyStringFormat="R 000" BorderBrush="Transparent" Background="Crimson" Foreground="White" MyButtonMarkColor="White"/>
+              <tomato:NumericUpDown x:Name="MyNumeShapeBackG" MyMinValue="0" MyMaxValue="255" MyValue="20" MyStringFormat="G 000" BorderBrush="Transparent" Background="ForestGreen" Foreground="White" MyButtonMarkColor="White"/>
+              <tomato:NumericUpDown x:Name="MyNumeShapeBackB" MyMinValue="0" MyMaxValue="255" MyValue="20" MyStringFormat="B 000" BorderBrush="Transparent" Background="RoyalBlue" Foreground="White" MyButtonMarkColor="White"/>
+            </UniformGrid>
+            <Button x:Name="ButtonAddShape" Content="追加" Click="ButtonAddShape_Click"/>
+            <Button x:Name="ButtonTestDrawPolyline" Content="クリックで描画" Click="ButtonTestDrawPolyline_Click"/>
 
           </StackPanel>
         </ScrollViewer>

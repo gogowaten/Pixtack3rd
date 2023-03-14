@@ -1,0 +1,2 @@
+﻿TThumbに新しい種類を増やしたときにすること
+	TThumb.csのpublic TThumb BuildThumb(Data data)に種類を追加
