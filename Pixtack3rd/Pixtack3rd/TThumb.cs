@@ -597,12 +597,18 @@ namespace Pixtack3rd
             get => _clickedThumb;
             set
             {
-                if (_clickedThumb != null) { _clickedThumb.IsClickedThumb = false; }
-                SetProperty(ref _clickedThumb, value);
-                if (_clickedThumb != null) { _clickedThumb.IsClickedThumb = true; }
+                if (_clickedThumb != null)
+                {
+                    _clickedThumb.IsClickedThumb = false;
+                    if (_clickedThumb is TTGeometricShape shape)
+                    {
+                        //shape.
+                    }
+                    SetProperty(ref _clickedThumb, value);
+                    if (_clickedThumb != null) { _clickedThumb.IsClickedThumb = true; }
+                }
             }
         }
-
         //注目しているThumb、選択Thumb群の筆頭
         private TThumb? _activeThumb;
         public TThumb? ActiveThumb
@@ -616,6 +622,7 @@ namespace Pixtack3rd
                     _activeThumb.Focusable = false;
                     //テキスト編集終了させる
                     if (_activeThumb is TTTextBox box) { box.IsEdit = false; }
+                    //if(_activeThumb is GeometricShape shape) { shape.}
                 }
                 SetProperty(ref _activeThumb, value);
                 if (_activeThumb != null)
@@ -1243,9 +1250,12 @@ namespace Pixtack3rd
                     //result = new TTPolylineZ(data);
                     result = new TTPolyline(data);
                     break;
+                case TType.Geometric:
+                    result = new TTGeometricShape(data);
+                    break;
                 //case TType.Polyline2:
-                    //result = new TTPolyline(data);
-                    //break;
+                //result = new TTPolyline(data);
+                //break;
                 default:
                     throw new NotImplementedException();
             }
@@ -2127,6 +2137,7 @@ namespace Pixtack3rd
     }
 
 
+    #region TTextBlock
 
 
     public class TTTextBlock : TThumb
@@ -2167,6 +2178,10 @@ namespace Pixtack3rd
             //MySetXYBinging(this.Data);
         }
     }
+    #endregion TTextBlock
+
+    #region TTTextBox
+
     public class TTTextBox : TThumb
     {
         #region 依存プロパティ
@@ -2405,6 +2420,8 @@ namespace Pixtack3rd
         }
 
     }
+    #endregion TTTextBox
+
 
     //public class TTPolylineZ : TThumb
     //{
@@ -2555,7 +2572,7 @@ namespace Pixtack3rd
     //        MyTemplateElement.SetBinding(Shape.FillProperty, nameof(TTFill));
     //        MyTemplateElement.SetBinding(PolylineZ.HeadBeginTypeProperty, nameof(HeadBeginType));
     //        MyTemplateElement.SetBinding(PolylineZ.HeadEndTypeProperty, nameof(HeadEndType));
-    //        MyTemplateElement.SetBinding(PolylineZ.AngleProperty, nameof(HeadAngle));
+    //        MyTemplateElement.SetBinding(PolylineZ.ArrowHeadAngleProperty, nameof(HeadAngle));
 
     //        //this <- mydata
     //        this.DataContext = this.Data;
@@ -2776,7 +2793,7 @@ namespace Pixtack3rd
             //Data.Stroke = Stroke;
             //Data.StrokeThickness = StrokeThickness;
             //Data.Fill = TTFill;
-            //Data.HeadAngle = Angle;
+            //Data.HeadAngle = ArrowHeadAngle;
         }
 
         private void SetBinding3()
@@ -2841,7 +2858,301 @@ namespace Pixtack3rd
     }
 
 
-//画像用TThumb
+    public class TTGeometricShape : TThumb
+    {
+        #region 依存プロパティ
+
+        public PointCollection MyPoints
+        {
+            get { return (PointCollection)GetValue(MyPointsProperty); }
+            set { SetValue(MyPointsProperty, value); }
+        }
+        public static readonly DependencyProperty MyPointsProperty =
+            DependencyProperty.Register(nameof(MyPoints), typeof(PointCollection), typeof(TTGeometricShape),
+                new FrameworkPropertyMetadata(new PointCollection(),
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public Visibility MyAnchorVisible
+        {
+            get { return (Visibility)GetValue(MyAnchorVisibleProperty); }
+            set { SetValue(MyAnchorVisibleProperty, value); }
+        }
+        public static readonly DependencyProperty MyAnchorVisibleProperty =
+            DependencyProperty.Register(nameof(MyAnchorVisible), typeof(Visibility), typeof(TTGeometricShape),
+                new FrameworkPropertyMetadata(Visibility.Collapsed,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public ShapeType MyShapeType
+        {
+            get { return (ShapeType)GetValue(MyShapeTypeProperty); }
+            set { SetValue(MyShapeTypeProperty, value); }
+        }
+        public static readonly DependencyProperty MyShapeTypeProperty =
+            DependencyProperty.Register(nameof(MyShapeType), typeof(ShapeType), typeof(TTGeometricShape),
+                new FrameworkPropertyMetadata(ShapeType.Line,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+
+        public bool MyLineClose
+        {
+            get { return (bool)GetValue(MyLineCloseProperty); }
+            set { SetValue(MyLineCloseProperty, value); }
+        }
+        public static readonly DependencyProperty MyLineCloseProperty =
+            DependencyProperty.Register(nameof(MyLineClose), typeof(bool), typeof(TTGeometricShape),
+                new FrameworkPropertyMetadata(false,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure));
+
+        /// <summary>
+        /// ラインのつなぎ目をtrueで丸める、falseで鋭角にする
+        /// </summary>
+        public bool MyLineSmoothJoin
+        {
+            get { return (bool)GetValue(MyLineSmoothJoinProperty); }
+            set { SetValue(MyLineSmoothJoinProperty, value); }
+        }
+        public static readonly DependencyProperty MyLineSmoothJoinProperty =
+            DependencyProperty.Register(nameof(MyLineSmoothJoin), typeof(bool), typeof(TTGeometricShape),
+                new FrameworkPropertyMetadata(false,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+
+        /// <summary>
+        /// 終点のヘッドタイプ
+        /// </summary>
+        public HeadType HeadEndType
+        {
+            get { return (HeadType)GetValue(HeadEndTypeProperty); }
+            set { SetValue(HeadEndTypeProperty, value); }
+        }
+        public static readonly DependencyProperty HeadEndTypeProperty =
+            DependencyProperty.Register(nameof(HeadEndType), typeof(HeadType), typeof(TTGeometricShape),
+                new FrameworkPropertyMetadata(HeadType.None,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+        /// <summary>
+        /// 始点のヘッドタイプ
+        /// </summary>
+        public HeadType HeadBeginType
+        {
+            get { return (HeadType)GetValue(HeadBeginTypeProperty); }
+            set { SetValue(HeadBeginTypeProperty, value); }
+        }
+        public static readonly DependencyProperty HeadBeginTypeProperty =
+            DependencyProperty.Register(nameof(HeadBeginType), typeof(HeadType), typeof(TTGeometricShape),
+                new FrameworkPropertyMetadata(HeadType.None,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        /// <summary>
+        /// 矢印角度、初期値は30.0にしている。30～40くらいが適当
+        /// </summary>
+        public double ArrowHeadAngle
+        {
+            get { return (double)GetValue(ArrowHeadAngleProperty); }
+            set { SetValue(ArrowHeadAngleProperty, value); }
+        }
+        public static readonly DependencyProperty ArrowHeadAngleProperty =
+            DependencyProperty.Register(nameof(ArrowHeadAngle), typeof(double), typeof(TTGeometricShape),
+                new FrameworkPropertyMetadata(30.0,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+
+        public Brush Stroke
+        {
+            get { return (Brush)GetValue(StrokeProperty); }
+            set { SetValue(StrokeProperty, value); }
+        }
+        public static readonly DependencyProperty StrokeProperty =
+            DependencyProperty.Register(nameof(Stroke), typeof(Brush), typeof(TTGeometricShape),
+                new FrameworkPropertyMetadata(Brushes.Red,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public Brush TTFill
+        {
+            get { return (Brush)GetValue(TTFillProperty); }
+            set { SetValue(TTFillProperty, value); }
+        }
+        public static readonly DependencyProperty TTFillProperty =
+            DependencyProperty.Register(nameof(TTFill), typeof(Brush), typeof(TTGeometricShape),
+                new FrameworkPropertyMetadata(Brushes.Red,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public double StrokeThickness
+        {
+            get { return (double)GetValue(StrokeThicknessProperty); }
+            set { SetValue(StrokeThicknessProperty, value); }
+        }
+        public static readonly DependencyProperty StrokeThicknessProperty =
+            DependencyProperty.Register(nameof(StrokeThickness), typeof(double), typeof(TTGeometricShape),
+                new FrameworkPropertyMetadata(5.0,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+
+        #endregion 依存プロパティ
+
+        public GeometricShape MyTemplateShape { get; protected set; }
+        
+
+
+        public TTGeometricShape() : this(new Data(TType.Geometric)) { }
+        public TTGeometricShape(Data data) : base(data)
+        {
+            Data = data;
+            this.DataContext = Data;
+            if (MakeTemplate<GeometricShape>() is GeometricShape element)
+            {
+                MyTemplateElement = element;
+                MyTemplateShape = element;
+                element.MyOwnerTThumb = this;
+            }
+            else { throw new ArgumentException("テンプレート作成できんかった"); }
+
+            //MySetBinding();
+            //SetBinding2();
+            SetBinding3();
+
+        }
+
+
+        private void SetBinding3()
+        {
+            //Bindingの方向はすべて双方向、ソースとターゲットの関係は
+            //使用class  target <- sourceだとすると
+
+            //this       this <- Data
+            //this       this.PolyCanvas <- this
+            //PolyCanvas PolylineZ <- PolyCanvas
+
+            //この関係じゃないとできない、特にDataは依存プロパティが使えないのでsourceにしか使えないのがめんどくさかった
+
+            MyTemplateElement.SetBinding(GeometricShape.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeProperty) });
+            MyTemplateElement.SetBinding(GeometricShape.StrokeThicknessProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeThicknessProperty) });
+            MyTemplateElement.SetBinding(GeometricShape.FillProperty, new Binding() { Source = this, Path = new PropertyPath(TTFillProperty) });
+
+            MyTemplateElement.SetBinding(GeometricShape.MyShapeTypeProperty, new Binding() { Source = this, Path = new PropertyPath(MyShapeTypeProperty) });
+            MyTemplateElement.SetBinding(GeometricShape.ArrowHeadAngleProperty, new Binding() { Source = this, Path = new PropertyPath(ArrowHeadAngleProperty) });
+            MyTemplateElement.SetBinding(GeometricShape.HeadBeginTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadBeginTypeProperty) });
+            MyTemplateElement.SetBinding(GeometricShape.HeadEndTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadEndTypeProperty) });
+            MyTemplateElement.SetBinding(GeometricShape.MyPointsProperty, new Binding() { Source = this, Path = new PropertyPath(MyPointsProperty) });//XAML更新で必須
+            MyTemplateElement.SetBinding(GeometricShape.MyAnchorVisibleProperty, new Binding() { Source = this, Path = new PropertyPath(MyAnchorVisibleProperty) });
+            MyTemplateElement.SetBinding(GeometricShape.MyLineCloseProperty, new Binding() { Source = this, Path = new PropertyPath(MyLineCloseProperty) });
+            MyTemplateElement.SetBinding(GeometricShape.MyLineSmoothJoinProperty, new Binding() { Source = this, Path = new PropertyPath(MyLineSmoothJoinProperty) });
+            //MyTemplateElement.SetBinding(GeometricShape.XProperty, new Binding() { Source = this, Path = new PropertyPath(TTLeftProperty) });
+            //MyTemplateElement.SetBinding(GeometricShape.YProperty, new Binding() { Source = this, Path = new PropertyPath(TTTopProperty) });
+
+            
+
+
+            DataContext = this.Data;
+            SetBinding(StrokeProperty, nameof(Data.Stroke));
+            SetBinding(StrokeThicknessProperty, nameof(Data.StrokeThickness));
+            SetBinding(TTFillProperty, nameof(Data.Fill));
+            SetBinding(ArrowHeadAngleProperty, nameof(Data.HeadAngle));
+            SetBinding(HeadBeginTypeProperty, nameof(Data.HeadBeginType));
+            SetBinding(HeadEndTypeProperty, nameof(Data.HeadEndType));
+            SetBinding(MyShapeTypeProperty, nameof(Data.ShapeType));
+
+            //Loaded時にPointsを関連付け
+            //起動時だと早すぎでMyPointsに値が入っていないのでloaded時
+            Loaded += TTGeometricShape_Loaded;
+        }
+
+        private void TTGeometricShape_Loaded(object sender, RoutedEventArgs e)
+        {
+            //if (MyTemplateElement is PolyCanvas polycan)
+            //{
+            //    //XAMLからの引き継ぎ用
+            //    if (Data.PointCollection.Count == 0)
+            //    {
+            //        //polycan.MyPoints = MyPoints;
+            //        Data.PointCollection = MyPoints;
+            //    }
+            //    //それ以外用？
+            //    else
+            //    {
+            //        polycan.MyPoints = Data.PointCollection;
+            //        MyPoints = Data.PointCollection;
+            //    }
+            //    polycan.InvalidateVisual();
+            //}
+            if (Data.PointCollection.Count == 0)
+            {
+                Data.PointCollection = MyPoints;
+            }
+            else
+            {
+                MyTemplateShape.MyPoints = Data.PointCollection;
+                MyPoints = Data.PointCollection;
+            }
+            MyTemplateShape.InvalidateVisual();//表示更新
+        }
+
+
+        /// <summary>
+        /// 位置修正、PointsのRect座標が0,0以外なら位置修正してtrueを返す
+        /// 回転などの変形には未対応なので、変形されていると位置がずれる
+        /// </summary>
+        /// <returns>修正処理した場合はtrueを返す、無処理はfalse</returns>
+        public bool FixLocate()
+        {
+            double minX = double.MaxValue, minY = double.MaxValue;
+            foreach (var item in MyPoints)
+            {
+                if (item.X < minX) minX = item.X;
+                if (item.Y < minY) minY = item.Y;
+            }
+            if (minX != 0 || minY != 0)
+            {
+                for (int i = 0; i < MyPoints.Count; i++)
+                {
+                    Point pp = MyPoints[i];
+                    MyPoints[i] = new Point(pp.X - minX, pp.Y - minY);
+                }
+
+                //double left = Canvas.GetLeft(this);
+                //double top = Canvas.GetTop(this);
+                //Canvas.SetLeft(this, left + minX);
+                //Canvas.SetTop(this, top + minY);
+                TTLeft += minX;
+                TTTop += minY;
+
+                //MyGeometryShape.UpdateAdorner();
+                return true;
+            }
+            else { return false; }
+
+        }
+
+
+    }
+
+
+
+
+
+
+
+    //画像用TThumb
     public class TTImage : TThumb
     {
         //画像ファイルのフルパス、変更時にコールバックでBitmapSourceを作成して表示する

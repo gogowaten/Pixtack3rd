@@ -63,9 +63,12 @@ namespace Pixtack3rd
         //
         private List<AnchorThumb> MyAnchoredThumbs { get; set; } = new();
 
+    
+
         public MainWindow()
         {
             InitializeComponent();
+            
 
             MyAppConfig = GetAppConfig(APP_CONFIG_FILE_NAME);
 
@@ -2152,9 +2155,24 @@ namespace Pixtack3rd
                 MyNumeShapeBackR.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = thumb.Stroke, Converter = new MyConverterBrushColorR() });
                 MyNumeShapeBackG.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = thumb.Stroke, Converter = new MyConverterBrushColorG() });
                 MyNumeShapeBackB.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = thumb.Stroke, Converter = new MyConverterBrushColorB() });
-
-
             }
+            if (MyRoot.ClickedThumb is TTGeometricShape geoThumb)
+            {
+                //MyAnchorPointEditCanvas.Cursor = Cursors.Hand;             
+                geoThumb.MyAnchorVisible = Visibility.Visible;
+
+                MyTabItemShape.DataContext = geoThumb.Data;
+                MyNumeArrowHeadAngle.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.HeadAngle));
+                MyNumeStrokeThickness.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.StrokeThickness));
+                MyComboBoxLineHeadBeginType.SetBinding(ComboBox.SelectedValueProperty, nameof(Data.HeadBeginType));
+                MyComboBoxLineHeadEndType.SetBinding(ComboBox.SelectedValueProperty, nameof(Data.HeadEndType));
+
+                MyNumeShapeBackA.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = geoThumb.Stroke, Converter = new MyConverterBrushColorA() });
+                MyNumeShapeBackR.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = geoThumb.Stroke, Converter = new MyConverterBrushColorR() });
+                MyNumeShapeBackG.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = geoThumb.Stroke, Converter = new MyConverterBrushColorG() });
+                MyNumeShapeBackB.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = geoThumb.Stroke, Converter = new MyConverterBrushColorB() });
+            }
+
         }
 
 
@@ -2175,6 +2193,25 @@ namespace Pixtack3rd
                 //BindingOperations.ClearAllBindings(MyNumeShapeBackG);
                 //BindingOperations.ClearAllBindings(MyNumeShapeBackB);
                 SolidColorBrush brush = (SolidColorBrush)thumb.Stroke;
+                MyNumeShapeBackA.MyValue = (decimal)brush.Color.A;
+                MyNumeShapeBackR.MyValue = (decimal)brush.Color.R;
+                MyNumeShapeBackG.MyValue = (decimal)brush.Color.G;
+                MyNumeShapeBackB.MyValue = (decimal)brush.Color.B;
+            }
+            if (MyRoot.ClickedThumb is TTGeometricShape geoThumb)
+            {
+                geoThumb.MyAnchorVisible = Visibility.Collapsed;
+                MyTabItemShape.DataContext = null;
+                MyNumeStrokeThickness.MyValue = (decimal)geoThumb.StrokeThickness;
+                MyNumeArrowHeadAngle.MyValue = (decimal)geoThumb.ArrowHeadAngle;
+                MyComboBoxLineHeadBeginType.SelectedValue = geoThumb.HeadBeginType;
+                MyComboBoxLineHeadEndType.SelectedValue = geoThumb.HeadEndType;
+
+                //BindingOperations.ClearAllBindings(MyNumeShapeBackA);
+                //BindingOperations.ClearAllBindings(MyNumeShapeBackR);
+                //BindingOperations.ClearAllBindings(MyNumeShapeBackG);
+                //BindingOperations.ClearAllBindings(MyNumeShapeBackB);
+                SolidColorBrush brush = (SolidColorBrush)geoThumb.Stroke;
                 MyNumeShapeBackA.MyValue = (decimal)brush.Color.A;
                 MyNumeShapeBackR.MyValue = (decimal)brush.Color.R;
                 MyNumeShapeBackG.MyValue = (decimal)brush.Color.G;

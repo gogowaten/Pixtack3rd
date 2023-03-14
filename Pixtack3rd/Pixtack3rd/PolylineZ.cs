@@ -276,7 +276,7 @@ namespace Pixtack3rd
         //    double y1 = MyPoints[1].Y;
 
         //    double lineRadian = Math.Atan2(y1 - y0, x1 - x0);
-        //    double arrowRadian = DegreeToRadian(Angle);
+        //    double arrowRadian = DegreeToRadian(ArrowHeadAngle);
         //    double headSize = StrokeThickness * 2.0;
         //    double wingLength = headSize / Math.Cos(arrowRadian);
 
@@ -284,7 +284,7 @@ namespace Pixtack3rd
         //    Point arrowP1 = new(
         //        wingLength * Math.Cos(wingRadian1) + x0,
         //        wingLength * Math.Sin(wingRadian1) + y0);
-        //    double wingRadian2 = lineRadian - DegreeToRadian(Angle);
+        //    double wingRadian2 = lineRadian - DegreeToRadian(ArrowHeadAngle);
         //    Point arrowP2 = new(
         //        wingLength * Math.Cos(wingRadian2) + x0,
         //        wingLength * Math.Sin(wingRadian2) + y0);
@@ -315,7 +315,7 @@ namespace Pixtack3rd
         //    double y1 = MyPoints[^2].Y;
 
         //    double lineRadian = Math.Atan2(y1 - y0, x1 - x0);
-        //    double arrowRadian = DegreeToRadian(Angle);
+        //    double arrowRadian = DegreeToRadian(ArrowHeadAngle);
         //    double headSize = StrokeThickness * 2.0;
         //    double wingLength = headSize / Math.Cos(arrowRadian);
 
@@ -323,7 +323,7 @@ namespace Pixtack3rd
         //    Point arrowP1 = new(
         //        wingLength * Math.Cos(wingRadian1) + x0,
         //        wingLength * Math.Sin(wingRadian1) + y0);
-        //    double wingRadian2 = lineRadian - DegreeToRadian(Angle);
+        //    double wingRadian2 = lineRadian - DegreeToRadian(ArrowHeadAngle);
         //    Point arrowP2 = new(
         //        wingLength * Math.Cos(wingRadian2) + x0,
         //        wingLength * Math.Sin(wingRadian2) + y0);
