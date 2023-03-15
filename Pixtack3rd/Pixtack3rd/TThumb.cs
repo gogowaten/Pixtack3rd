@@ -22,6 +22,7 @@ using System.IO;
 using System.Dynamic;
 using System.Xml.Linq;
 using System.Windows.Ink;
+using ControlLibraryCore20200620;
 
 namespace Pixtack3rd
 {
@@ -588,6 +589,10 @@ namespace Pixtack3rd
 
     public class TTRoot : TTGroup
     {
+        #region イベント
+        //ClickedThumbが変更されるとき発生、引数左がoldvalue、右がnewvalue
+        public event Action<TThumb?, TThumb?>? ClickedThumbChanging;
+        #endregion イベント
 
         #region 通知プロパティ
         //最後にクリックしたThumb
@@ -597,16 +602,14 @@ namespace Pixtack3rd
             get => _clickedThumb;
             set
             {
-                if (_clickedThumb != null)
-                {
-                    _clickedThumb.IsClickedThumb = false;
-                    if (_clickedThumb is TTGeometricShape shape)
-                    {
-                        //shape.
-                    }
-                    SetProperty(ref _clickedThumb, value);
-                    if (_clickedThumb != null) { _clickedThumb.IsClickedThumb = true; }
-                }
+                if (_clickedThumb != null) { _clickedThumb.IsClickedThumb = false; }
+
+                //イベント発動
+                ClickedThumbChanging?.Invoke(_clickedThumb, value);
+
+                SetProperty(ref _clickedThumb, value);
+        
+                if (_clickedThumb != null) { _clickedThumb.IsClickedThumb = true; }
             }
         }
         //注目しているThumb、選択Thumb群の筆頭
@@ -2779,7 +2782,20 @@ namespace Pixtack3rd
             this.DataContext = this.Data;
             this.SetBinding(StrokeThicknessProperty, nameof(Data.StrokeThickness));
             //SetBinding(StrokeThicknessProperty, new Binding() { Source = MyTemplateElement, Path = new PropertyPath(PolyCanvas.StrokeThicknessProperty) });
-            this.SetBinding(StrokeProperty, nameof(Data.Stroke));
+
+            //this.SetBinding(StrokeProperty, nameof(Data.Stroke));
+            MultiBinding mb = new();
+            mb.Converter = new MyConverterBrushByte();
+            Binding b0 = new(nameof(Data.StrokeA));
+            Binding b1 = new(nameof(Data.StrokeR));
+            Binding b2 = new(nameof(Data.StrokeG));
+            Binding b3 = new(nameof(Data.StrokeB));
+            mb.Bindings.Add(b0);
+            mb.Bindings.Add(b1);
+            mb.Bindings.Add(b2);
+            mb.Bindings.Add(b3);
+            SetBinding(StrokeProperty, mb);
+
             this.SetBinding(TTFillProperty, nameof(Data.Fill));
             this.SetBinding(HeadEndTypeProperty, nameof(Data.HeadEndType));
             this.SetBinding(HeadBeginTypeProperty, nameof(Data.HeadBeginType));
@@ -2822,7 +2838,19 @@ namespace Pixtack3rd
 
 
             DataContext = this.Data;
-            SetBinding(StrokeProperty, nameof(Data.Stroke));
+            //SetBinding(StrokeProperty, nameof(Data.Stroke));
+            MultiBinding mb = new();
+            mb.Converter = new MyConverterBrushByte();
+            Binding b0 = new(nameof(Data.StrokeA));
+            Binding b1 = new(nameof(Data.StrokeR));
+            Binding b2 = new(nameof(Data.StrokeG));
+            Binding b3 = new(nameof(Data.StrokeB));
+            mb.Bindings.Add(b0);
+            mb.Bindings.Add(b1);
+            mb.Bindings.Add(b2);
+            mb.Bindings.Add(b3);
+            SetBinding(StrokeProperty, mb);
+
             SetBinding(StrokeThicknessProperty, nameof(Data.StrokeThickness));
             SetBinding(TTFillProperty, nameof(Data.Fill));
             SetBinding(AngleProperty, nameof(Data.HeadAngle));
@@ -3011,7 +3039,8 @@ namespace Pixtack3rd
         #endregion 依存プロパティ
 
         public GeometricShape MyTemplateShape { get; protected set; }
-        
+        //編集中フラグ
+        public bool IsEditing { get; set; } = false;
 
 
         public TTGeometricShape() : this(new Data(TType.Geometric)) { }
@@ -3045,6 +3074,7 @@ namespace Pixtack3rd
 
             //この関係じゃないとできない、特にDataは依存プロパティが使えないのでsourceにしか使えないのがめんどくさかった
 
+            //templateShape <- this
             MyTemplateElement.SetBinding(GeometricShape.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeProperty) });
             MyTemplateElement.SetBinding(GeometricShape.StrokeThicknessProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeThicknessProperty) });
             MyTemplateElement.SetBinding(GeometricShape.FillProperty, new Binding() { Source = this, Path = new PropertyPath(TTFillProperty) });
@@ -3060,17 +3090,33 @@ namespace Pixtack3rd
             //MyTemplateElement.SetBinding(GeometricShape.XProperty, new Binding() { Source = this, Path = new PropertyPath(TTLeftProperty) });
             //MyTemplateElement.SetBinding(GeometricShape.YProperty, new Binding() { Source = this, Path = new PropertyPath(TTTopProperty) });
 
-            
 
 
+            //this <- data
             DataContext = this.Data;
-            SetBinding(StrokeProperty, nameof(Data.Stroke));
+            //SetBinding(StrokeProperty, nameof(Data.Stroke));
+            MultiBinding mb = new();
+            mb.Converter = new MyConverterBrushByte();
+            Binding b0 = new(nameof(Data.StrokeA));
+            Binding b1 = new(nameof(Data.StrokeR));
+            Binding b2 = new(nameof(Data.StrokeG));
+            Binding b3 = new(nameof(Data.StrokeB));
+            mb.Bindings.Add(b0);
+            mb.Bindings.Add(b1);
+            mb.Bindings.Add(b2);
+            mb.Bindings.Add(b3);
+            SetBinding(StrokeProperty, mb);
+
+
             SetBinding(StrokeThicknessProperty, nameof(Data.StrokeThickness));
             SetBinding(TTFillProperty, nameof(Data.Fill));
             SetBinding(ArrowHeadAngleProperty, nameof(Data.HeadAngle));
             SetBinding(HeadBeginTypeProperty, nameof(Data.HeadBeginType));
             SetBinding(HeadEndTypeProperty, nameof(Data.HeadEndType));
             SetBinding(MyShapeTypeProperty, nameof(Data.ShapeType));
+            SetBinding(MyLineSmoothJoinProperty, nameof(Data.IsSmoothJoin));
+            SetBinding(MyLineCloseProperty, nameof(Data.IsLineClose));
+
 
             //Loaded時にPointsを関連付け
             //起動時だと早すぎでMyPointsに値が入っていないのでloaded時
