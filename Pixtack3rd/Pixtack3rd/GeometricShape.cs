@@ -213,6 +213,7 @@ namespace Pixtack3rd
                 MyAdornerLayer.Add(new GeometryAdorner(this));
             }
         }
+    
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             //アドーナーの登録
@@ -223,12 +224,11 @@ namespace Pixtack3rd
             {
                 MyAdornerLayer.Add(MyAdorner);
             }
-            
-            //MyAdornerLayer.Add(new BoundsAdorner(this));
         }
 
-        //protected override Geometry DefiningGeometry => Geometry.Empty;
-
+        
+        #region 描画
+        
         /// <summary>
         /// ベジェ曲線部分の描画
         /// </summary>
@@ -396,6 +396,9 @@ namespace Pixtack3rd
             }
         }
 
+        #endregion 描画
+
+
         ////変形時にBoundsを更新、これは変形してもArrangeは無反応だから→
         ////Arrangeでも反応していた
         //protected override Geometry GetLayoutClip(Size layoutSlotSize)
@@ -422,7 +425,9 @@ namespace Pixtack3rd
             MyTFWidth = MyExternalBounds.Width;
             MyTFHeight = MyExternalBounds.Height;
 
+            Rect r = new(MyExternalBounds.Size);
 
+            var aw = ActualWidth;
 
             return base.ArrangeOverride(finalSize);
         }
@@ -505,6 +510,8 @@ namespace Pixtack3rd
             InitializeThumbs();
         }
 
+        #region ドラッグ移動
+
         //ドラッグ移動終了後に親Thumbを位置修正＋頂点Thumbの位置修正
         private void Thumb_DragCompleted(object sender, DragCompletedEventArgs e)
         {
@@ -512,9 +519,7 @@ namespace Pixtack3rd
             {
                 RelocationThumbs();
             }
-
         }
-
 
         private void Thumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
@@ -528,6 +533,7 @@ namespace Pixtack3rd
                 SetLocate(t, points[i]);
             }
         }
+        #endregion ドラッグ移動
 
         private static void SetLocate(Thumb thumb, Point point)
         {
@@ -535,6 +541,7 @@ namespace Pixtack3rd
             Canvas.SetTop(thumb, point.Y);
         }
 
+        //最終的？なRectの指定
         protected override Size ArrangeOverride(Size finalSize)
         {
             //Thumbが収まるRectをCanvasのArrangeに指定する
