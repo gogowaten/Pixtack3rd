@@ -184,8 +184,11 @@ namespace Pixtack3rd
             MyAdorner = new GeometryAdorner(this);
             MyGeometry = this.DefiningGeometry.Clone();
             Loaded += This_Loaded;
+            
             MySetBinding();
         }
+
+        
         #endregion コンストラクタ
 
         private void MySetBinding()
@@ -213,22 +216,22 @@ namespace Pixtack3rd
                 MyAdornerLayer.Add(new GeometryAdorner(this));
             }
         }
-    
+
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             //アドーナーの登録
             //グループ化の処理直後にも、なぜかLoadedが発生するので
             //二重登録にならないようにParentを調べてから登録処理している
             MyAdornerLayer = AdornerLayer.GetAdornerLayer(this);
-            if(MyAdornerLayer != MyAdorner.Parent)
+            if (MyAdornerLayer != MyAdorner.Parent)
             {
                 MyAdornerLayer.Add(MyAdorner);
             }
         }
 
-        
+
         #region 描画
-        
+
         /// <summary>
         /// ベジェ曲線部分の描画
         /// </summary>
@@ -409,6 +412,13 @@ namespace Pixtack3rd
         //各種Bounds更新
         protected override Size ArrangeOverride(Size finalSize)
         {
+           
+            return base.ArrangeOverride(finalSize);
+
+            //return base.ArrangeOverride(MyExternalBounds.Size);
+        }
+        protected override Size MeasureOverride(Size constraint)
+        {
             Pen pen = new(Stroke, StrokeThickness);
             Geometry geo = this.DefiningGeometry.Clone();
             MyInternalBoundsNotTF = geo.Bounds;//内部Rect
@@ -429,9 +439,15 @@ namespace Pixtack3rd
 
             var aw = ActualWidth;
 
-            return base.ArrangeOverride(finalSize);
-        }
 
+            return base.MeasureOverride(constraint);
+            //return base.MeasureOverride(MyExternalBounds.Size);
+        }
+        protected override Geometry GetLayoutClip(Size layoutSlotSize)
+        {
+            //Arrange(MyExternalBounds);
+            return base.GetLayoutClip(layoutSlotSize);
+        }
         /// <summary>
         /// ピッタリのサイズのBitmap取得
         /// </summary>

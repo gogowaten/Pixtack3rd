@@ -3042,7 +3042,8 @@ namespace Pixtack3rd
         //編集中フラグ
         public bool IsEditing { get; set; } = false;
 
-
+        #region コンストラクタ
+        
         public TTGeometricShape() : this(new Data(TType.Geometric)) { }
         public TTGeometricShape(Data data) : base(data)
         {
@@ -3060,8 +3061,12 @@ namespace Pixtack3rd
             //SetBinding2();
             SetBinding3();
 
-        }
+            //Loaded時にPointsを関連付け
+            //起動時だと早すぎでMyPointsに値が入っていないのでloaded時
+            Loaded += TTGeometricShape_Loaded;
 
+        }
+        #endregion コンストラクタ
 
         private void SetBinding3()
         {
@@ -3118,13 +3123,15 @@ namespace Pixtack3rd
             SetBinding(MyLineCloseProperty, nameof(Data.IsLineClose));
 
 
-            //Loaded時にPointsを関連付け
-            //起動時だと早すぎでMyPointsに値が入っていないのでloaded時
-            Loaded += TTGeometricShape_Loaded;
+          
+
+
+            
         }
 
         private void TTGeometricShape_Loaded(object sender, RoutedEventArgs e)
         {
+            
             //if (MyTemplateElement is PolyCanvas polycan)
             //{
             //    //XAMLからの引き継ぎ用
@@ -3151,6 +3158,7 @@ namespace Pixtack3rd
                 MyPoints = Data.PointCollection;
             }
             MyTemplateShape.InvalidateVisual();//表示更新
+
         }
 
 

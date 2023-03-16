@@ -267,8 +267,8 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
           <local:TTPolyline x:Name="MyPolyline3" MyPoints="50,0 200,50 0,100 200,100" TTLeft="100" TTTop="130"
                              HeadBeginType="Arrow" HeadEndType="Arrow" Angle="30" Stroke="SeaGreen" 
                             StrokeThickness="20" IsBezier="True"/>
-          <local:TTGeometricShape MyPoints="50,0 10,100 150,0 120,100" StrokeThickness="10" Stroke="Crimson"
-                                  MyShapeType="Bezier" HeadBeginType="None" MyLineClose="True" TTFill="Blue"/>
+          <local:TTGeometricShape x:Name="MyTTGermtricShape" MyPoints="50,0 10,100 150,0 120,100" StrokeThickness="20" Stroke="Gold"
+                                  MyShapeType="Bezier" HeadBeginType="None" MyLineClose="False" TTFill="Blue"/>
           <!--<local:TTGeometricShape MyPoints="50,0 0,100 100,100 100,0" StrokeThickness="20" Stroke="Red"
                                   MyShapeType="Line" MyLineSmoothJoin="True" HeadBeginType="Arrow" HeadEndType="Arrow" TTFill="Blue"/>-->
         </local:TTRoot>
@@ -281,8 +281,8 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
       </Canvas>
       <Canvas Grid.Row="1" Grid.Column="1">
         <local:PolylineZ x:Name="MyPolyZ" MyPoints="200,0 450,100 00,100 300,150" IsBezier="True" Stroke="Red" StrokeThickness="10"/>
-        <local:GeometricShape MyPoints="150,100 0,50 250,0 50,150" MyShapeType="Bezier"
-                              MyAnchorVisible="Visible" HeadBeginType="Arrow" Stroke="Gray" StrokeThickness="10"/>
+        <!--<local:GeometricShape MyPoints="150,100 0,50 250,0 50,150" MyShapeType="Bezier"
+                              MyAnchorVisible="Visible" HeadBeginType="Arrow" Stroke="Gray" StrokeThickness="10"/>-->
         <!--<Canvas Grid.Row="1" Grid.Column="1"
               x:Name="MyAnchorPointEditCanvas" Visibility="Collapsed"
               Background="Transparent">
