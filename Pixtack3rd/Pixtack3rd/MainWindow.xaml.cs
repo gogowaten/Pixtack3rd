@@ -58,7 +58,7 @@ namespace Pixtack3rd
 
         //マウスクリックでPolyline描画するときの一時的なもの
         private readonly PointCollection MyTempPoints = new();
-        private Shape? MyTempShape;
+        private GeometricShape? MyTempShape;
 
         //
         private List<AnchorThumb> MyAnchoredThumbs { get; set; } = new();
@@ -97,7 +97,7 @@ namespace Pixtack3rd
             //    var maiX = b.Source;
             //};
 
-            // マウスクリックでPolyline描画
+            // マウスクリックでShape描画
             MyDrawCanvas.MouseLeftButtonDown += MyDrawCanvas_MouseLeftButtonDown;
             MyDrawCanvas.MouseMove += MyDrawCanvas_MouseMove;
             MyDrawCanvas.MouseRightButtonDown += MyDrawCanvas_MouseRightButtonDown;
@@ -2024,12 +2024,12 @@ namespace Pixtack3rd
 
         private void ButtonTest_Click(object sender, RoutedEventArgs e)
         {
-           var tempshaper= VisualTreeHelper.GetDescendantBounds(MyTTGermtricShape.MyTemplateShape);
+            var tempshaper = VisualTreeHelper.GetDescendantBounds(MyTTGermtricShape.MyTemplateShape);
             var ttgrect = VisualTreeHelper.GetDescendantBounds(MyTTGermtricShape);
             var tempshape = MyTTGermtricShape.RenderSize;
             var rsize = MyTTGermtricShape.MyTemplateShape.RenderSize;
             //MyTTGermtricShape.Arrange(MyTTGermtricShape.MyTemplateShape.MyExternalBounds);
-            
+
             if (MyRoot.ClickedThumb == null) return;
             var neko2 = MyRoot.ClickedThumb.Data.StrokeA;
             //MyRoot.ClickedThumb.Data.PointCollection[0] = new Point(200,200);
@@ -2049,31 +2049,11 @@ namespace Pixtack3rd
 
         #region 図形関連
 
-        #region マウスクリックでPolyline描画
+        #region マウスクリックでShape描画
         /// <summary>
-        /// マウスクリックでPolyline描画開始
+        /// マウスクリックでShape描画開始
         /// </summary>
-        //private void DrawPolylineFromClick()
-        //{
-        //    MyTabControl.IsEnabled = false;
-        //    MyDrawCanvas.Visibility = Visibility.Visible;
-        //    MyTempPoints.Clear();
-
-        //    PolylineZ polyZ = new()
-        //    {
-        //        Angle = (double)MyNumeArrowHeadAngle.MyValue,
-        //        Fill = GetBrush(),
-        //        Stroke = GetBrush(),
-        //        StrokeThickness = (double)MyNumeStrokeThickness.MyValue,
-        //        HeadEndType = (HeadType)MyComboBoxLineHeadEndType.SelectedValue,
-        //        HeadBeginType = (HeadType)MyComboBoxLineHeadBeginType.SelectedValue,
-        //        MyPoints = MyTempPoints,
-        //    };
-
-        //    MyTempShape = polyZ;
-        //    MyDrawCanvas.Children.Add(MyTempShape);
-        //}
-        private void DrawPolylineFromClick2()
+        private void DrawShapeFromMouseClick()
         {
             MyTabControl.IsEnabled = false;
             MyDrawCanvas.Visibility = Visibility.Visible;
@@ -2155,11 +2135,56 @@ namespace Pixtack3rd
             data.X = x; data.Y = y;
         }
 
+        //マウスクリックでCanvasにベジェ曲線で曲線、PolyBezierSegment - 午後わてんのブログ
+        //        https://gogowaten.hatenablog.com/entry/15544835
+        /// <summary>
+        /// マウス移動時、ベジェ曲線のときはなめらかな曲線になるように制御点を設定する
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MyDrawCanvas_MouseMove(object sender, MouseEventArgs e)
         {
             if (MyTempPoints.Count < 2) { return; }
-            Point pp = Mouse.GetPosition(MyDrawCanvas);
-            MyTempPoints[^1] = pp;
+            Point mousePoint = Mouse.GetPosition(MyDrawCanvas);
+            //直線の場合
+            if (MyTempShape?.MyShapeType == ShapeType.Line)
+            {
+                MyTempPoints[^1] = mousePoint;
+            }
+            //ベジェ曲線の場合、2個前までのアンカー点まで考慮して制御点座標を計算
+            else if (MyTempShape?.MyShapeType == ShapeType.Bezier)
+            {
+                if (MyTempPoints.Count <= 4)
+                {
+                    MyTempPoints[^1] = mousePoint;
+                }
+                else
+                {
+                    //最終アンカー点座標は、今のマウスの位置
+                    MyTempPoints[^1] = mousePoint;
+
+                    Point prevPoint1 = MyTempPoints[^4];//1個前のアンカー点
+                    Point prevPoint2;//2個前のアンカー点
+                    if (MyTempPoints.Count < 7)
+                    {
+                        prevPoint2 = MyTempPoints[^1];
+                    }
+                    else { prevPoint2 = MyTempPoints[^7]; }
+
+                    //マウス座標と2個前のアンカー点との差の1/4、これを使って
+                    //一個前のアンカー点の制御点座標を決定
+                    double diffX = (mousePoint.X - prevPoint2.X) / 4.0;
+                    double diffY = (mousePoint.Y - prevPoint2.Y) / 4.0;
+                    MyTempPoints[^3] = new Point(prevPoint1.X + diffX, prevPoint1.Y + diffY);
+                    MyTempPoints[^5] = new Point(prevPoint1.X - diffX, prevPoint1.Y - diffY);
+
+                    //最終アンカー点の制御点座標を決定
+                    diffX = (mousePoint.X - MyTempPoints[^3].X) / 4.0;
+                    diffY = (mousePoint.Y - MyTempPoints[^3].Y) / 4.0;
+                    MyTempPoints[^2] = new Point(mousePoint.X - diffX, mousePoint.Y - diffY);
+
+                }
+            }
         }
 
         /// <summary>
@@ -2170,52 +2195,43 @@ namespace Pixtack3rd
         private void MyDrawCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             Point pp = Mouse.GetPosition(MyDrawCanvas);
-            //最初だけは同時に2点追加
-            if (MyTempPoints.Count == 0)
+            //直線の場合、最初だけは同時に2点追加
+            if (MyTempShape?.MyShapeType == ShapeType.Line)
             {
-                MyTempPoints.Add(pp);
-                MyTempPoints.Add(pp);
+                if (MyTempPoints.Count == 0)
+                {
+                    MyTempPoints.Add(pp);
+                    MyTempPoints.Add(pp);
+                }
+                else
+                {
+                    MyTempPoints.Add(pp);
+                }
             }
-            else
+            //ベジェ曲線の場合、最初は4点追加、以降は3点づつ追加
+            else if (MyTempShape?.MyShapeType == ShapeType.Bezier)
             {
-                MyTempPoints.Add(pp);
+                if (MyTempPoints.Count == 0)
+                {
+                    MyTempPoints.Add(pp);
+                    MyTempPoints.Add(pp);
+                    MyTempPoints.Add(pp);
+                    MyTempPoints.Add(pp);
+                }
+                else
+                {
+                    MyTempPoints.Add(pp);
+                    MyTempPoints.Add(pp);
+                    MyTempPoints.Add(pp);
+                }
             }
+
 
         }
         #endregion マウスクリックでPolyline描画
 
         #region 図形のアンカーポイント編集開始、終了
 
-        private void ContextAddAnchor_Click(object sender, RoutedEventArgs e)
-        {
-            //if (MyRoot.ClickedThumb is TThumb tShape)
-            //{
-            //    Point thumbMP = Mouse.GetPosition(tShape);
-            //    Point canvasMP = Mouse.GetPosition(MyAnchorPointEditCanvas);
-
-            //    AnchorThumb anchor = new(canvasMP);
-            //    anchor.DragDelta += AnchorThumb_DragDelta;
-            //    anchor.DragCompleted += AnchorThumb_DragCompleted;
-
-            //    double beginD = TwoPointDistance(tShape.Data.PointCollection[0], thumbMP);
-            //    double endD = TwoPointDistance(tShape.Data.PointCollection[^1], thumbMP);
-            //    if (beginD > endD)
-            //    {
-            //        tShape.Data.PointCollection.Add(thumbMP);//頂点追加
-            //        MyAnchoredThumbs.Add(anchor);//アンカーThumb追加
-            //        MyAnchorPointEditCanvas.Children.Add(anchor);//アンカーThumb追加
-            //    }
-            //    else
-            //    {
-            //        tShape.Data.PointCollection.Insert(0, thumbMP);
-            //        MyAnchoredThumbs.Insert(0, anchor);//アンカーThumb追加
-            //        MyAnchorPointEditCanvas.Children.Insert(0, anchor);//アンカーThumb追加
-            //    }
-
-
-
-            //}
-        }
 
 
         public double TwoPointDistance(Point p1, Point p2)
@@ -2240,135 +2256,11 @@ namespace Pixtack3rd
 
 
 
-        //アンカーポイント移動中、対象Pointの更新
-        private void AnchorThumb_DragDelta(object sender, DragDeltaEventArgs e)
-        {
-            if (sender is AnchorThumb anchor && MyRoot.ClickedThumb?.Data is Data tData)
-            {
-                double x = anchor.X + e.HorizontalChange;
-                double y = anchor.Y + e.VerticalChange;
-                if (x < 0 || y < 0)
-                {
-                    if (x < 0)
-                    {
-                        tData.X += x;
-                        anchor.X = x;
-                        foreach (var item in MyAnchoredThumbs)
-                        {
-                            item.X -= x;
-                        }
-                    }
-                    if (y < 0)
-                    {
-                        tData.Y += y;
-                        anchor.Y = y;
-                        foreach (var item in MyAnchoredThumbs)
-                        {
-                            item.Y -= y;
-                        }
-                    }
-
-                    //DataPointCollection全体をオフセット
-                    for (int i = 0; i < tData.PointCollection.Count; i++)
-                    {
-                        tData.PointCollection[i] = new Point(MyAnchoredThumbs[i].X, MyAnchoredThumbs[i].Y);
-                    }
-                }
-                else
-                {
-                    anchor.X = x; anchor.Y = y;
-                    tData.PointCollection[MyAnchoredThumbs.IndexOf(anchor)] = new Point(x, y);
-                }
-                //anchor.X += e.HorizontalChange;
-                //anchor.Y += e.VerticalChange;
-                //tData.PointCollection[MyAnchoredThumbs.IndexOf(anchor)] = new Point(x, y);
-
-                //if (MyRoot.ClickedThumb is TTPolylineZ pt)
-                //{
-                //    int ii = MyAnchoredThumbs.IndexOf(anchor);
-                //    //pt.MyPoints[ii] = new Point(anchor.X - pt.TTLeft, anchor.Y - pt.TTTop);
-                //    pt.MyPoints[ii] = new Point(anchor.X, anchor.Y);
-                //}
-            }
-        }
-
-
-        //アンカーポイント移動後、マイナス座標を修正
-        private void AnchorThumb_DragCompleted(object sender, DragCompletedEventArgs e)
-        {
-            //FixAnchorPoint(MyRoot.ClickedThumb?.Data);
-
-            //if (sender is AnchorThumb anchor)
-            //{
-            //    var maiX = anchor.X;
-            //    var maiY = anchor.Y;
-            //    if (maiX < 0)
-            //    {
-            //        foreach (var item in MyAnchoredThumbs)
-            //        {
-            //            item.X -= maiX;
-            //        }
-            //    }
-            //    if (maiY < 0)
-            //    {
-            //        foreach (var item in MyAnchoredThumbs)
-            //        {
-            //            item.Y -= maiY;
-            //        }
-            //    }
-            //}
-        }
-        private void FixAnchorPoint(Data? thumbData)
-        {
-            if (thumbData == null) return;
-            double x = double.MaxValue;
-            double y = double.MaxValue;
-            foreach (var item in thumbData.PointCollection)
-            {
-                if (x > item.X) { x = item.X; }
-                if (y > item.Y) { y = item.Y; }
-            }
-            for (int i = 0; i < thumbData.PointCollection.Count; i++)
-            {
-                thumbData.PointCollection[i]
-                    = new Point(
-                        thumbData.PointCollection[i].X - x,
-                        thumbData.PointCollection[i].Y - y);
-            }
-            thumbData.X += x;
-            thumbData.Y += y;
-
-            //for (int i = 0; i < MyAnchoredThumbs.Count; i++)
-            //{
-            //    MyAnchoredThumbs[i].X = thumbData.X + thumbData.PointCollection[i].X;
-            //    MyAnchoredThumbs[i].Y = thumbData.Y + thumbData.PointCollection[i].Y;
-            //}
-        }
-
-
 
 
         #endregion 図形のアンカーポイント編集開始、終了
 
         #region 追加
-        //private void AddShapePolyline(PointCollection points, bool locateFix = true)
-        //{
-        //    Data data = new(TType.Polyline)
-        //    {
-        //        HeadAngle = (double)MyNumeArrowHeadAngle.MyValue,
-        //        Stroke = GetBrush(),
-        //        StrokeThickness = (double)MyNumeStrokeThickness.MyValue,
-        //        Fill = GetBrush(),
-        //        PointCollection = points,
-        //        HeadBeginType = (HeadType)MyComboBoxLineHeadBeginType.SelectedItem,
-        //        HeadEndType = (HeadType)MyComboBoxLineHeadEndType.SelectedItem,
-        //        IsBezier = MyCheckBoxIsBezier.IsChecked == true,
-        //    };
-
-
-        //    FixTopLeftPointCollectionData(data);
-        //    MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper, locateFix);
-        //}
         private void AddShapePolyline2(PointCollection points, bool locateFix = true)
         {
             Data data = new(TType.Geometric)
@@ -2482,7 +2374,7 @@ namespace Pixtack3rd
         //TestDrawPolyline
         private void ButtonTestDrawPolyline_Click(object sender, RoutedEventArgs e)
         {
-            DrawPolylineFromClick2();
+            DrawShapeFromMouseClick();
             //DrawPolylineFromClick();
         }
 

@@ -184,11 +184,11 @@ namespace Pixtack3rd
             MyAdorner = new GeometryAdorner(this);
             MyGeometry = this.DefiningGeometry.Clone();
             Loaded += This_Loaded;
-            
+
             MySetBinding();
         }
 
-        
+
         #endregion コンストラクタ
 
         private void MySetBinding()
@@ -412,7 +412,7 @@ namespace Pixtack3rd
         //各種Bounds更新
         protected override Size ArrangeOverride(Size finalSize)
         {
-           
+
             return base.ArrangeOverride(finalSize);
 
             //return base.ArrangeOverride(MyExternalBounds.Size);
@@ -505,17 +505,17 @@ namespace Pixtack3rd
         {
             for (int i = 0; i < MyTargetGeoShape.MyPoints.Count; i++)
             {
-                SetLocate(MyThumbs[i], MyTargetGeoShape.MyPoints[i]);
+                SetAnchorLocate(MyThumbs[i], MyTargetGeoShape.MyPoints[i]);
             }
         }
         private void InitializeThumbs()
         {
             foreach (var item in MyTargetGeoShape.MyPoints)
             {
-                AnchorThumb thumb = new(item) { Width = 20, Height = 20 };
+                AnchorThumb thumb = new(item);
                 MyThumbs.Add(thumb);
                 MyCanvas.Children.Add(thumb);
-                SetLocate(thumb, item);
+                SetAnchorLocate(thumb, item);
                 thumb.DragDelta += Thumb_DragDelta;
                 thumb.DragCompleted += Thumb_DragCompleted;
             }
@@ -546,15 +546,15 @@ namespace Pixtack3rd
                 double x = points[i].X + e.HorizontalChange;
                 double y = points[i].Y + e.VerticalChange;
                 points[i] = new Point(x, y);
-                SetLocate(t, points[i]);
+                SetAnchorLocate(t, points[i]);
             }
         }
         #endregion ドラッグ移動
 
-        private static void SetLocate(Thumb thumb, Point point)
+        private static void SetAnchorLocate(AnchorThumb anchor, Point point)
         {
-            Canvas.SetLeft(thumb, point.X);
-            Canvas.SetTop(thumb, point.Y);
+            Canvas.SetLeft(anchor, point.X - (anchor.Size / 2.0));
+            Canvas.SetTop(anchor, point.Y - (anchor.Size / 2.0));
         }
 
         //最終的？なRectの指定

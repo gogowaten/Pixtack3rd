@@ -37,8 +37,23 @@ namespace Pixtack3rd
             DependencyProperty.Register(nameof(Y), typeof(double), typeof(AnchorThumb),
                 new FrameworkPropertyMetadata(0.0,
                     FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure|
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+
+        public double Size
+        {
+            get { return (double)GetValue(SizeProperty); }
+            set { SetValue(SizeProperty, value); }
+        }
+        public static readonly DependencyProperty SizeProperty =
+            DependencyProperty.Register(nameof(Size), typeof(double), typeof(AnchorThumb),
+                new FrameworkPropertyMetadata(20.0,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure));
+
+
+
 
         public Rectangle MyTemplateElement { get; private set; }
         //public Point MyPoint;
@@ -50,8 +65,8 @@ namespace Pixtack3rd
             SetBinding(Canvas.TopProperty, nameof(Y));
             X = point.X;
             Y = point.Y;
-            Width = 20;
-            Height = 20;
+            Width = Size;
+            Height = Size;
             //DragDelta += AnchorThumb_DragDelta;
         }
 

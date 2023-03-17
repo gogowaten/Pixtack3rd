@@ -608,7 +608,7 @@ namespace Pixtack3rd
                 ClickedThumbChanging?.Invoke(_clickedThumb, value);
 
                 SetProperty(ref _clickedThumb, value);
-        
+
                 if (_clickedThumb != null) { _clickedThumb.IsClickedThumb = true; }
             }
         }
@@ -3043,7 +3043,7 @@ namespace Pixtack3rd
         public bool IsEditing { get; set; } = false;
 
         #region コンストラクタ
-        
+
         public TTGeometricShape() : this(new Data(TType.Geometric)) { }
         public TTGeometricShape(Data data) : base(data)
         {
@@ -3065,9 +3065,16 @@ namespace Pixtack3rd
             //起動時だと早すぎでMyPointsに値が入っていないのでloaded時
             Loaded += TTGeometricShape_Loaded;
 
+
         }
         #endregion コンストラクタ
 
+        protected override Size MeasureOverride(Size constraint)
+        {
+
+            
+            return base.MeasureOverride(constraint);
+        }
         private void SetBinding3()
         {
             //Bindingの方向はすべて双方向、ソースとターゲットの関係は
@@ -3123,15 +3130,15 @@ namespace Pixtack3rd
             SetBinding(MyLineCloseProperty, nameof(Data.IsLineClose));
 
 
-          
 
 
-            
+
+
         }
 
         private void TTGeometricShape_Loaded(object sender, RoutedEventArgs e)
         {
-            
+
             //if (MyTemplateElement is PolyCanvas polycan)
             //{
             //    //XAMLからの引き継ぎ用
