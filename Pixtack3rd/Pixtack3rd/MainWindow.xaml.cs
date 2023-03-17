@@ -2024,13 +2024,11 @@ namespace Pixtack3rd
 
         private void ButtonTest_Click(object sender, RoutedEventArgs e)
         {
-            var tempshaper = VisualTreeHelper.GetDescendantBounds(MyTTGermtricShape.MyTemplateShape);
-            var ttgrect = VisualTreeHelper.GetDescendantBounds(MyTTGermtricShape);
-            var tempshape = MyTTGermtricShape.RenderSize;
-            var rsize = MyTTGermtricShape.MyTemplateShape.RenderSize;
+           var direc=  MyTTGermtricShape.MyTemplateShape.MyAdorner.MyDirectionLine;
             //MyTTGermtricShape.Arrange(MyTTGermtricShape.MyTemplateShape.MyExternalBounds);
 
             if (MyRoot.ClickedThumb == null) return;
+            
             var neko2 = MyRoot.ClickedThumb.Data.StrokeA;
             //MyRoot.ClickedThumb.Data.PointCollection[0] = new Point(200,200);
             if (MyRoot.ClickedThumb.MyTemplateElement is PolyCanvas p2)
