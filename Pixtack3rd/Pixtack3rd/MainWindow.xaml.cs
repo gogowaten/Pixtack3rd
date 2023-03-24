@@ -2080,25 +2080,14 @@ namespace Pixtack3rd
             return new SolidColorBrush(Color.FromArgb((byte)MyNumeShapeBackA.MyValue,
                 (byte)MyNumeShapeBackR.MyValue, (byte)MyNumeShapeBackG.MyValue, (byte)MyNumeShapeBackB.MyValue));
         }
+
         //右クリックで終了
         //MyTempPointsからData作成してRootに追加
         private void MyDrawCanvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (MyTempPoints.Count >= 2)
             {
-                //    Data data = new(TType.Polyline)
-                //    {
-                //        HeadAngle = (double)MyNumeArrowHeadAngle.MyValue,
-                //        Stroke = GetBrush(),
-                //        StrokeThickness = (double)MyNumeStrokeThickness.MyValue,
-                //        Fill = GetBrush(),
-                //        PointCollection = new(MyTempPoints),
-                //        HeadEndType = (HeadType)MyComboBoxLineHeadBeginType.SelectedValue,
-                //    };
-                //    FixTopLeftPointCollectionData(data);
-                //    MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper, false);
-                AddShapePolyline2(new(MyTempPoints), false);
-                //AddShapePolyline(new(MyTempPoints), false);
+                AddShapePolyline2(new(MyTempPoints), false);                
             }
 
             //後片付け

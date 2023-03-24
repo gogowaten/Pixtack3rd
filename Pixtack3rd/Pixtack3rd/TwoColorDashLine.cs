@@ -55,9 +55,9 @@ namespace Pixtack3rd
 
         public TwoColorDashLine()
         {
-            Stroke = Brushes.Gold;
+            Stroke = Brushes.White;
             StrokeThickness = 2.0;
-            StrokeDashArray = new DoubleCollection() { 10.0 };
+            StrokeDashArray = new DoubleCollection() { 5.0 };
             //StrokeDashArray = new DoubleCollection() { 10.0,5.0 };
         }
 
@@ -98,7 +98,7 @@ namespace Pixtack3rd
                             //context.LineTo(MyPoints[7], true, false);
                             //context.BeginFigure(MyPoints[8], false, false);
                             //context.LineTo(MyPoints[9], true, false);
-
+                            
                             context.BeginFigure(MyPoints[i], false, false);
                             context.LineTo(MyPoints[i + 1], true, false);
                         }

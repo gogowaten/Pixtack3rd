@@ -1818,9 +1818,9 @@ namespace Pixtack3rd
             Rect bounds = VisualTreeHelper.GetDescendantBounds(el);
             bounds = el.RenderTransform.TransformBounds(bounds);
             DrawingVisual dVisual = new();
-            //四捨五入しているけど、UselayoutRoundingをtrueにしていたら必要なさそう
-            bounds.Width = (int)(bounds.Width + 0.5);
-            bounds.Height = (int)(bounds.Height + 0.5);
+            //サイズを切り上げ、UselayoutRoundingをtrueにしていたら必要なさそう
+            bounds.Width = (int)(bounds.Width + 1.0);
+            bounds.Height = (int)(bounds.Height + 1.0);
 
             using (DrawingContext context = dVisual.RenderOpen())
             {
