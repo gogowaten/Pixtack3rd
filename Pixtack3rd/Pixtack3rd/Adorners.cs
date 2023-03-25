@@ -27,7 +27,7 @@ namespace Pixtack3rd
         public Canvas MyCanvas { get; private set; } = new();
         public List<AnchorThumb> MyThumbs { get; private set; } = new();
         public TwoColorDashLine MyDirectionLine { get; private set; }
-        public PathFigureCollection MyControlLines { get; private set; } = new();
+        //public PathFigureCollection MyControlLines { get; private set; } = new();
 
         public GeometricShape MyTargetGeoShape { get; private set; }
 
@@ -40,10 +40,7 @@ namespace Pixtack3rd
             MyDirectionLine = new TwoColorDashLine();
             MyCanvas.Children.Add(MyDirectionLine);
 
-            MyVisuals = new VisualCollection(this)
-            {
-                MyCanvas,
-            };
+            MyVisuals = new VisualCollection(this) { MyCanvas, };
             MyTargetGeoShape = adornedElement;
             Loaded += GeometryAdorner_Loaded;
 
@@ -70,8 +67,6 @@ namespace Pixtack3rd
                 SetAnchorLocate(thumb, item);
                 thumb.DragDelta += Thumb_DragDelta;
                 thumb.DragCompleted += Thumb_DragCompleted;
-
-
             }
         }
 
