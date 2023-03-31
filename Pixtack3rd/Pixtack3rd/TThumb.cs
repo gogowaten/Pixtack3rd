@@ -2466,14 +2466,7 @@ namespace Pixtack3rd
 
         public ShapeType MyShapeType
         {
-            get
-            {
-                if (MyAnchorVisible == Visibility.Visible)
-                {
-                    FixCanvasLocate04();
-                }
-                    return (ShapeType)GetValue(MyShapeTypeProperty);
-            }
+            get { return (ShapeType)GetValue(MyShapeTypeProperty); }
             set { SetValue(MyShapeTypeProperty, value); }
         }
         public static readonly DependencyProperty MyShapeTypeProperty =
@@ -2648,7 +2641,7 @@ namespace Pixtack3rd
             MyCanvas.Children.Add(MyShape);
 
             SetBinding4();
-
+            
             //Loaded時にPointsを関連付け
             //起動時だと早すぎでMyPointsに値が入っていないのでloaded時
             Loaded += TTGeometricShape_Loaded;

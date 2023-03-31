@@ -163,73 +163,76 @@ namespace Pixtack3rd
                 PointCollection points = MyPoints;
                 double x = points[i].X + e.HorizontalChange;
                 double y = points[i].Y + e.VerticalChange;
-                points[i] = new Point(x, y);
-                SetAnchorLocate(t, points[i]);
+                //points[i] = new Point(x, y);
+                //SetAnchorLocate(t, points[i]);
 
-                //if (MyTargetGeoShape.MyShapeType == ShapeType.Line)
-                //{
-                //    points[i] = new Point(x, y);
-                //    SetAnchorLocate(t, points[i]);
+                if (MyTargetGeoShape.MyShapeType == ShapeType.Line)
+                {
+                    points[i] = new Point(x, y);
+                    SetAnchorLocate(t, points[i]);
 
-                //}
-                ////ベジェ曲線のとき、今のところ固定点移動時に制御点も同時移動、制御点移動は対角線上になるように移動
-                //else if (MyTargetGeoShape.MyShapeType == ShapeType.Bezier)
-                //{
-                //    //前制御点、固定点、後制御点の判定
-                //    Point frontP, anchorP, rearP;
-                //    int mod = i % 3;
-                //    if (mod == 0)
-                //    {
-                //        //固定点、前後の制御点も同じ移動
-                //        anchorP = points[i];
-                //        SetAnchorLocate2(i, new Point(anchorP.X + xAdd, anchorP.Y + yAdd));
+                }
+                //ベジェ曲線のとき、今のところ固定点移動時に制御点も同時移動、制御点移動は対角線上になるように移動
+                else if (MyTargetGeoShape.MyShapeType == ShapeType.Bezier)
+                {
+                    //前制御点、固定点、後制御点の判定
+                    Point frontP, anchorP, rearP;
+                    int mod = i % 3;
+                    double xAdd = e.HorizontalChange;
+                    double yAdd = e.VerticalChange;
+                    //自身が固定点の場合
+                    if (mod == 0)
+                    {
+                        //固定点、前後の制御点も同じ移動
+                        anchorP = points[i];
+                        SetAnchorLocate2(i, new Point(anchorP.X + xAdd, anchorP.Y + yAdd));
 
-                //        //自身が先頭固定点じゃないときは前制御点があるので移動させる
-                //        if (i != 0)
-                //        {
-                //            frontP = points[i - 1];
-                //            SetAnchorLocate2(i - 1, new Point(frontP.X + xAdd, frontP.Y + yAdd));
-                //        }
+                        //自身が先頭固定点じゃないときは前制御点があるので移動させる
+                        if (i != 0)
+                        {
+                            frontP = points[i - 1];
+                            SetAnchorLocate2(i - 1, new Point(frontP.X + xAdd, frontP.Y + yAdd));
+                        }
 
-                //        //自身が最終固定点じゃないときは後制御点があるので移動させる
-                //        if (i != points.Count - 1)
-                //        {
-                //            rearP = points[i + 1];
-                //            SetAnchorLocate2(i + 1, new Point(rearP.X + xAdd, rearP.Y + yAdd));
-                //        }
+                        //自身が最終固定点じゃないときは後制御点があるので移動させる
+                        if (i != points.Count - 1)
+                        {
+                            rearP = points[i + 1];
+                            SetAnchorLocate2(i + 1, new Point(rearP.X + xAdd, rearP.Y + yAdd));
+                        }
 
-                //    }
-                //    //自身が後制御点
-                //    else if (mod == 1)
-                //    {
-                //        rearP = points[i];
-                //        SetAnchorLocate2(i, new Point(rearP.X + xAdd, rearP.Y + yAdd));
+                    }
+                    //自身が後制御点
+                    else if (mod == 1)
+                    {
+                        rearP = points[i];
+                        SetAnchorLocate2(i, new Point(rearP.X + xAdd, rearP.Y + yAdd));
 
-                //        //前制御点の移動、対角線上になるように移動
-                //        if (i != 1)
-                //        {
-                //            anchorP = points[i - 1];
-                //            double xDiff = rearP.X - anchorP.X;
-                //            double yDiff = rearP.Y - anchorP.Y;
-                //            SetAnchorLocate2(i - 2, new Point(anchorP.X - xDiff, anchorP.Y - yDiff));
-                //        }
-                //    }
-                //    //自身が前制御点
-                //    else
-                //    {
-                //        //後制御点の移動、対角線上になるように移動
-                //        frontP = points[i];
-                //        SetAnchorLocate2(i, new Point(frontP.X + xAdd, frontP.Y + yAdd));
+                        //前制御点の移動、対角線上になるように移動
+                        if (i != 1)
+                        {
+                            anchorP = points[i - 1];
+                            double xDiff = rearP.X - anchorP.X;
+                            double yDiff = rearP.Y - anchorP.Y;
+                            SetAnchorLocate2(i - 2, new Point(anchorP.X - xDiff, anchorP.Y - yDiff));
+                        }
+                    }
+                    //自身が前制御点
+                    else
+                    {
+                        //後制御点の移動、対角線上になるように移動
+                        frontP = points[i];
+                        SetAnchorLocate2(i, new Point(frontP.X + xAdd, frontP.Y + yAdd));
 
-                //        if (i != points.Count - 2)
-                //        {
-                //            anchorP = points[i + 1];
-                //            double xDiff = frontP.X - anchorP.X;
-                //            double yDiff = frontP.Y - anchorP.Y;
-                //            SetAnchorLocate2(i + 2, new Point(anchorP.X - xDiff, anchorP.Y - yDiff));
-                //        }
-                //    }
-                //}
+                        if (i != points.Count - 2)
+                        {
+                            anchorP = points[i + 1];
+                            double xDiff = frontP.X - anchorP.X;
+                            double yDiff = frontP.Y - anchorP.Y;
+                            SetAnchorLocate2(i + 2, new Point(anchorP.X - xDiff, anchorP.Y - yDiff));
+                        }
+                    }
+                }
 
 
             }
