@@ -41,20 +41,19 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
 
-        public double Size
-        {
-            get { return (double)GetValue(SizeProperty); }
-            set { SetValue(SizeProperty, value); }
-        }
-        public static readonly DependencyProperty SizeProperty =
-            DependencyProperty.Register(nameof(Size), typeof(double), typeof(AnchorThumb),
-                new FrameworkPropertyMetadata(20.0,
-                    FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure));
+        //public double Size
+        //{
+        //    get { return (double)GetValue(SizeProperty); }
+        //    set { SetValue(SizeProperty, value); }
+        //}
+        //public static readonly DependencyProperty SizeProperty =
+        //    DependencyProperty.Register(nameof(Size), typeof(double), typeof(AnchorThumb),
+        //        new FrameworkPropertyMetadata(20.0,
+        //            FrameworkPropertyMetadataOptions.AffectsRender |
+        //            FrameworkPropertyMetadataOptions.AffectsMeasure));
 
 
-
-
+        public double ThumbSize = 20.0;
         public Rectangle MyTemplateElement { get; private set; }
         //public Point MyPoint;
         public AnchorThumb(Point point)
@@ -65,8 +64,8 @@ namespace Pixtack3rd
             SetBinding(Canvas.TopProperty, nameof(Y));
             X = point.X;
             Y = point.Y;
-            Width = Size;
-            Height = Size;
+            Width = ThumbSize;
+            Height = ThumbSize;
             //DragDelta += AnchorThumb_DragDelta;
         }
 

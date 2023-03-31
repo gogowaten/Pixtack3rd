@@ -2024,24 +2024,14 @@ namespace Pixtack3rd
 
         private void ButtonTest_Click(object sender, RoutedEventArgs e)
         {
-           var direc=  MyTTGermtricShape.MyTemplateShape.MyAdorner.MyDirectionLine;
-            //MyTTGermtricShape.Arrange(MyTTGermtricShape.MyTemplateShape.MyExternalBounds);
+            var direc = Canvas.GetLeft(MyTTGermtricShape.MyShape);
+
 
             if (MyRoot.ClickedThumb == null) return;
             
             var neko2 = MyRoot.ClickedThumb.Data.StrokeA;
             //MyRoot.ClickedThumb.Data.PointCollection[0] = new Point(200,200);
-            if (MyRoot.ClickedThumb.MyTemplateElement is PolyCanvas p2)
-            {
-                //p2.MyPoints[0] = new Point(200, 200);
-                var inu = p2.MyPoints;
-                var inu2 = p2.Stroke;
-                if (MyRoot.ClickedThumb is TTPolyline poly)
-                {
-                    var uma = poly.MyPoints;
-                    var uma2 = poly.Stroke;
-                }
-            }
+            
         }
 
 

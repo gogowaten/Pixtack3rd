@@ -15,7 +15,12 @@ using System.Windows.Media.Imaging;
 
 namespace Pixtack3rd
 {
-    public enum TType { None = 0, Root, Group, TextBlock, TextBox, Image, Rectangle, Polyline, Geometric }
+    public enum TType
+    {
+        None = 0, Root, Group, TextBlock, TextBox, Image, Rectangle, 
+        //Polyline,
+        Geometric
+    }
 
 
 
@@ -201,8 +206,6 @@ namespace Pixtack3rd
                 case TType.Rectangle:
                     break;
                 case TType.TextBox:
-                    break;
-                case TType.Polyline:
                     break;
                 default:
                     break;
