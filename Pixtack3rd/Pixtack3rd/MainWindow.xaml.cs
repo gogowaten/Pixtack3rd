@@ -58,17 +58,17 @@ namespace Pixtack3rd
 
         //マウスクリックでPolyline描画するときの一時的なもの
         private readonly PointCollection MyTempPoints = new();
-        private Shape? MyTempShape;
+        private GeometricShape? MyTempShape;
 
         //
         private List<AnchorThumb> MyAnchoredThumbs { get; set; } = new();
 
-    
+
 
         public MainWindow()
         {
             InitializeComponent();
-            
+
 
             MyAppConfig = GetAppConfig(APP_CONFIG_FILE_NAME);
 
@@ -97,12 +97,15 @@ namespace Pixtack3rd
             //    var maiX = b.Source;
             //};
 
-            // マウスクリックでPolyline描画
+            // マウスクリックでShape描画
             MyDrawCanvas.MouseLeftButtonDown += MyDrawCanvas_MouseLeftButtonDown;
             MyDrawCanvas.MouseMove += MyDrawCanvas_MouseMove;
             MyDrawCanvas.MouseRightButtonDown += MyDrawCanvas_MouseRightButtonDown;
 
+            //ClickedThumb変更イベント時
+            MyRoot.ClickedThumbChanging += MyRoot_ClickedThumbChanging;
         }
+
 
 
         #region 初期設定
@@ -192,6 +195,9 @@ namespace Pixtack3rd
             MyComboBoxLineHeadBeginType.SelectedValue = HeadType.None;
             MyComboBoxLineHeadEndType.ItemsSource = Enum.GetValues(typeof(HeadType));
             MyComboBoxLineHeadEndType.SelectedValue = HeadType.Arrow;
+            MyComboBoxShapeType.ItemsSource = Enum.GetValues(typeof(ShapeType));
+            MyComboBoxShapeType.SelectedValue = ShapeType.Line;
+
             //MyComboBoxFontStretchs.ItemsSource = MakeFontStretchDictionary();
             //MyComboBoxFontStyle.ItemsSource = MakeFontStylesDictionary();
             //MyComboBoxFontStyle.SelectedValue = this.FontStyle;
@@ -1534,6 +1540,73 @@ namespace Pixtack3rd
         #endregion データ読み込み、アプリの設定読み込み
 
 
+        #region 図形編集の開始と終了
+
+        //クリックされたThumb変更時、編集中の図形以外がクリックされたら編集とBinding解除
+        private void MyRoot_ClickedThumbChanging(TThumb? oldThumb, TThumb? newThumb)
+        {
+            if (oldThumb?.Data.Guid == newThumb?.Data.Guid) { return; }
+            if (oldThumb is TTGeometricShape oldShape && oldShape.IsEditing)
+            {
+                ShapeEditEnd(oldShape);
+            }
+        }
+
+        //図形編集開始、Binding
+        private void ShapeEditStart()
+        {
+            if (MyRoot.ClickedThumb is TTGeometricShape geoThumb)
+            {
+                geoThumb.IsEditing = true;
+                geoThumb.MyAnchorVisible = Visibility.Visible;
+
+                MyTabItemShape.DataContext = geoThumb.Data;
+                MyNumeArrowHeadAngle.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.HeadAngle));
+                MyNumeStrokeThickness.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.StrokeThickness));
+                MyComboBoxLineHeadBeginType.SetBinding(ComboBox.SelectedValueProperty, nameof(Data.HeadBeginType));
+                MyComboBoxLineHeadEndType.SetBinding(ComboBox.SelectedValueProperty, nameof(Data.HeadEndType));
+                MyComboBoxShapeType.SetBinding(ComboBox.SelectedValueProperty, nameof(Data.ShapeType));
+                MyChecBoxIsLineClose.SetBinding(CheckBox.IsCheckedProperty, nameof(Data.IsLineClose));
+                MyChecBoxIsLineSmoothJoin.SetBinding(CheckBox.IsCheckedProperty, nameof(Data.IsSmoothJoin));
+
+                //DataにブラシプロパティをBindingするのは無理そう、なのでARGBに分解した
+                //MyNumeShapeBackA.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = geoThumb.Stroke, Converter = new MyConverterBrushColorA() });
+                MyNumeShapeBackA.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.StrokeA));
+                MyNumeShapeBackR.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.StrokeR));
+                MyNumeShapeBackG.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.StrokeG));
+                MyNumeShapeBackB.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.StrokeB));
+
+            }
+        }
+
+        //編集中の図形のBinding解除
+        private void ShapeEditEndForClickedThumb()
+        {
+            if (MyRoot.ClickedThumb is TTGeometricShape shape)
+            {
+                ShapeEditEnd(shape);
+            }
+        }
+        private void ShapeEditEnd(TTGeometricShape geoThumb)
+        {
+            geoThumb.IsEditing = false;
+            geoThumb.MyAnchorVisible = Visibility.Collapsed;
+            MyTabItemShape.DataContext = null;
+            MyNumeStrokeThickness.MyValue = (decimal)geoThumb.StrokeThickness;
+            MyNumeArrowHeadAngle.MyValue = (decimal)geoThumb.ArrowHeadAngle;
+            MyComboBoxLineHeadBeginType.SelectedValue = geoThumb.HeadBeginType;
+            MyComboBoxLineHeadEndType.SelectedValue = geoThumb.HeadEndType;
+            MyComboBoxShapeType.SelectedValue = geoThumb.MyShapeType;
+            //BindingOperations.ClearAllBindings(MyNumeShapeBackB);
+            SolidColorBrush brush = (SolidColorBrush)geoThumb.Stroke;
+            MyNumeShapeBackA.MyValue = (decimal)brush.Color.A;
+            MyNumeShapeBackR.MyValue = (decimal)brush.Color.R;
+            MyNumeShapeBackG.MyValue = (decimal)brush.Color.G;
+            MyNumeShapeBackB.MyValue = (decimal)brush.Color.B;
+        }
+
+        #endregion 図形編集の開始と終了
+
 
 
 
@@ -1951,77 +2024,60 @@ namespace Pixtack3rd
 
         private void ButtonTest_Click(object sender, RoutedEventArgs e)
         {
-            var consize = MyPolyZ.MyContentRect;
-            var rsize = MyPolyZ.RenderSize;
-            var polybound = VisualTreeHelper.GetContentBounds(MyPolyZ);
-            var debound = VisualTreeHelper.GetDescendantBounds(MyPolyZ);
+            var direc = Canvas.GetLeft(MyTTGermtricShape.MyShape);
 
-            var neko = MyRoot.ClickedThumb.Data.PointCollection;
-            var neko2 = MyRoot.ClickedThumb.Data.Stroke;
+
+            if (MyRoot.ClickedThumb == null) return;
+            
+            var neko2 = MyRoot.ClickedThumb.Data.StrokeA;
             //MyRoot.ClickedThumb.Data.PointCollection[0] = new Point(200,200);
-            if (MyRoot.ClickedThumb.MyTemplateElement is PolyCanvas p2)
-            {
-                //p2.MyPoints[0] = new Point(200, 200);
-                var inu = p2.MyPoints;
-                var inu2 = p2.Stroke;
-                if (MyRoot.ClickedThumb is TTPolyline poly)
-                {
-                    var uma = poly.MyPoints;
-                    var uma2 = poly.Stroke;
-                }
-            }
+            
         }
 
 
         #region 図形関連
 
-        #region マウスクリックでPolyline描画
+        #region マウスクリックでShape描画
         /// <summary>
-        /// マウスクリックでPolyline描画開始
+        /// マウスクリックでShape描画開始
         /// </summary>
-        private void DrawPolylineFromClick()
+        private void DrawShapeFromMouseClick()
         {
             MyTabControl.IsEnabled = false;
             MyDrawCanvas.Visibility = Visibility.Visible;
             MyTempPoints.Clear();
 
-            PolylineZ polyZ = new()
+            GeometricShape shape = new()
             {
-                Angle = (double)MyNumeArrowHeadAngle.MyValue,
+                ArrowHeadAngle = (double)MyNumeArrowHeadAngle.MyValue,
                 Fill = GetBrush(),
                 Stroke = GetBrush(),
                 StrokeThickness = (double)MyNumeStrokeThickness.MyValue,
                 HeadEndType = (HeadType)MyComboBoxLineHeadEndType.SelectedValue,
                 HeadBeginType = (HeadType)MyComboBoxLineHeadBeginType.SelectedValue,
                 MyPoints = MyTempPoints,
+                MyLineSmoothJoin = MyChecBoxIsLineSmoothJoin.IsChecked == true,
+                MyLineClose = MyChecBoxIsLineClose.IsChecked == true,
+                MyShapeType = (ShapeType)MyComboBoxShapeType.SelectedValue,
             };
 
-            MyTempShape = polyZ;
+            MyTempShape = shape;
             MyDrawCanvas.Children.Add(MyTempShape);
         }
+
         private SolidColorBrush GetBrush()
         {
             return new SolidColorBrush(Color.FromArgb((byte)MyNumeShapeBackA.MyValue,
                 (byte)MyNumeShapeBackR.MyValue, (byte)MyNumeShapeBackG.MyValue, (byte)MyNumeShapeBackB.MyValue));
         }
+
         //右クリックで終了
         //MyTempPointsからData作成してRootに追加
         private void MyDrawCanvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (MyTempPoints.Count >= 2)
             {
-                //    Data data = new(TType.Polyline)
-                //    {
-                //        HeadAngle = (double)MyNumeArrowHeadAngle.MyValue,
-                //        Stroke = GetBrush(),
-                //        StrokeThickness = (double)MyNumeStrokeThickness.MyValue,
-                //        Fill = GetBrush(),
-                //        PointCollection = new(MyTempPoints),
-                //        HeadEndType = (HeadType)MyComboBoxLineHeadBeginType.SelectedValue,
-                //    };
-                //    FixTopLeftPointCollectionData(data);
-                //    MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper, false);
-                AddShapePolyline(new(MyTempPoints), false);
+                AddShapePolyline2(new(MyTempPoints), false);                
             }
 
             //後片付け
@@ -2056,11 +2112,56 @@ namespace Pixtack3rd
             data.X = x; data.Y = y;
         }
 
+        //マウスクリックでCanvasにベジェ曲線で曲線、PolyBezierSegment - 午後わてんのブログ
+        //        https://gogowaten.hatenablog.com/entry/15544835
+        /// <summary>
+        /// マウス移動時、ベジェ曲線のときはなめらかな曲線になるように制御点を設定する
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MyDrawCanvas_MouseMove(object sender, MouseEventArgs e)
         {
             if (MyTempPoints.Count < 2) { return; }
-            Point pp = Mouse.GetPosition(MyDrawCanvas);
-            MyTempPoints[^1] = pp;
+            Point mousePoint = Mouse.GetPosition(MyDrawCanvas);
+            //直線の場合
+            if (MyTempShape?.MyShapeType == ShapeType.Line)
+            {
+                MyTempPoints[^1] = mousePoint;
+            }
+            //ベジェ曲線の場合、2個前までのアンカー点まで考慮して制御点座標を計算
+            else if (MyTempShape?.MyShapeType == ShapeType.Bezier)
+            {
+                if (MyTempPoints.Count <= 4)
+                {
+                    MyTempPoints[^1] = mousePoint;
+                }
+                else
+                {
+                    //最終アンカー点座標は、今のマウスの位置
+                    MyTempPoints[^1] = mousePoint;
+
+                    Point prevPoint1 = MyTempPoints[^4];//1個前のアンカー点
+                    Point prevPoint2;//2個前のアンカー点
+                    if (MyTempPoints.Count < 7)
+                    {
+                        prevPoint2 = MyTempPoints[^1];
+                    }
+                    else { prevPoint2 = MyTempPoints[^7]; }
+
+                    //マウス座標と2個前のアンカー点との差の1/4、これを使って
+                    //一個前のアンカー点の制御点座標を決定
+                    double diffX = (mousePoint.X - prevPoint2.X) / 4.0;
+                    double diffY = (mousePoint.Y - prevPoint2.Y) / 4.0;
+                    MyTempPoints[^3] = new Point(prevPoint1.X + diffX, prevPoint1.Y + diffY);
+                    MyTempPoints[^5] = new Point(prevPoint1.X - diffX, prevPoint1.Y - diffY);
+
+                    //最終アンカー点の制御点座標を決定
+                    diffX = (mousePoint.X - MyTempPoints[^3].X) / 4.0;
+                    diffY = (mousePoint.Y - MyTempPoints[^3].Y) / 4.0;
+                    MyTempPoints[^2] = new Point(mousePoint.X - diffX, mousePoint.Y - diffY);
+
+                }
+            }
         }
 
         /// <summary>
@@ -2071,52 +2172,43 @@ namespace Pixtack3rd
         private void MyDrawCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             Point pp = Mouse.GetPosition(MyDrawCanvas);
-            //最初だけは同時に2点追加
-            if (MyTempPoints.Count == 0)
+            //直線の場合、最初だけは同時に2点追加
+            if (MyTempShape?.MyShapeType == ShapeType.Line)
             {
-                MyTempPoints.Add(pp);
-                MyTempPoints.Add(pp);
+                if (MyTempPoints.Count == 0)
+                {
+                    MyTempPoints.Add(pp);
+                    MyTempPoints.Add(pp);
+                }
+                else
+                {
+                    MyTempPoints.Add(pp);
+                }
             }
-            else
+            //ベジェ曲線の場合、最初は4点追加、以降は3点づつ追加
+            else if (MyTempShape?.MyShapeType == ShapeType.Bezier)
             {
-                MyTempPoints.Add(pp);
+                if (MyTempPoints.Count == 0)
+                {
+                    MyTempPoints.Add(pp);
+                    MyTempPoints.Add(pp);
+                    MyTempPoints.Add(pp);
+                    MyTempPoints.Add(pp);
+                }
+                else
+                {
+                    MyTempPoints.Add(pp);
+                    MyTempPoints.Add(pp);
+                    MyTempPoints.Add(pp);
+                }
             }
+
 
         }
         #endregion マウスクリックでPolyline描画
 
         #region 図形のアンカーポイント編集開始、終了
 
-        private void ContextAddAnchor_Click(object sender, RoutedEventArgs e)
-        {
-            //if (MyRoot.ClickedThumb is TThumb tShape)
-            //{
-            //    Point thumbMP = Mouse.GetPosition(tShape);
-            //    Point canvasMP = Mouse.GetPosition(MyAnchorPointEditCanvas);
-
-            //    AnchorThumb anchor = new(canvasMP);
-            //    anchor.DragDelta += AnchorThumb_DragDelta;
-            //    anchor.DragCompleted += AnchorThumb_DragCompleted;
-
-            //    double beginD = TwoPointDistance(tShape.Data.PointCollection[0], thumbMP);
-            //    double endD = TwoPointDistance(tShape.Data.PointCollection[^1], thumbMP);
-            //    if (beginD > endD)
-            //    {
-            //        tShape.Data.PointCollection.Add(thumbMP);//頂点追加
-            //        MyAnchoredThumbs.Add(anchor);//アンカーThumb追加
-            //        MyAnchorPointEditCanvas.Children.Add(anchor);//アンカーThumb追加
-            //    }
-            //    else
-            //    {
-            //        tShape.Data.PointCollection.Insert(0, thumbMP);
-            //        MyAnchoredThumbs.Insert(0, anchor);//アンカーThumb追加
-            //        MyAnchorPointEditCanvas.Children.Insert(0, anchor);//アンカーThumb追加
-            //    }
-
-
-
-            //}
-        }
 
 
         public double TwoPointDistance(Point p1, Point p2)
@@ -2130,200 +2222,15 @@ namespace Pixtack3rd
 
         private void ButtonStartEditAnchor_Click(object sender, RoutedEventArgs e)
         {
-            EditStartAnchor();
+            ShapeEditStart();
         }
 
         private void ButtonEndEditAnchor_Click(object sender, RoutedEventArgs e)
         {
-            EditEndAnchor();
-        }
-        //アンカーポイントの編集開始
-        private void EditStartAnchor()
-        {
-            if (MyRoot.ClickedThumb is TTPolyline thumb)
-            {
-                //MyAnchorPointEditCanvas.Cursor = Cursors.Hand;             
-                thumb.MyAnchorVisible = Visibility.Visible;
-
-                MyTabItemShape.DataContext = thumb.Data;
-                MyNumeArrowHeadAngle.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.HeadAngle));
-                MyNumeStrokeThickness.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.StrokeThickness));
-                MyComboBoxLineHeadBeginType.SetBinding(ComboBox.SelectedValueProperty, nameof(Data.HeadBeginType));
-                MyComboBoxLineHeadEndType.SetBinding(ComboBox.SelectedValueProperty, nameof(Data.HeadEndType));
-
-                MyNumeShapeBackA.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = thumb.Stroke, Converter = new MyConverterBrushColorA() });
-                MyNumeShapeBackR.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = thumb.Stroke, Converter = new MyConverterBrushColorR() });
-                MyNumeShapeBackG.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = thumb.Stroke, Converter = new MyConverterBrushColorG() });
-                MyNumeShapeBackB.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = thumb.Stroke, Converter = new MyConverterBrushColorB() });
-            }
-            if (MyRoot.ClickedThumb is TTGeometricShape geoThumb)
-            {
-                //MyAnchorPointEditCanvas.Cursor = Cursors.Hand;             
-                geoThumb.MyAnchorVisible = Visibility.Visible;
-
-                MyTabItemShape.DataContext = geoThumb.Data;
-                MyNumeArrowHeadAngle.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.HeadAngle));
-                MyNumeStrokeThickness.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.StrokeThickness));
-                MyComboBoxLineHeadBeginType.SetBinding(ComboBox.SelectedValueProperty, nameof(Data.HeadBeginType));
-                MyComboBoxLineHeadEndType.SetBinding(ComboBox.SelectedValueProperty, nameof(Data.HeadEndType));
-
-                MyNumeShapeBackA.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = geoThumb.Stroke, Converter = new MyConverterBrushColorA() });
-                MyNumeShapeBackR.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = geoThumb.Stroke, Converter = new MyConverterBrushColorR() });
-                MyNumeShapeBackG.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = geoThumb.Stroke, Converter = new MyConverterBrushColorG() });
-                MyNumeShapeBackB.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = geoThumb.Stroke, Converter = new MyConverterBrushColorB() });
-            }
-
+            ShapeEditEndForClickedThumb();
         }
 
 
-        //アンカーポイントの編集終了
-        private void EditEndAnchor()
-        {
-            if (MyRoot.ClickedThumb is TTPolyline thumb)
-            {
-                thumb.MyAnchorVisible = Visibility.Collapsed;
-                MyTabItemShape.DataContext = null;
-                MyNumeStrokeThickness.MyValue = (decimal)thumb.StrokeThickness;
-                MyNumeArrowHeadAngle.MyValue = (decimal)thumb.Angle;
-                MyComboBoxLineHeadBeginType.SelectedValue = thumb.HeadBeginType;
-                MyComboBoxLineHeadEndType.SelectedValue = thumb.HeadEndType;
-
-                //BindingOperations.ClearAllBindings(MyNumeShapeBackA);
-                //BindingOperations.ClearAllBindings(MyNumeShapeBackR);
-                //BindingOperations.ClearAllBindings(MyNumeShapeBackG);
-                //BindingOperations.ClearAllBindings(MyNumeShapeBackB);
-                SolidColorBrush brush = (SolidColorBrush)thumb.Stroke;
-                MyNumeShapeBackA.MyValue = (decimal)brush.Color.A;
-                MyNumeShapeBackR.MyValue = (decimal)brush.Color.R;
-                MyNumeShapeBackG.MyValue = (decimal)brush.Color.G;
-                MyNumeShapeBackB.MyValue = (decimal)brush.Color.B;
-            }
-            if (MyRoot.ClickedThumb is TTGeometricShape geoThumb)
-            {
-                geoThumb.MyAnchorVisible = Visibility.Collapsed;
-                MyTabItemShape.DataContext = null;
-                MyNumeStrokeThickness.MyValue = (decimal)geoThumb.StrokeThickness;
-                MyNumeArrowHeadAngle.MyValue = (decimal)geoThumb.ArrowHeadAngle;
-                MyComboBoxLineHeadBeginType.SelectedValue = geoThumb.HeadBeginType;
-                MyComboBoxLineHeadEndType.SelectedValue = geoThumb.HeadEndType;
-
-                //BindingOperations.ClearAllBindings(MyNumeShapeBackA);
-                //BindingOperations.ClearAllBindings(MyNumeShapeBackR);
-                //BindingOperations.ClearAllBindings(MyNumeShapeBackG);
-                //BindingOperations.ClearAllBindings(MyNumeShapeBackB);
-                SolidColorBrush brush = (SolidColorBrush)geoThumb.Stroke;
-                MyNumeShapeBackA.MyValue = (decimal)brush.Color.A;
-                MyNumeShapeBackR.MyValue = (decimal)brush.Color.R;
-                MyNumeShapeBackG.MyValue = (decimal)brush.Color.G;
-                MyNumeShapeBackB.MyValue = (decimal)brush.Color.B;
-            }
-        }
-
-
-        //アンカーポイント移動中、対象Pointの更新
-        private void AnchorThumb_DragDelta(object sender, DragDeltaEventArgs e)
-        {
-            if (sender is AnchorThumb anchor && MyRoot.ClickedThumb?.Data is Data tData)
-            {
-                double x = anchor.X + e.HorizontalChange;
-                double y = anchor.Y + e.VerticalChange;
-                if (x < 0 || y < 0)
-                {
-                    if (x < 0)
-                    {
-                        tData.X += x;
-                        anchor.X = x;
-                        foreach (var item in MyAnchoredThumbs)
-                        {
-                            item.X -= x;
-                        }
-                    }
-                    if (y < 0)
-                    {
-                        tData.Y += y;
-                        anchor.Y = y;
-                        foreach (var item in MyAnchoredThumbs)
-                        {
-                            item.Y -= y;
-                        }
-                    }
-
-                    //DataPointCollection全体をオフセット
-                    for (int i = 0; i < tData.PointCollection.Count; i++)
-                    {
-                        tData.PointCollection[i] = new Point(MyAnchoredThumbs[i].X, MyAnchoredThumbs[i].Y);
-                    }
-                }
-                else
-                {
-                    anchor.X = x; anchor.Y = y;
-                    tData.PointCollection[MyAnchoredThumbs.IndexOf(anchor)] = new Point(x, y);
-                }
-                //anchor.X += e.HorizontalChange;
-                //anchor.Y += e.VerticalChange;
-                //tData.PointCollection[MyAnchoredThumbs.IndexOf(anchor)] = new Point(x, y);
-
-                //if (MyRoot.ClickedThumb is TTPolylineZ pt)
-                //{
-                //    int ii = MyAnchoredThumbs.IndexOf(anchor);
-                //    //pt.MyPoints[ii] = new Point(anchor.X - pt.TTLeft, anchor.Y - pt.TTTop);
-                //    pt.MyPoints[ii] = new Point(anchor.X, anchor.Y);
-                //}
-            }
-        }
-
-
-        //アンカーポイント移動後、マイナス座標を修正
-        private void AnchorThumb_DragCompleted(object sender, DragCompletedEventArgs e)
-        {
-            //FixAnchorPoint(MyRoot.ClickedThumb?.Data);
-
-            //if (sender is AnchorThumb anchor)
-            //{
-            //    var maiX = anchor.X;
-            //    var maiY = anchor.Y;
-            //    if (maiX < 0)
-            //    {
-            //        foreach (var item in MyAnchoredThumbs)
-            //        {
-            //            item.X -= maiX;
-            //        }
-            //    }
-            //    if (maiY < 0)
-            //    {
-            //        foreach (var item in MyAnchoredThumbs)
-            //        {
-            //            item.Y -= maiY;
-            //        }
-            //    }
-            //}
-        }
-        private void FixAnchorPoint(Data? thumbData)
-        {
-            if (thumbData == null) return;
-            double x = double.MaxValue;
-            double y = double.MaxValue;
-            foreach (var item in thumbData.PointCollection)
-            {
-                if (x > item.X) { x = item.X; }
-                if (y > item.Y) { y = item.Y; }
-            }
-            for (int i = 0; i < thumbData.PointCollection.Count; i++)
-            {
-                thumbData.PointCollection[i]
-                    = new Point(
-                        thumbData.PointCollection[i].X - x,
-                        thumbData.PointCollection[i].Y - y);
-            }
-            thumbData.X += x;
-            thumbData.Y += y;
-
-            //for (int i = 0; i < MyAnchoredThumbs.Count; i++)
-            //{
-            //    MyAnchoredThumbs[i].X = thumbData.X + thumbData.PointCollection[i].X;
-            //    MyAnchoredThumbs[i].Y = thumbData.Y + thumbData.PointCollection[i].Y;
-            //}
-        }
 
 
 
@@ -2331,24 +2238,34 @@ namespace Pixtack3rd
         #endregion 図形のアンカーポイント編集開始、終了
 
         #region 追加
-        private void AddShapePolyline(PointCollection points, bool locateFix = true)
+        private void AddShapePolyline2(PointCollection points, bool locateFix = true)
         {
-            Data data = new(TType.Polyline)
+            Data data = new(TType.Geometric)
             {
                 HeadAngle = (double)MyNumeArrowHeadAngle.MyValue,
-                Stroke = GetBrush(),
+                StrokeA = (byte)MyNumeShapeBackA.MyValue,
+                StrokeR = (byte)MyNumeShapeBackR.MyValue,
+                StrokeG = (byte)MyNumeShapeBackG.MyValue,
+                StrokeB = (byte)MyNumeShapeBackB.MyValue,
+
                 StrokeThickness = (double)MyNumeStrokeThickness.MyValue,
                 Fill = GetBrush(),
                 PointCollection = points,
                 HeadBeginType = (HeadType)MyComboBoxLineHeadBeginType.SelectedItem,
                 HeadEndType = (HeadType)MyComboBoxLineHeadEndType.SelectedItem,
+                ShapeType = (ShapeType)MyComboBoxShapeType.SelectedItem,
                 IsBezier = MyCheckBoxIsBezier.IsChecked == true,
+                IsLineClose = MyChecBoxIsLineClose.IsChecked == true,
+                IsSmoothJoin = MyChecBoxIsLineSmoothJoin.IsChecked == true,
+
             };
 
 
             FixTopLeftPointCollectionData(data);
             MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper, locateFix);
         }
+
+
         #endregion 追加
         #endregion 図形関連
 
@@ -2434,12 +2351,14 @@ namespace Pixtack3rd
         //TestDrawPolyline
         private void ButtonTestDrawPolyline_Click(object sender, RoutedEventArgs e)
         {
-            DrawPolylineFromClick();
+            DrawShapeFromMouseClick();
+            //DrawPolylineFromClick();
         }
 
         private void ButtonAddShape_Click(object sender, RoutedEventArgs e)
         {
-            AddShapePolyline(new PointCollection() { new Point(0, 0), new Point(100, 100) });
+            AddShapePolyline2(new PointCollection() { new Point(0, 0), new Point(100, 100) });
+            //AddShapePolyline(new PointCollection() { new Point(0, 0), new Point(100, 100) });
         }
     }
 
@@ -2465,70 +2384,93 @@ namespace Pixtack3rd
             return array;
         }
     }
-    public class MyConverterBrushColorA : IValueConverter
+    public class MyConverterBrushByte : IMultiValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            SolidColorBrush brush = (SolidColorBrush)value;
-            return brush.Color.A;
+            byte a = (byte)values[0];
+            byte r = (byte)values[1];
+            byte g = (byte)values[2];
+            byte b = (byte)values[3];
+            return new SolidColorBrush(Color.FromArgb(a, r, g, b));
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            SolidColorBrush brush = (SolidColorBrush)parameter;
-            Color c = brush.Color;
-            byte v = (byte)(decimal)value;
-            return new SolidColorBrush(Color.FromArgb(v, c.R, c.G, c.B));
-        }
-    }
-    public class MyConverterBrushColorR : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             SolidColorBrush brush = (SolidColorBrush)value;
-            return brush.Color.R;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            SolidColorBrush brush = (SolidColorBrush)parameter;
-            Color c = brush.Color;
-            byte v = (byte)(decimal)value;
-            return new SolidColorBrush(Color.FromArgb(c.A, v, c.G, c.B));
+            object[] array = new object[4];
+            array[0] = brush.Color.A;
+            array[1] = brush.Color.R;
+            array[2] = brush.Color.G;
+            array[3] = brush.Color.B;
+            return array;
         }
     }
-    public class MyConverterBrushColorG : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            SolidColorBrush brush = (SolidColorBrush)value;
-            return brush.Color.G;
-        }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            SolidColorBrush brush = (SolidColorBrush)parameter;
-            Color c = brush.Color;
-            byte v = (byte)(decimal)value;
-            return new SolidColorBrush(Color.FromArgb(c.A, c.R, v, c.B));
-        }
-    }
-    public class MyConverterBrushColorB : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            SolidColorBrush brush = (SolidColorBrush)value;
-            return brush.Color.B;
-        }
+    //public class MyConverterBrushColorA : IValueConverter
+    //{
+    //    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        SolidColorBrush brush = (SolidColorBrush)value;
+    //        return brush.Color.A;
+    //    }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            SolidColorBrush brush = (SolidColorBrush)parameter;
-            Color c = brush.Color;
-            byte v = (byte)(decimal)value;
-            return new SolidColorBrush(Color.FromArgb(c.A, c.R, c.G, v));
-        }
-    }
+    //    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        SolidColorBrush brush = (SolidColorBrush)parameter;
+    //        Color c = brush.Color;
+    //        byte v = (byte)(decimal)value;
+    //        return new SolidColorBrush(Color.FromArgb(v, c.R, c.G, c.B));
+    //    }
+    //}
+    //public class MyConverterBrushColorR : IValueConverter
+    //{
+    //    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        SolidColorBrush brush = (SolidColorBrush)value;
+    //        return brush.Color.R;
+    //    }
+
+    //    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        SolidColorBrush brush = (SolidColorBrush)parameter;
+    //        Color c = brush.Color;
+    //        byte v = (byte)(decimal)value;
+    //        return new SolidColorBrush(Color.FromArgb(c.A, v, c.G, c.B));
+    //    }
+    //}
+    //public class MyConverterBrushColorG : IValueConverter
+    //{
+    //    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        SolidColorBrush brush = (SolidColorBrush)value;
+    //        return brush.Color.G;
+    //    }
+
+    //    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        SolidColorBrush brush = (SolidColorBrush)parameter;
+    //        Color c = brush.Color;
+    //        byte v = (byte)(decimal)value;
+    //        return new SolidColorBrush(Color.FromArgb(c.A, c.R, v, c.B));
+    //    }
+    //}
+    //public class MyConverterBrushColorB : IValueConverter
+    //{
+    //    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        SolidColorBrush brush = (SolidColorBrush)value;
+    //        return brush.Color.B;
+    //    }
+
+    //    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        SolidColorBrush brush = (SolidColorBrush)parameter;
+    //        Color c = brush.Color;
+    //        byte v = (byte)(decimal)value;
+    //        return new SolidColorBrush(Color.FromArgb(c.A, c.R, c.G, v));
+    //    }
+    //}
 
 
     #region アプリの設定保存用Dataクラス

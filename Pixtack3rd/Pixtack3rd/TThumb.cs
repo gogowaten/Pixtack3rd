@@ -22,6 +22,7 @@ using System.IO;
 using System.Dynamic;
 using System.Xml.Linq;
 using System.Windows.Ink;
+using ControlLibraryCore20200620;
 
 namespace Pixtack3rd
 {
@@ -588,6 +589,10 @@ namespace Pixtack3rd
 
     public class TTRoot : TTGroup
     {
+        #region イベント
+        //ClickedThumbが変更されるとき発生、引数左がoldvalue、右がnewvalue
+        public event Action<TThumb?, TThumb?>? ClickedThumbChanging;
+        #endregion イベント
 
         #region 通知プロパティ
         //最後にクリックしたThumb
@@ -597,16 +602,14 @@ namespace Pixtack3rd
             get => _clickedThumb;
             set
             {
-                if (_clickedThumb != null)
-                {
-                    _clickedThumb.IsClickedThumb = false;
-                    if (_clickedThumb is TTGeometricShape shape)
-                    {
-                        //shape.
-                    }
-                    SetProperty(ref _clickedThumb, value);
-                    if (_clickedThumb != null) { _clickedThumb.IsClickedThumb = true; }
-                }
+                if (_clickedThumb != null) { _clickedThumb.IsClickedThumb = false; }
+
+                //イベント発動
+                ClickedThumbChanging?.Invoke(_clickedThumb, value);
+
+                SetProperty(ref _clickedThumb, value);
+
+                if (_clickedThumb != null) { _clickedThumb.IsClickedThumb = true; }
             }
         }
         //注目しているThumb、選択Thumb群の筆頭
@@ -1246,10 +1249,10 @@ namespace Pixtack3rd
                 case TType.TextBox:
                     result = new TTTextBox(data);
                     break;
-                case TType.Polyline:
-                    //result = new TTPolylineZ(data);
-                    result = new TTPolyline(data);
-                    break;
+                //case TType.Polyline:
+                //    //result = new TTPolylineZ(data);
+                //    result = new TTPolyline(data);
+                //    break;
                 case TType.Geometric:
                     result = new TTGeometricShape(data);
                     break;
@@ -1815,9 +1818,9 @@ namespace Pixtack3rd
             Rect bounds = VisualTreeHelper.GetDescendantBounds(el);
             bounds = el.RenderTransform.TransformBounds(bounds);
             DrawingVisual dVisual = new();
-            //四捨五入しているけど、UselayoutRoundingをtrueにしていたら必要なさそう
-            bounds.Width = (int)(bounds.Width + 0.5);
-            bounds.Height = (int)(bounds.Height + 0.5);
+            //サイズを切り上げ、UselayoutRoundingをtrueにしていたら必要なさそう
+            bounds.Width = (int)(bounds.Width + 1.0);
+            bounds.Height = (int)(bounds.Height + 1.0);
 
             using (DrawingContext context = dVisual.RenderOpen())
             {
@@ -2587,279 +2590,314 @@ namespace Pixtack3rd
     //}
 
 
-    public class TTPolyline : TThumb
-    {
-        #region 依存プロパティ
+    //public class TTPolyline : TThumb
+    //{
+    //    #region 依存プロパティ
 
-        public PointCollection MyPoints
-        {
-            get { return (PointCollection)GetValue(MyPointsProperty); }
-            set { SetValue(MyPointsProperty, value); }
-        }
-        public static readonly DependencyProperty MyPointsProperty =
-            DependencyProperty.Register(nameof(MyPoints), typeof(PointCollection), typeof(TTPolyline),
-                new FrameworkPropertyMetadata(new PointCollection(),
-                    FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure |
-                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+    //    public PointCollection MyPoints
+    //    {
+    //        get { return (PointCollection)GetValue(MyPointsProperty); }
+    //        set { SetValue(MyPointsProperty, value); }
+    //    }
+    //    public static readonly DependencyProperty MyPointsProperty =
+    //        DependencyProperty.Register(nameof(MyPoints), typeof(PointCollection), typeof(TTPolyline),
+    //            new FrameworkPropertyMetadata(new PointCollection(),
+    //                FrameworkPropertyMetadataOptions.AffectsRender |
+    //                FrameworkPropertyMetadataOptions.AffectsMeasure |
+    //                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        public Visibility MyAnchorVisible
-        {
-            get { return (Visibility)GetValue(MyAnchorVisibleProperty); }
-            set { SetValue(MyAnchorVisibleProperty, value); }
-        }
-        public static readonly DependencyProperty MyAnchorVisibleProperty =
-            DependencyProperty.Register(nameof(MyAnchorVisible), typeof(Visibility), typeof(TTPolyline),
-                new FrameworkPropertyMetadata(Visibility.Collapsed,
-                    FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure |
-                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+    //    public Visibility MyAnchorVisible
+    //    {
+    //        get { return (Visibility)GetValue(MyAnchorVisibleProperty); }
+    //        set { SetValue(MyAnchorVisibleProperty, value); }
+    //    }
+    //    public static readonly DependencyProperty MyAnchorVisibleProperty =
+    //        DependencyProperty.Register(nameof(MyAnchorVisible), typeof(Visibility), typeof(TTPolyline),
+    //            new FrameworkPropertyMetadata(Visibility.Collapsed,
+    //                FrameworkPropertyMetadataOptions.AffectsRender |
+    //                FrameworkPropertyMetadataOptions.AffectsMeasure |
+    //                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        public bool IsBezier
-        {
-            get { return (bool)GetValue(IsBezierProperty); }
-            set { SetValue(IsBezierProperty, value); }
-        }
-        public static readonly DependencyProperty IsBezierProperty =
-            DependencyProperty.Register(nameof(IsBezier), typeof(bool), typeof(TTPolyline),
-                new FrameworkPropertyMetadata(false,
-                    FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure |
-                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+    //    public bool IsBezier
+    //    {
+    //        get { return (bool)GetValue(IsBezierProperty); }
+    //        set { SetValue(IsBezierProperty, value); }
+    //    }
+    //    public static readonly DependencyProperty IsBezierProperty =
+    //        DependencyProperty.Register(nameof(IsBezier), typeof(bool), typeof(TTPolyline),
+    //            new FrameworkPropertyMetadata(false,
+    //                FrameworkPropertyMetadataOptions.AffectsRender |
+    //                FrameworkPropertyMetadataOptions.AffectsMeasure |
+    //                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        /// <summary>
-        /// 終点のヘッドタイプ
-        /// </summary>
-        public HeadType HeadEndType
-        {
-            get { return (HeadType)GetValue(HeadEndTypeProperty); }
-            set { SetValue(HeadEndTypeProperty, value); }
-        }
-        public static readonly DependencyProperty HeadEndTypeProperty =
-            DependencyProperty.Register(nameof(HeadEndType), typeof(HeadType), typeof(TTPolyline),
-                new FrameworkPropertyMetadata(HeadType.None,
-                    FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure |
-                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-        /// <summary>
-        /// 始点のヘッドタイプ
-        /// </summary>
-        public HeadType HeadBeginType
-        {
-            get { return (HeadType)GetValue(HeadBeginTypeProperty); }
-            set { SetValue(HeadBeginTypeProperty, value); }
-        }
-        public static readonly DependencyProperty HeadBeginTypeProperty =
-            DependencyProperty.Register(nameof(HeadBeginType), typeof(HeadType), typeof(TTPolyline),
-                new FrameworkPropertyMetadata(HeadType.None,
-                    FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure |
-                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+    //    /// <summary>
+    //    /// 終点のヘッドタイプ
+    //    /// </summary>
+    //    public HeadType HeadEndType
+    //    {
+    //        get { return (HeadType)GetValue(HeadEndTypeProperty); }
+    //        set { SetValue(HeadEndTypeProperty, value); }
+    //    }
+    //    public static readonly DependencyProperty HeadEndTypeProperty =
+    //        DependencyProperty.Register(nameof(HeadEndType), typeof(HeadType), typeof(TTPolyline),
+    //            new FrameworkPropertyMetadata(HeadType.None,
+    //                FrameworkPropertyMetadataOptions.AffectsRender |
+    //                FrameworkPropertyMetadataOptions.AffectsMeasure |
+    //                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+    //    /// <summary>
+    //    /// 始点のヘッドタイプ
+    //    /// </summary>
+    //    public HeadType HeadBeginType
+    //    {
+    //        get { return (HeadType)GetValue(HeadBeginTypeProperty); }
+    //        set { SetValue(HeadBeginTypeProperty, value); }
+    //    }
+    //    public static readonly DependencyProperty HeadBeginTypeProperty =
+    //        DependencyProperty.Register(nameof(HeadBeginType), typeof(HeadType), typeof(TTPolyline),
+    //            new FrameworkPropertyMetadata(HeadType.None,
+    //                FrameworkPropertyMetadataOptions.AffectsRender |
+    //                FrameworkPropertyMetadataOptions.AffectsMeasure |
+    //                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        /// <summary>
-        /// 矢印角度、初期値は30.0にしている。30～40くらいが適当
-        /// </summary>
-        public double Angle
-        {
-            get { return (double)GetValue(AngleProperty); }
-            set { SetValue(AngleProperty, value); }
-        }
-        public static readonly DependencyProperty AngleProperty =
-            DependencyProperty.Register(nameof(Angle), typeof(double), typeof(TTPolyline),
-                new FrameworkPropertyMetadata(30.0,
-                    FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure |
-                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-
-        public Brush Stroke
-        {
-            get { return (Brush)GetValue(StrokeProperty); }
-            set { SetValue(StrokeProperty, value); }
-        }
-        public static readonly DependencyProperty StrokeProperty =
-            DependencyProperty.Register(nameof(Stroke), typeof(Brush), typeof(TTPolyline),
-                new FrameworkPropertyMetadata(Brushes.Red,
-                    FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure |
-                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        public Brush TTFill
-        {
-            get { return (Brush)GetValue(TTFillProperty); }
-            set { SetValue(TTFillProperty, value); }
-        }
-        public static readonly DependencyProperty TTFillProperty =
-            DependencyProperty.Register(nameof(TTFill), typeof(Brush), typeof(TTPolyline),
-                new FrameworkPropertyMetadata(Brushes.Red,
-                    FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure |
-                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        public double StrokeThickness
-        {
-            get { return (double)GetValue(StrokeThicknessProperty); }
-            set { SetValue(StrokeThicknessProperty, value); }
-        }
-        public static readonly DependencyProperty StrokeThicknessProperty =
-            DependencyProperty.Register(nameof(StrokeThickness), typeof(double), typeof(TTPolyline),
-                new FrameworkPropertyMetadata(5.0,
-                    FrameworkPropertyMetadataOptions.AffectsRender |
-                    FrameworkPropertyMetadataOptions.AffectsMeasure |
-                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+    //    /// <summary>
+    //    /// 矢印角度、初期値は30.0にしている。30～40くらいが適当
+    //    /// </summary>
+    //    public double Angle
+    //    {
+    //        get { return (double)GetValue(AngleProperty); }
+    //        set { SetValue(AngleProperty, value); }
+    //    }
+    //    public static readonly DependencyProperty AngleProperty =
+    //        DependencyProperty.Register(nameof(Angle), typeof(double), typeof(TTPolyline),
+    //            new FrameworkPropertyMetadata(30.0,
+    //                FrameworkPropertyMetadataOptions.AffectsRender |
+    //                FrameworkPropertyMetadataOptions.AffectsMeasure |
+    //                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
 
+    //    public Brush Stroke
+    //    {
+    //        get { return (Brush)GetValue(StrokeProperty); }
+    //        set { SetValue(StrokeProperty, value); }
+    //    }
+    //    public static readonly DependencyProperty StrokeProperty =
+    //        DependencyProperty.Register(nameof(Stroke), typeof(Brush), typeof(TTPolyline),
+    //            new FrameworkPropertyMetadata(Brushes.Red,
+    //                FrameworkPropertyMetadataOptions.AffectsRender |
+    //                FrameworkPropertyMetadataOptions.AffectsMeasure |
+    //                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        #endregion 依存プロパティ
+    //    public Brush TTFill
+    //    {
+    //        get { return (Brush)GetValue(TTFillProperty); }
+    //        set { SetValue(TTFillProperty, value); }
+    //    }
+    //    public static readonly DependencyProperty TTFillProperty =
+    //        DependencyProperty.Register(nameof(TTFill), typeof(Brush), typeof(TTPolyline),
+    //            new FrameworkPropertyMetadata(Brushes.Red,
+    //                FrameworkPropertyMetadataOptions.AffectsRender |
+    //                FrameworkPropertyMetadataOptions.AffectsMeasure |
+    //                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        public TTPolyline() : this(new Data(TType.Polyline)) { }
-        public TTPolyline(Data data) : base(data)
-        {
-            Data = data;
-            this.DataContext = Data;
-            if (MakeTemplate<PolyCanvas>() is PolyCanvas element)
-            {
-                MyTemplateElement = element;
-            }
-            else { throw new ArgumentException("テンプレート作成できんかった"); }
-
-            //MySetBinding();
-            //SetBinding2();
-            SetBinding3();
-
-        }
-        private void MySetBinding()
-        {
-            //Points同士の連携はBindingより=(イコール)でしたほうが楽
-            //連携の方向はXAMLとDataの優先順位で決める
-            //DataのPointCollectionとthisのPointCollectionの連携
-            //if (Data.PointCollection.Count == 0)
-            //{
-            //    //Data優先
-            //    Loaded += (a, b) => { Data.PointCollection = MyPoints; };
-            //}
-            //else
-            //{
-            //    //XAML優先
-            //    Loaded += (a, b) => { MyPoints = Data.PointCollection; };
-            //}
-            Loaded += TTPolyline2_Loaded;
-            //thisのPointCollectionとTemplateのPolylineのPointCollectionの連携
-            this.SetBinding(MyPointsProperty, new Binding() { Source = MyTemplateElement, Path = new PropertyPath(PolyCanvas.MyPointsProperty) });
-
-            ////以下だと値の更新はされるけど、見た目の更新がされない。
-            ////→値更新後にPolylineZに対してInvalidateVisual();を実行したら見た目も更新された
-            ////でもめんどくさいから上の方法が良い
-            //MyPolylineZ.SetBinding(PolylineZ.MyPointsProperty,new Binding() { Source=this,Path= new PropertyPath(MyPointsProperty) });
-            //this.SetBinding(MyPointsProperty,new Binding(nameof(MyData.PointCollection)) { Source=this.MyData });
-
-            //Bindingの方向、Dataの各プロパティは依存プロパティではないのでTargetにはできないので
-            //mydata <- this や mydata <- poly とかにはできない
-            //なのでできるのは以下の3種類、target <- Source
-            //poly <- this & this <- mydata 今回はこれ
-            //this <- poly & poly <- mydata
-            //this <- mydata & poly <- mydata
-            //
-
-
-            //polyz <- this
-            MyTemplateElement.DataContext = this;
-            MyTemplateElement.SetBinding(PolyCanvas.StrokeThicknessProperty, nameof(StrokeThickness));
-            //MyTemplateElement.SetBinding(PolyCanvas.StrokeThicknessProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeThicknessProperty) });
-            MyTemplateElement.SetBinding(PolyCanvas.StrokeProperty, nameof(Stroke));
-            //MyTemplateElement.SetBinding(PolyCanvas.TTFillProperty, nameof(TTFill));
-            MyTemplateElement.SetBinding(PolyCanvas.HeadBeginTypeProperty, nameof(HeadBeginType));
-            MyTemplateElement.SetBinding(PolyCanvas.HeadEndTypeProperty, nameof(HeadEndType));
-            MyTemplateElement.SetBinding(PolyCanvas.AngleProperty, nameof(Angle));
-            //MyTemplateElement.SetBinding(PolyCanvas.MyAnchorVisibleProperty, nameof(MyAnchorVisible));
-            MyTemplateElement.SetBinding(PolyCanvas.XProperty, nameof(TTLeft));
-            MyTemplateElement.SetBinding(PolyCanvas.YProperty, nameof(TTTop));
-
-            //this <- mydata
-            this.DataContext = this.Data;
-            this.SetBinding(StrokeThicknessProperty, nameof(Data.StrokeThickness));
-            //SetBinding(StrokeThicknessProperty, new Binding() { Source = MyTemplateElement, Path = new PropertyPath(PolyCanvas.StrokeThicknessProperty) });
-            this.SetBinding(StrokeProperty, nameof(Data.Stroke));
-            this.SetBinding(TTFillProperty, nameof(Data.Fill));
-            this.SetBinding(HeadEndTypeProperty, nameof(Data.HeadEndType));
-            this.SetBinding(HeadBeginTypeProperty, nameof(Data.HeadBeginType));
-            this.SetBinding(AngleProperty, nameof(Data.HeadAngle));
-
-        }
-
-        private void TTPolyline_Loaded(object sender, RoutedEventArgs e)
-        {
-            Data.PointCollection = MyPoints;
-            //Data.Stroke = Stroke;
-            //Data.StrokeThickness = StrokeThickness;
-            //Data.Fill = TTFill;
-            //Data.HeadAngle = ArrowHeadAngle;
-        }
-
-        private void SetBinding3()
-        {
-            //Bindingの方向はすべて双方向、ソースとターゲットの関係は
-            //使用class  target <- sourceだとすると
-
-            //this       this <- Data
-            //this       this.PolyCanvas <- this
-            //PolyCanvas PolylineZ <- PolyCanvas
-
-            //この関係じゃないとできない、特にDataは依存プロパティが使えないのでsourceにしか使えないのがめんどくさかった
-
-            MyTemplateElement.SetBinding(PolyCanvas.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeProperty) });
-            MyTemplateElement.SetBinding(PolyCanvas.StrokeThicknessProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeThicknessProperty) });
-            //MyTemplateElement.SetBinding(PolyCanvas.TTFillProperty, new Binding() { Source = this, Path = new PropertyPath(TTFillProperty) });
-            MyTemplateElement.SetBinding(PolyCanvas.AngleProperty, new Binding() { Source = this, Path = new PropertyPath(AngleProperty) });
-            MyTemplateElement.SetBinding(PolyCanvas.IsBezierProperty, new Binding() { Source = this, Path = new PropertyPath(IsBezierProperty) });
-            MyTemplateElement.SetBinding(PolyCanvas.HeadBeginTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadBeginTypeProperty) });
-            MyTemplateElement.SetBinding(PolyCanvas.HeadEndTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadEndTypeProperty) });
-            MyTemplateElement.SetBinding(PolyCanvas.MyPointsProperty, new Binding() { Source = this, Path = new PropertyPath(MyPointsProperty) });//XAML更新で必須
-            MyTemplateElement.SetBinding(PolyCanvas.MyAnchorVisibleProperty, new Binding() { Source = this, Path = new PropertyPath(MyAnchorVisibleProperty) });
-            MyTemplateElement.SetBinding(PolyCanvas.XProperty, new Binding() { Source = this, Path = new PropertyPath(TTLeftProperty) });
-            MyTemplateElement.SetBinding(PolyCanvas.YProperty, new Binding() { Source = this, Path = new PropertyPath(TTTopProperty) });
+    //    public double StrokeThickness
+    //    {
+    //        get { return (double)GetValue(StrokeThicknessProperty); }
+    //        set { SetValue(StrokeThicknessProperty, value); }
+    //    }
+    //    public static readonly DependencyProperty StrokeThicknessProperty =
+    //        DependencyProperty.Register(nameof(StrokeThickness), typeof(double), typeof(TTPolyline),
+    //            new FrameworkPropertyMetadata(5.0,
+    //                FrameworkPropertyMetadataOptions.AffectsRender |
+    //                FrameworkPropertyMetadataOptions.AffectsMeasure |
+    //                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
 
 
-            DataContext = this.Data;
-            SetBinding(StrokeProperty, nameof(Data.Stroke));
-            SetBinding(StrokeThicknessProperty, nameof(Data.StrokeThickness));
-            SetBinding(TTFillProperty, nameof(Data.Fill));
-            SetBinding(AngleProperty, nameof(Data.HeadAngle));
-            SetBinding(HeadBeginTypeProperty, nameof(Data.HeadBeginType));
-            SetBinding(HeadEndTypeProperty, nameof(Data.HeadEndType));
-            SetBinding(IsBezierProperty, nameof(Data.IsBezier));
+    //    #endregion 依存プロパティ
 
-            //Loaded時にPointsを関連付け
-            //起動時だと早すぎでMyPointsに値が入っていないのでloaded時
-            Loaded += TTPolyline2_Loaded;
-        }
+    //    public TTPolyline() : this(new Data(TType.Polyline)) { }
+    //    public TTPolyline(Data data) : base(data)
+    //    {
+    //        Data = data;
+    //        this.DataContext = Data;
+    //        if (MakeTemplate<PolyCanvas>() is PolyCanvas element)
+    //        {
+    //            MyTemplateElement = element;
+    //        }
+    //        else { throw new ArgumentException("テンプレート作成できんかった"); }
 
-        private void TTPolyline2_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (MyTemplateElement is PolyCanvas polycan)
-            {
-                //XAMLからの引き継ぎ用
-                if (Data.PointCollection.Count == 0)
-                {
-                    //polycan.MyPoints = MyPoints;
-                    Data.PointCollection = MyPoints;
-                }
-                //それ以外用？
-                else
-                {
-                    polycan.MyPoints = Data.PointCollection;
-                    MyPoints = Data.PointCollection;
-                }
-                polycan.InvalidateVisual();
-            }
+    //        //MySetBinding();
+    //        //SetBinding2();
+    //        SetBinding3();
 
-        }
-    }
+    //    }
+    //    private void MySetBinding()
+    //    {
+    //        //Points同士の連携はBindingより=(イコール)でしたほうが楽
+    //        //連携の方向はXAMLとDataの優先順位で決める
+    //        //DataのPointCollectionとthisのPointCollectionの連携
+    //        //if (Data.PointCollection.Count == 0)
+    //        //{
+    //        //    //Data優先
+    //        //    Loaded += (a, b) => { Data.PointCollection = MyPoints; };
+    //        //}
+    //        //else
+    //        //{
+    //        //    //XAML優先
+    //        //    Loaded += (a, b) => { MyPoints = Data.PointCollection; };
+    //        //}
+    //        Loaded += TTPolyline2_Loaded;
+    //        //thisのPointCollectionとTemplateのPolylineのPointCollectionの連携
+    //        this.SetBinding(MyPointsProperty, new Binding() { Source = MyTemplateElement, Path = new PropertyPath(PolyCanvas.MyPointsProperty) });
+
+    //        ////以下だと値の更新はされるけど、見た目の更新がされない。
+    //        ////→値更新後にPolylineZに対してInvalidateVisual();を実行したら見た目も更新された
+    //        ////でもめんどくさいから上の方法が良い
+    //        //MyPolylineZ.SetBinding(PolylineZ.MyPointsProperty,new Binding() { Source=this,Path= new PropertyPath(MyPointsProperty) });
+    //        //this.SetBinding(MyPointsProperty,new Binding(nameof(MyData.PointCollection)) { Source=this.MyData });
+
+    //        //Bindingの方向、Dataの各プロパティは依存プロパティではないのでTargetにはできないので
+    //        //mydata <- this や mydata <- poly とかにはできない
+    //        //なのでできるのは以下の3種類、target <- Source
+    //        //poly <- this & this <- mydata 今回はこれ
+    //        //this <- poly & poly <- mydata
+    //        //this <- mydata & poly <- mydata
+    //        //
 
 
+    //        //polyz <- this
+    //        MyTemplateElement.DataContext = this;
+    //        MyTemplateElement.SetBinding(PolyCanvas.StrokeThicknessProperty, nameof(StrokeThickness));
+    //        //MyTemplateElement.SetBinding(PolyCanvas.StrokeThicknessProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeThicknessProperty) });
+    //        MyTemplateElement.SetBinding(PolyCanvas.StrokeProperty, nameof(Stroke));
+    //        //MyTemplateElement.SetBinding(PolyCanvas.TTFillProperty, nameof(TTFill));
+    //        MyTemplateElement.SetBinding(PolyCanvas.HeadBeginTypeProperty, nameof(HeadBeginType));
+    //        MyTemplateElement.SetBinding(PolyCanvas.HeadEndTypeProperty, nameof(HeadEndType));
+    //        MyTemplateElement.SetBinding(PolyCanvas.AngleProperty, nameof(Angle));
+    //        //MyTemplateElement.SetBinding(PolyCanvas.MyAnchorVisibleProperty, nameof(MyAnchorVisible));
+    //        MyTemplateElement.SetBinding(PolyCanvas.XProperty, nameof(TTLeft));
+    //        MyTemplateElement.SetBinding(PolyCanvas.YProperty, nameof(TTTop));
+
+    //        //this <- mydata
+    //        this.DataContext = this.Data;
+    //        this.SetBinding(StrokeThicknessProperty, nameof(Data.StrokeThickness));
+    //        //SetBinding(StrokeThicknessProperty, new Binding() { Source = MyTemplateElement, Path = new PropertyPath(PolyCanvas.StrokeThicknessProperty) });
+
+    //        //this.SetBinding(StrokeProperty, nameof(Data.Stroke));
+    //        MultiBinding mb = new();
+    //        mb.Converter = new MyConverterBrushByte();
+    //        Binding b0 = new(nameof(Data.StrokeA));
+    //        Binding b1 = new(nameof(Data.StrokeR));
+    //        Binding b2 = new(nameof(Data.StrokeG));
+    //        Binding b3 = new(nameof(Data.StrokeB));
+    //        mb.Bindings.Add(b0);
+    //        mb.Bindings.Add(b1);
+    //        mb.Bindings.Add(b2);
+    //        mb.Bindings.Add(b3);
+    //        SetBinding(StrokeProperty, mb);
+
+    //        this.SetBinding(TTFillProperty, nameof(Data.Fill));
+    //        this.SetBinding(HeadEndTypeProperty, nameof(Data.HeadEndType));
+    //        this.SetBinding(HeadBeginTypeProperty, nameof(Data.HeadBeginType));
+    //        this.SetBinding(AngleProperty, nameof(Data.HeadAngle));
+
+    //    }
+
+    //    private void TTPolyline_Loaded(object sender, RoutedEventArgs e)
+    //    {
+    //        Data.PointCollection = MyPoints;
+    //        //Data.Stroke = Stroke;
+    //        //Data.StrokeThickness = StrokeThickness;
+    //        //Data.Fill = TTFill;
+    //        //Data.HeadAngle = ArrowHeadAngle;
+    //    }
+
+    //    private void SetBinding3()
+    //    {
+    //        //Bindingの方向はすべて双方向、ソースとターゲットの関係は
+    //        //使用class  target <- sourceだとすると
+
+    //        //this       this <- Data
+    //        //this       this.PolyCanvas <- this
+    //        //PolyCanvas PolylineZ <- PolyCanvas
+
+    //        //この関係じゃないとできない、特にDataは依存プロパティが使えないのでsourceにしか使えないのがめんどくさかった
+
+    //        MyTemplateElement.SetBinding(PolyCanvas.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeProperty) });
+    //        MyTemplateElement.SetBinding(PolyCanvas.StrokeThicknessProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeThicknessProperty) });
+    //        //MyTemplateElement.SetBinding(PolyCanvas.TTFillProperty, new Binding() { Source = this, Path = new PropertyPath(TTFillProperty) });
+    //        MyTemplateElement.SetBinding(PolyCanvas.AngleProperty, new Binding() { Source = this, Path = new PropertyPath(AngleProperty) });
+    //        MyTemplateElement.SetBinding(PolyCanvas.IsBezierProperty, new Binding() { Source = this, Path = new PropertyPath(IsBezierProperty) });
+    //        MyTemplateElement.SetBinding(PolyCanvas.HeadBeginTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadBeginTypeProperty) });
+    //        MyTemplateElement.SetBinding(PolyCanvas.HeadEndTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadEndTypeProperty) });
+    //        MyTemplateElement.SetBinding(PolyCanvas.MyPointsProperty, new Binding() { Source = this, Path = new PropertyPath(MyPointsProperty) });//XAML更新で必須
+    //        MyTemplateElement.SetBinding(PolyCanvas.MyAnchorVisibleProperty, new Binding() { Source = this, Path = new PropertyPath(MyAnchorVisibleProperty) });
+    //        MyTemplateElement.SetBinding(PolyCanvas.XProperty, new Binding() { Source = this, Path = new PropertyPath(TTLeftProperty) });
+    //        MyTemplateElement.SetBinding(PolyCanvas.YProperty, new Binding() { Source = this, Path = new PropertyPath(TTTopProperty) });
+
+
+
+    //        DataContext = this.Data;
+    //        //SetBinding(StrokeProperty, nameof(Data.Stroke));
+    //        MultiBinding mb = new();
+    //        mb.Converter = new MyConverterBrushByte();
+    //        Binding b0 = new(nameof(Data.StrokeA));
+    //        Binding b1 = new(nameof(Data.StrokeR));
+    //        Binding b2 = new(nameof(Data.StrokeG));
+    //        Binding b3 = new(nameof(Data.StrokeB));
+    //        mb.Bindings.Add(b0);
+    //        mb.Bindings.Add(b1);
+    //        mb.Bindings.Add(b2);
+    //        mb.Bindings.Add(b3);
+    //        SetBinding(StrokeProperty, mb);
+
+    //        SetBinding(StrokeThicknessProperty, nameof(Data.StrokeThickness));
+    //        SetBinding(TTFillProperty, nameof(Data.Fill));
+    //        SetBinding(AngleProperty, nameof(Data.HeadAngle));
+    //        SetBinding(HeadBeginTypeProperty, nameof(Data.HeadBeginType));
+    //        SetBinding(HeadEndTypeProperty, nameof(Data.HeadEndType));
+    //        SetBinding(IsBezierProperty, nameof(Data.IsBezier));
+
+    //        //Loaded時にPointsを関連付け
+    //        //起動時だと早すぎでMyPointsに値が入っていないのでloaded時
+    //        Loaded += TTPolyline2_Loaded;
+    //    }
+
+    //    private void TTPolyline2_Loaded(object sender, RoutedEventArgs e)
+    //    {
+    //        if (MyTemplateElement is PolyCanvas polycan)
+    //        {
+    //            //XAMLからの引き継ぎ用
+    //            if (Data.PointCollection.Count == 0)
+    //            {
+    //                //polycan.MyPoints = MyPoints;
+    //                Data.PointCollection = MyPoints;
+    //            }
+    //            //それ以外用？
+    //            else
+    //            {
+    //                polycan.MyPoints = Data.PointCollection;
+    //                MyPoints = Data.PointCollection;
+    //            }
+    //            polycan.InvalidateVisual();
+    //        }
+
+    //    }
+    //}
+
+
+    /// <summary>
+    /// GeometricShapeを表示するThumb
+    /// かなり特殊な形になってしまった
+    /// GeometricShapeは座標指定するので、それを反映させるためにCanvasに表示する必要がある
+    /// そこで、GeometricShapeをThumbのTemplateにするのではなく
+    /// CanvasをTemplateにして、そこにGeometricShapeを入れている
+    /// ThumbのTemplateーGeometricShape、これだと座標指定が無視されるので
+    /// ThumbのTemplateーCanvasのChildrenーGeometricShape
+    /// </summary>
     public class TTGeometricShape : TThumb
     {
+
         #region 依存プロパティ
 
         public PointCollection MyPoints
@@ -3008,33 +3046,249 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
 
+        public bool IsEditing
+        {
+            get { return (bool)GetValue(IsEditingProperty); }
+            set
+            {
+                SetValue(IsEditingProperty, value);
+                ChangeBinding();
+            }
+        }
+        public static readonly DependencyProperty IsEditingProperty =
+            DependencyProperty.Register(nameof(IsEditing), typeof(bool), typeof(TTGeometricShape),
+                new FrameworkPropertyMetadata(false,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+
+        //頂点Thumbのサイズ
+        public double MyAnchorThumbSize
+        {
+            get { return (double)GetValue(MyAnchorThumbSizeProperty); }
+            set { SetValue(MyAnchorThumbSizeProperty, value); }
+        }
+        public static readonly DependencyProperty MyAnchorThumbSizeProperty =
+            DependencyProperty.Register(nameof(MyAnchorThumbSize), typeof(double), typeof(TTGeometricShape),
+                new FrameworkPropertyMetadata(20.0,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
         #endregion 依存プロパティ
 
-        public GeometricShape MyTemplateShape { get; protected set; }
-        
 
+        public GeometricShape MyShape { get; protected set; }
+        public Canvas MyCanvas { get; protected set; }
+
+
+        #region コンストラクタ
 
         public TTGeometricShape() : this(new Data(TType.Geometric)) { }
         public TTGeometricShape(Data data) : base(data)
         {
             Data = data;
             this.DataContext = Data;
-            if (MakeTemplate<GeometricShape>() is GeometricShape element)
+            if (MakeTemplate<Canvas>() is Canvas element)
             {
                 MyTemplateElement = element;
-                MyTemplateShape = element;
-                element.MyOwnerTThumb = this;
+                MyCanvas = element;
             }
             else { throw new ArgumentException("テンプレート作成できんかった"); }
+            MyShape = new();
+            MyCanvas.Children.Add(MyShape);
+            //if (MakeTemplate<GeometricShape>() is GeometricShape element)
+            //{
+            //    MyTemplateElement = element;
+            //    MyTemplateShape = element;
+            //    //element.MyOwnerTThumb = this;
+            //}
+            //else { throw new ArgumentException("テンプレート作成できんかった"); }
 
-            //MySetBinding();
-            //SetBinding2();
-            SetBinding3();
 
+
+
+            SetBinding4();
+
+            //Loaded時にPointsを関連付け
+            //起動時だと早すぎでMyPointsに値が入っていないのでloaded時
+            Loaded += TTGeometricShape_Loaded;
+
+            //UpdateLayout();
+            //if (MyTemplateShape.MyExternalBounds.IsEmpty == false)
+            //{
+            //    FixBezierLocate();
+            //}
+
+        }
+        #endregion コンストラクタ
+
+        private void TTGeometricShape_Loaded(object sender, RoutedEventArgs e)
+        {
+            MyShape.MyAdorner.ThumbDragConpleted += MyAdorner_ThumbDragConpleted;
+            //Pointsの共有
+            if (Data.PointCollection.Count == 0)
+            {
+                //XAMLと関連付け
+                Data.PointCollection = MyPoints;
+            }
+            else
+            {
+                //Dataと関連付け
+                MyShape.MyPoints = Data.PointCollection;
+                MyPoints = Data.PointCollection;
+            }
+            //MyTemplateShape.InvalidateVisual();//表示更新
+
+            UpdateLayout();
+            if (MyShape.MyExternalBounds.IsEmpty == false)
+            {
+                Canvas.SetLeft(MyShape, -MyShape.MyExternalBounds.X);
+                Canvas.SetTop(MyShape, -MyShape.MyExternalBounds.Y);
+            }
+        }
+
+        private void MyAdorner_ThumbDragConpleted(object arg1, Vector arg2)
+        {
+            FixCanvasLocate04();
+        }
+        /// <summary>
+        /// 頂点Thumbのドラッグ移動終了後に実行する
+        /// Canvas自身と図形の座標決定する
+        /// これに2週間かかった
+        /// </summary>
+        public void FixCanvasLocate04()
+        {
+            var ex = MyShape.MyExternalBounds;
+            var pts = GetPointsRect(MyPoints);
+            var bLeft = Canvas.GetLeft(MyShape);
+            var bTop = Canvas.GetTop(MyShape);
+
+            //自身の座標決定
+            if (ex.X > pts.X)
+                TTLeft += pts.X + bLeft;
+            else TTLeft += ex.X + bLeft;
+            if (ex.Y > pts.Y)
+                TTTop += pts.Y + bTop;
+            else TTTop += ex.Y + bTop;
+            
+            //図形の座標決定
+            var ex_ptsx = ex.X - pts.X;
+            var ex_ptsy = ex.Y - pts.Y;
+            double bx = ex_ptsx < 0 ? -ex_ptsx : 0;
+            double by = ex_ptsy < 0 ? -ex_ptsy : 0;
+            Canvas.SetLeft(MyShape, bx);
+            Canvas.SetTop(MyShape, by);
+
+            if (pts.X != 0 || pts.Y != 0)
+            {
+                Fix0Point();
+                MyShape.MyAdorner.FixThumbsLocate();
+            }
+        }
+
+        /// <summary>
+        /// PointCollectionのRectを返す
+        /// </summary>
+        /// <param name="pt">PointCollection</param>
+        /// <returns></returns>
+        public static Rect GetPointsRect(PointCollection pt)
+        {
+            if (pt.Count == 0) return new Rect();
+            double minX = double.MaxValue;
+            double minY = double.MaxValue;
+            double maxX = double.MinValue;
+            double maxY = double.MinValue;
+            foreach (var item in pt)
+            {
+                if (minX > item.X) minX = item.X;
+                if (minY > item.Y) minY = item.Y;
+                if (maxX < item.X) maxX = item.X;
+                if (maxY < item.Y) maxY = item.Y;
+            }
+            return new Rect(minX, minY, maxX - minX, maxY - minY);
         }
 
 
-        private void SetBinding3()
+        //Pointsの左上を0,0にするだけ
+        public void Fix0Point()
+        {
+            Rect r = GetPointsRect(MyPoints);
+            for (int i = 0; i < MyPoints.Count; i++)
+            {
+                Point pp = MyPoints[i];
+                MyPoints[i] = new Point(pp.X - r.Left, pp.Y - r.Top);
+            }
+        }
+
+        ////使う場面は
+        ////頂点ThumbのDragDeltaイベントなどで図形が変化しているとき
+        //public void FixCanvasLocate00()
+        //{
+        //    var bezExRect = MyTemplateShape.MyExternalBounds;
+        //    if (bezExRect.IsEmpty) { return; }
+        //    //var canRect = VisualTreeHelper.GetDescendantBounds(this);
+
+        //    //自身Canvasの座標修正、
+        //    //新しい座標 = 自身の座標＋(図形の座標＋Rect座標)
+        //    var bezLocate = VisualTreeHelper.GetOffset(MyTemplateShape);
+        //    var xDiff = bezLocate.X + bezExRect.Left;
+        //    var yDiff = bezLocate.Y + bezExRect.Top;
+        //    // var myLocate = VisualTreeHelper.GetOffset(this);
+        //    //Canvas.SetLeft(this, myLocate.X + xDiff);
+        //    //Canvas.SetTop(this, myLocate.Y + yDiff);
+        //    //TTLeft += xDiff;
+        //    //TTTop += yDiff;
+
+        //    //図形の座標修正、
+        //    //新しい座標 = 図形の座標 - (図形の座標＋Rect座標) + PointsのRect座標
+        //    var ptsRect = GetPointsRect(MyPoints);
+        //    Canvas.SetLeft(MyTemplateShape, -bezExRect.X);
+        //    Canvas.SetTop(MyTemplateShape, -bezExRect.Y);
+        //    //Canvas.SetLeft(MyTemplateShape, bezLocate.X - xDiff + ptsRect.X);
+        //    //Canvas.SetTop(MyTemplateShape, bezLocate.Y - yDiff + ptsRect.Y);
+
+        //    //PointsのRect座標を0,0に修正
+        //    Fix0Point();
+
+        //    //頂点Thumbの座標修正、Pointsに合わせる
+        //    MyTemplateShape.MyAdorner?.FixThumbsLocate();
+        //}
+        //public void FixCanvasLocate00()
+        //{
+        //    var bezExRect = MyTemplateShape.MyExternalBounds;
+        //    if (bezExRect.IsEmpty) { return; }
+        //    //var canRect = VisualTreeHelper.GetDescendantBounds(this);
+
+        //    //自身Canvasの座標修正、
+        //    //新しい座標 = 自身の座標＋(図形の座標＋Rect座標)
+        //    var bezLocate = VisualTreeHelper.GetOffset(MyTemplateShape);
+        //    var xDiff = bezLocate.X + bezExRect.Left;
+        //    var yDiff = bezLocate.Y + bezExRect.Top;
+        //    var myLocate = VisualTreeHelper.GetOffset(this);
+        //    Canvas.SetLeft(this, myLocate.X + xDiff);
+        //    Canvas.SetTop(this, myLocate.Y + yDiff);
+
+        //    //図形の座標修正、
+        //    //新しい座標 = 図形の座標 - (図形の座標＋Rect座標) + PointsのRect座標
+        //    var ptsRect = GetPointsRect(MyPoints);
+        //    Canvas.SetLeft(MyTemplateShape, bezLocate.X - xDiff + ptsRect.X);
+        //    Canvas.SetTop(MyTemplateShape, bezLocate.Y - yDiff + ptsRect.Y);
+
+        //    //PointsのRect座標を0,0に修正
+        //    Fix0Point();
+
+        //    //頂点Thumbの座標修正、Pointsに合わせる
+        //    MyTemplateShape.MyAdorner?.FixThumbsLocate();
+        //}
+
+        protected override Size MeasureOverride(Size constraint)
+        {
+            //if (IsEditing) { FixCanvasLocate00(); }
+            return base.MeasureOverride(constraint);
+        }
+        private void SetBinding4()
         {
             //Bindingの方向はすべて双方向、ソースとターゲットの関係は
             //使用class  target <- sourceだとすると
@@ -3045,67 +3299,136 @@ namespace Pixtack3rd
 
             //この関係じゃないとできない、特にDataは依存プロパティが使えないのでsourceにしか使えないのがめんどくさかった
 
-            MyTemplateElement.SetBinding(GeometricShape.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeProperty) });
-            MyTemplateElement.SetBinding(GeometricShape.StrokeThicknessProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeThicknessProperty) });
-            MyTemplateElement.SetBinding(GeometricShape.FillProperty, new Binding() { Source = this, Path = new PropertyPath(TTFillProperty) });
+            //Shape <- this            
+            MyShape.SetBinding(GeometricShape.MyIsEditingProperty, new Binding() { Source = this, Path = new PropertyPath(IsEditingProperty) });
+            MyShape.SetBinding(GeometricShape.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeProperty) });
+            MyShape.SetBinding(GeometricShape.StrokeThicknessProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeThicknessProperty) });
+            MyShape.SetBinding(GeometricShape.FillProperty, new Binding() { Source = this, Path = new PropertyPath(TTFillProperty) });
 
-            MyTemplateElement.SetBinding(GeometricShape.MyShapeTypeProperty, new Binding() { Source = this, Path = new PropertyPath(MyShapeTypeProperty) });
-            MyTemplateElement.SetBinding(GeometricShape.ArrowHeadAngleProperty, new Binding() { Source = this, Path = new PropertyPath(ArrowHeadAngleProperty) });
-            MyTemplateElement.SetBinding(GeometricShape.HeadBeginTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadBeginTypeProperty) });
-            MyTemplateElement.SetBinding(GeometricShape.HeadEndTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadEndTypeProperty) });
-            MyTemplateElement.SetBinding(GeometricShape.MyPointsProperty, new Binding() { Source = this, Path = new PropertyPath(MyPointsProperty) });//XAML更新で必須
-            MyTemplateElement.SetBinding(GeometricShape.MyAnchorVisibleProperty, new Binding() { Source = this, Path = new PropertyPath(MyAnchorVisibleProperty) });
-            MyTemplateElement.SetBinding(GeometricShape.MyLineCloseProperty, new Binding() { Source = this, Path = new PropertyPath(MyLineCloseProperty) });
-            MyTemplateElement.SetBinding(GeometricShape.MyLineSmoothJoinProperty, new Binding() { Source = this, Path = new PropertyPath(MyLineSmoothJoinProperty) });
+            MyShape.SetBinding(GeometricShape.MyShapeTypeProperty, new Binding() { Source = this, Path = new PropertyPath(MyShapeTypeProperty) });
+            MyShape.SetBinding(GeometricShape.ArrowHeadAngleProperty, new Binding() { Source = this, Path = new PropertyPath(ArrowHeadAngleProperty) });
+            MyShape.SetBinding(GeometricShape.HeadBeginTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadBeginTypeProperty) });
+            MyShape.SetBinding(GeometricShape.HeadEndTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadEndTypeProperty) });
+            MyShape.SetBinding(GeometricShape.MyPointsProperty, new Binding() { Source = this, Path = new PropertyPath(MyPointsProperty) });//XAML更新で必須
+            MyShape.SetBinding(GeometricShape.MyAnchorVisibleProperty, new Binding() { Source = this, Path = new PropertyPath(MyAnchorVisibleProperty) });
+            MyShape.SetBinding(GeometricShape.MyLineCloseProperty, new Binding() { Source = this, Path = new PropertyPath(MyLineCloseProperty) });
+            MyShape.SetBinding(GeometricShape.MyLineSmoothJoinProperty, new Binding() { Source = this, Path = new PropertyPath(MyLineSmoothJoinProperty) });
+            MyShape.SetBinding(GeometricShape.MyAnchorThumbSizeProperty, new Binding() { Source = this, Path = new PropertyPath(MyAnchorThumbSizeProperty) });
+
             //MyTemplateElement.SetBinding(GeometricShape.XProperty, new Binding() { Source = this, Path = new PropertyPath(TTLeftProperty) });
             //MyTemplateElement.SetBinding(GeometricShape.YProperty, new Binding() { Source = this, Path = new PropertyPath(TTTopProperty) });
 
-            
+            //MyCanvas.SetBinding(BackgroundProperty, new Binding() { Source = this, Path = new PropertyPath(BackgroundProperty) });
 
 
+            //this <- data
             DataContext = this.Data;
-            SetBinding(StrokeProperty, nameof(Data.Stroke));
+            //SetBinding(StrokeProperty, nameof(Data.Stroke));
+            MultiBinding mb = new();
+            mb.Converter = new MyConverterBrushByte();
+            Binding b0 = new(nameof(Data.StrokeA));
+            Binding b1 = new(nameof(Data.StrokeR));
+            Binding b2 = new(nameof(Data.StrokeG));
+            Binding b3 = new(nameof(Data.StrokeB));
+            mb.Bindings.Add(b0);
+            mb.Bindings.Add(b1);
+            mb.Bindings.Add(b2);
+            mb.Bindings.Add(b3);
+            SetBinding(StrokeProperty, mb);
+
             SetBinding(StrokeThicknessProperty, nameof(Data.StrokeThickness));
             SetBinding(TTFillProperty, nameof(Data.Fill));
             SetBinding(ArrowHeadAngleProperty, nameof(Data.HeadAngle));
             SetBinding(HeadBeginTypeProperty, nameof(Data.HeadBeginType));
             SetBinding(HeadEndTypeProperty, nameof(Data.HeadEndType));
             SetBinding(MyShapeTypeProperty, nameof(Data.ShapeType));
+            SetBinding(MyLineSmoothJoinProperty, nameof(Data.IsSmoothJoin));
+            SetBinding(MyLineCloseProperty, nameof(Data.IsLineClose));
 
-            //Loaded時にPointsを関連付け
-            //起動時だと早すぎでMyPointsに値が入っていないのでloaded時
-            Loaded += TTGeometricShape_Loaded;
-        }
+            SetBinding(WidthProperty, new Binding() { Source = MyShape, Path = new PropertyPath(GeometricShape.MyExternalBoundsProperty), Converter = new MyConverterRectWidth() });
+            SetBinding(HeightProperty, new Binding() { Source = MyShape, Path = new PropertyPath(GeometricShape.MyExternalBoundsProperty), Converter = new MyConverterRectHeight() });
 
-        private void TTGeometricShape_Loaded(object sender, RoutedEventArgs e)
-        {
-            //if (MyTemplateElement is PolyCanvas polycan)
-            //{
-            //    //XAMLからの引き継ぎ用
-            //    if (Data.PointCollection.Count == 0)
-            //    {
-            //        //polycan.MyPoints = MyPoints;
-            //        Data.PointCollection = MyPoints;
-            //    }
-            //    //それ以外用？
-            //    else
-            //    {
-            //        polycan.MyPoints = Data.PointCollection;
-            //        MyPoints = Data.PointCollection;
-            //    }
-            //    polycan.InvalidateVisual();
-            //}
-            if (Data.PointCollection.Count == 0)
-            {
-                Data.PointCollection = MyPoints;
-            }
-            else
-            {
-                MyTemplateShape.MyPoints = Data.PointCollection;
-                MyPoints = Data.PointCollection;
-            }
-            MyTemplateShape.InvalidateVisual();//表示更新
+
+
+
+
         }
+        //private void SetBinding3()
+        //{
+        //    //Bindingの方向はすべて双方向、ソースとターゲットの関係は
+        //    //使用class  target <- sourceだとすると
+
+        //    //this       this <- Data
+        //    //this       this.PolyCanvas <- this
+        //    //PolyCanvas PolylineZ <- PolyCanvas
+
+        //    //この関係じゃないとできない、特にDataは依存プロパティが使えないのでsourceにしか使えないのがめんどくさかった
+
+        //    //templateShape <- this            
+        //    MyTemplateElement.SetBinding(GeometricShape.MyIsEditingProperty, new Binding() { Source = this, Path = new PropertyPath(IsEditingProperty) });
+        //    MyTemplateElement.SetBinding(GeometricShape.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeProperty) });
+        //    MyTemplateElement.SetBinding(GeometricShape.StrokeThicknessProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeThicknessProperty) });
+        //    MyTemplateElement.SetBinding(GeometricShape.FillProperty, new Binding() { Source = this, Path = new PropertyPath(TTFillProperty) });
+
+        //    MyTemplateElement.SetBinding(GeometricShape.MyShapeTypeProperty, new Binding() { Source = this, Path = new PropertyPath(MyShapeTypeProperty) });
+        //    MyTemplateElement.SetBinding(GeometricShape.ArrowHeadAngleProperty, new Binding() { Source = this, Path = new PropertyPath(ArrowHeadAngleProperty) });
+        //    MyTemplateElement.SetBinding(GeometricShape.HeadBeginTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadBeginTypeProperty) });
+        //    MyTemplateElement.SetBinding(GeometricShape.HeadEndTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadEndTypeProperty) });
+        //    MyTemplateElement.SetBinding(GeometricShape.MyPointsProperty, new Binding() { Source = this, Path = new PropertyPath(MyPointsProperty) });//XAML更新で必須
+        //    MyTemplateElement.SetBinding(GeometricShape.MyAnchorVisibleProperty, new Binding() { Source = this, Path = new PropertyPath(MyAnchorVisibleProperty) });
+        //    MyTemplateElement.SetBinding(GeometricShape.MyLineCloseProperty, new Binding() { Source = this, Path = new PropertyPath(MyLineCloseProperty) });
+        //    MyTemplateElement.SetBinding(GeometricShape.MyLineSmoothJoinProperty, new Binding() { Source = this, Path = new PropertyPath(MyLineSmoothJoinProperty) });
+        //    MyTemplateElement.SetBinding(GeometricShape.MyAnchorThumbSizeProperty, new Binding() { Source = this, Path = new PropertyPath(MyAnchorThumbSizeProperty) });
+
+        //    //MyTemplateElement.SetBinding(GeometricShape.XProperty, new Binding() { Source = this, Path = new PropertyPath(TTLeftProperty) });
+        //    //MyTemplateElement.SetBinding(GeometricShape.YProperty, new Binding() { Source = this, Path = new PropertyPath(TTTopProperty) });
+
+
+
+        //    //this <- data
+        //    DataContext = this.Data;
+        //    //SetBinding(StrokeProperty, nameof(Data.Stroke));
+        //    MultiBinding mb = new();
+        //    mb.Converter = new MyConverterBrushByte();
+        //    Binding b0 = new(nameof(Data.StrokeA));
+        //    Binding b1 = new(nameof(Data.StrokeR));
+        //    Binding b2 = new(nameof(Data.StrokeG));
+        //    Binding b3 = new(nameof(Data.StrokeB));
+        //    mb.Bindings.Add(b0);
+        //    mb.Bindings.Add(b1);
+        //    mb.Bindings.Add(b2);
+        //    mb.Bindings.Add(b3);
+        //    SetBinding(StrokeProperty, mb);
+
+
+        //    SetBinding(StrokeThicknessProperty, nameof(Data.StrokeThickness));
+        //    SetBinding(TTFillProperty, nameof(Data.Fill));
+        //    SetBinding(ArrowHeadAngleProperty, nameof(Data.HeadAngle));
+        //    SetBinding(HeadBeginTypeProperty, nameof(Data.HeadBeginType));
+        //    SetBinding(HeadEndTypeProperty, nameof(Data.HeadEndType));
+        //    SetBinding(MyShapeTypeProperty, nameof(Data.ShapeType));
+        //    SetBinding(MyLineSmoothJoinProperty, nameof(Data.IsSmoothJoin));
+        //    SetBinding(MyLineCloseProperty, nameof(Data.IsLineClose));
+        //    //SetBinding(WidthProperty, new Binding(nameof(MyTemplateShape.MyTFBounds)) { Source = MyTemplateShape, Converter = new MyConverterRectWidth() });
+        //    //SetBinding(HeightProperty, new Binding(nameof(MyTemplateShape.MyTFBounds)) { Source = MyTemplateShape, Converter = new MyConverterRectHeight() });
+
+        //    //SetBinding(WidthProperty, new Binding() { Source = MyTemplateShape, Path = new PropertyPath(GeometricShape.MyExternalBoundsProperty), Converter = new MyConverterRectWidth() });
+        //    //SetBinding(HeightProperty, new Binding() { Source = MyTemplateShape, Path = new PropertyPath(GeometricShape.MyExternalBoundsProperty), Converter = new MyConverterRectHeight() });
+
+        //    //SetBinding(WidthProperty, new Binding() { Source = MyTemplateShape, Path = new PropertyPath(GeometricShape.MyExternalWidenBoundsProperty), Converter = new MyConverterRectWidth() });
+        //    //SetBinding(HeightProperty, new Binding() { Source = MyTemplateShape, Path = new PropertyPath(GeometricShape.MyExternalWidenBoundsProperty), Converter = new MyConverterRectHeight() });
+
+        //    SetBinding(WidthProperty, new Binding() { Source = MyShape, Path = new PropertyPath(GeometricShape.MyExternalBoundsProperty), Converter = new MyConverterRectWidth() });
+        //    SetBinding(HeightProperty, new Binding() { Source = MyShape, Path = new PropertyPath(GeometricShape.MyExternalBoundsProperty), Converter = new MyConverterRectHeight() });
+
+        //    //SetBinding(WidthProperty, new Binding(nameof(MyTemplateShape.MyExWidenRenderBounds)) { Source = MyTemplateShape, Converter = new MyConverterRectWidth() });
+        //    //SetBinding(HeightProperty, new Binding(nameof(MyTemplateShape.MyExWidenRenderBounds)) { Source = MyTemplateShape, Converter = new MyConverterRectHeight() });
+
+
+
+
+
+        //}
 
 
         /// <summary>
@@ -3143,7 +3466,36 @@ namespace Pixtack3rd
 
         }
 
+        /// <summary>
+        /// 編集状態の切り替え時に必須、自身と図形の座標修正とサイズのBinding変更
+        /// </summary>
+        public void ChangeBinding()
+        {
+            if (IsEditing)
+            {
+                SetBinding(WidthProperty, new Binding() { Source = MyShape, Path = new PropertyPath(GeometricShape.MyAllBoundsProperty), Converter = new MyConverterRectWidth() });
+                SetBinding(HeightProperty, new Binding() { Source = MyShape, Path = new PropertyPath(GeometricShape.MyAllBoundsProperty), Converter = new MyConverterRectHeight() });
+                var all = MyShape.MyAllBounds;
+                var ex = MyShape.MyExternalBounds;
 
+                TTLeft += all.X - ex.X;
+                TTTop += all.Y - ex.Y;
+                Canvas.SetLeft(MyShape, -all.X);
+                Canvas.SetTop(MyShape, -all.Y);
+            }
+            else
+            {
+                SetBinding(WidthProperty, new Binding() { Source = MyShape, Path = new PropertyPath(GeometricShape.MyExternalBoundsProperty), Converter = new MyConverterRectWidth() });
+                SetBinding(HeightProperty, new Binding() { Source = MyShape, Path = new PropertyPath(GeometricShape.MyExternalBoundsProperty), Converter = new MyConverterRectHeight() });
+                var ex = MyShape.MyExternalBounds;
+                var all = MyShape.MyAllBounds;
+
+                TTLeft -= all.X - ex.X;
+                TTTop -= all.Y - ex.Y;
+                Canvas.SetLeft(MyShape, -ex.X);
+                Canvas.SetTop(MyShape, -ex.Y);
+            }
+        }
     }
 
 
@@ -3192,270 +3544,6 @@ namespace Pixtack3rd
 
 
 
-
-
-    #region コンバーター
-    //Thickness
-    public class ConverterThickness : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            double d = (double)(decimal)value;
-            return new Thickness(d);
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            Thickness thickness = (Thickness)value;
-            return thickness.Top;
-        }
-    }
-
-    //フォントの斜体
-    public class ConverterFontStyleIsItalic : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            bool b = (bool)value;
-            if (b) { return FontStyles.Italic; }
-            else { return FontStyles.Normal; }
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            FontStyle style = (FontStyle)value;
-            return style == FontStyles.Italic;
-        }
-    }
-
-    //フォントの太字
-    public class ConverterFontWeightIsBold : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            bool b = (bool)value;
-            if (b) { return FontWeights.Bold; }
-            else { return FontWeights.Normal; }
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            FontWeight weight = (FontWeight)value;
-            return weight == FontWeights.Bold;
-        }
-    }
-
-    //ARGB各値からSolidBrush作成
-    public class ConverterArgbNumericToBrush : IMultiValueConverter
-    {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
-        {
-            byte a = (byte)(decimal)values[0];
-            byte r = (byte)(decimal)values[1];
-            byte g = (byte)(decimal)values[2];
-            byte b = (byte)(decimal)values[3];
-            return new SolidColorBrush(Color.FromArgb(a, r, g, b));
-        }
-
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    //ColorとSolidBrushの変換＋色反転、テキストボックスのカーソルの色に使用
-    public class ConverterColorSolidBrushNegative : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            Color c = (Color)value;
-            Color negative = Color.FromArgb(255, (byte)(255 - c.R), (byte)(255 - c.G), (byte)(255 - c.B));
-            return new SolidColorBrush(negative);
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            SolidColorBrush b = (SolidColorBrush)value;
-            Color c = b.Color;
-            Color negative = Color.FromArgb(255, (byte)(255 - c.R), (byte)(255 - c.G), (byte)(255 - c.B));
-            return negative;
-        }
-    }
-    public class ConverterColorSolidBrush : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            Color c = (Color)value;
-            return new SolidColorBrush(c);
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            SolidColorBrush b = (SolidColorBrush)value;
-            return b.Color;
-        }
-    }
-
-    public class ConverterFontFamilyName : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            string name = (string)value;
-            FontFamilyConverter ffc = new();
-            if (ffc.ConvertFromString(name) is FontFamily font)
-            {
-                return font;
-            }
-            else { return Application.Current.MainWindow.FontFamily; }
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            FontFamily font = (FontFamily)value;
-            return font.Source;
-        }
-    }
-
-    public class ConverterWakuBrush : IMultiValueConverter
-    {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
-        {
-            List<Brush> myBrushes = (List<Brush>)parameter;
-            if (values[3] is WakuVisibleType type)
-            {
-                if (type == WakuVisibleType.None || type == WakuVisibleType.OnlyActiveGroup)
-                {
-                    return Brushes.Transparent;
-                }
-                else
-                {
-                    if ((bool)values[2]) { return myBrushes[4]; }
-                    else if ((bool)values[1]) { return myBrushes[3]; }
-                    else if ((bool)values[0]) { return myBrushes[0]; }
-                    else return Brushes.Transparent;
-                }
-
-            }
-            else return Brushes.Transparent;
-            //WakuVisibleType type = (WakuVisibleType)values[3];
-        }
-
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
-    public class ConverterWakuBrushForTTGroup : IMultiValueConverter
-    {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
-        {
-            List<Brush> myBrushes = (List<Brush>)parameter;
-            Brush result = Brushes.Transparent;
-            if (values[4] is WakuVisibleType type)
-            {
-
-
-
-                //WakuVisibleType type = (WakuVisibleType)values[4];
-                switch (type)
-                {
-                    case WakuVisibleType.None:
-                        break;
-                    case WakuVisibleType.All:
-                        if ((bool)values[0]) { result = myBrushes[4]; }
-                        else if ((bool)values[1]) { result = myBrushes[3]; }
-                        else if ((bool)values[2]) { result = myBrushes[2]; }
-                        else if ((bool)values[3]) { result = myBrushes[1]; }
-                        break;
-                    case WakuVisibleType.OnlyActiveGroup:
-                        if ((bool)values[2]) { result = myBrushes[2]; }
-                        break;
-                    case WakuVisibleType.NotGroup:
-                        if ((bool)values[0]) { result = myBrushes[4]; }
-                        else if ((bool)values[1]) { result = myBrushes[3]; }
-                        else if ((bool)values[2]) { result = myBrushes[2]; }
-                        break;
-                    default:
-                        break;
-                }
-            }
-            return result;
-        }
-
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    //列挙型の値をラジオボタンにバインドするには？［ユニバーサルWindowsアプリ開発］：WinRT／Metro TIPS - ＠IT
-    //    https://atmarkit.itmedia.co.jp/ait/articles/1507/29/news019.html
-    //wpf - How to bind RadioButtons to an enum? - Stack Overflow
-    //    https://stackoverflow.com/questions/397556/how-to-bind-radiobuttons-to-an-enum
-
-    public class ConverterEnumToBool : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value.Equals(true)) { return true; }
-            else
-            {
-                return DependencyProperty.UnsetValue;
-            }
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value.Equals(true)) { return parameter; }
-            else
-            {
-                return DependencyProperty.UnsetValue;
-            }
-        }
-    }
-
-    //表示非表示の切り替え用
-    public class ConverterVisible : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            bool bb = (bool)value;
-            if (bb)
-            {
-                return Visibility.Hidden;
-            }
-            else
-            {
-                return Visibility.Visible;
-            }
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            Visibility vi = (Visibility)value;
-            if (vi == Visibility.Visible) { return false; }
-            else { return true; }
-        }
-    }
-
-    public class ConverterBoolInverse : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            bool bb = (bool)value;
-            if (bb is true) { return false; }
-            else { return true; }
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            bool? bb = (bool?)value;
-            if (bb is null or true) { return false; }
-            else { return true; }
-        }
-    }
-
-    #endregion コンバーター
 
 
     public class ExObservableCollection : ObservableCollection<TThumb>

@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Ink;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
@@ -14,7 +15,12 @@ using System.Windows.Media.Imaging;
 
 namespace Pixtack3rd
 {
-    public enum TType { None = 0, Root, Group, TextBlock, TextBox, Image, Rectangle, Polyline, Geometric }
+    public enum TType
+    {
+        None = 0, Root, Group, TextBlock, TextBox, Image, Rectangle, 
+        //Polyline,
+        Geometric
+    }
 
 
 
@@ -136,8 +142,18 @@ namespace Pixtack3rd
         private double _strokeThickness = 1.0;
         [DataMember] public double StrokeThickness { get => _strokeThickness; set => SetProperty(ref _strokeThickness, value); }
 
-        private Brush _stroke = Brushes.Red;
-        [DataMember] public Brush Stroke { get => _stroke; set => SetProperty(ref _stroke, value); }
+        //private Brush _stroke = Brushes.Red;
+        //[DataMember] public Brush Stroke { get => _stroke; set => SetProperty(ref _stroke, value); }
+
+        private byte _strokeA;
+        [DataMember] public byte StrokeA { get => _strokeA; set => SetProperty(ref _strokeA, value); }
+        private byte _strokeR;
+        [DataMember] public byte StrokeR { get => _strokeR; set => SetProperty(ref _strokeR, value); }
+        private byte _strokeG;
+        [DataMember] public byte StrokeG { get => _strokeG; set => SetProperty(ref _strokeG, value); }
+        private byte _strokeB;
+        [DataMember] public byte StrokeB { get => _strokeB; set => SetProperty(ref _strokeB, value); }
+
 
         private Brush _fill = Brushes.DarkOrange;
         [DataMember] public Brush Fill { get => _fill; set => SetProperty(ref _fill, value); }
@@ -156,6 +172,12 @@ namespace Pixtack3rd
 
         private ShapeType _shapeType;
         public ShapeType ShapeType { get => _shapeType; set => SetProperty(ref _shapeType, value); }
+
+        private bool _isSmoothJoin;
+        public bool IsSmoothJoin { get => _isSmoothJoin; set => SetProperty(ref _isSmoothJoin, value); }
+
+        private bool _isLineClose;
+        public bool IsLineClose { get => _isLineClose; set => SetProperty(ref _isLineClose, value); }
 
 
         #endregion 図形
@@ -184,8 +206,6 @@ namespace Pixtack3rd
                 case TType.Rectangle:
                     break;
                 case TType.TextBox:
-                    break;
-                case TType.Polyline:
                     break;
                 default:
                     break;

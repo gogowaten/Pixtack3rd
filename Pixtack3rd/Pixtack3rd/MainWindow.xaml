@@ -264,11 +264,12 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
           <!--<local:TTPolyline x:Name="MyPolyline2" MyPoints="0,0 250,0" TTLeft="100" TTTop="50"
                              HeadBeginType="Arrow" HeadEndType="Arrow" Angle="30" Stroke="Pink" 
                             StrokeThickness="20"/>-->
-          <local:TTPolyline x:Name="MyPolyline3" MyPoints="50,0 200,50 0,100 200,100" TTLeft="100" TTTop="130"
+          <!--<local:TTPolyline x:Name="MyPolyline3" MyPoints="50,0 200,50 0,100 200,100" TTLeft="100" TTTop="130"
                              HeadBeginType="Arrow" HeadEndType="Arrow" Angle="30" Stroke="SeaGreen" 
-                            StrokeThickness="20" IsBezier="True"/>
-          <local:TTGeometricShape MyPoints="50,0 0,100 150,0 20,100" StrokeThickness="10" Stroke="Crimson"
-                                  MyShapeType="Bezier" HeadBeginType="None" MyLineClose="True" TTFill="Blue"/>
+                            StrokeThickness="20" IsBezier="True"/>-->
+          <local:TTGeometricShape x:Name="MyTTGermtricShape" MyPoints="50,0 0,100 150,0 120,100" StrokeThickness="20" Stroke="Gold"
+                                  MyShapeType="Bezier" HeadBeginType="None" MyLineClose="False" TTFill="Blue"
+                                  TTLeft="100" TTTop="100"/>
           <!--<local:TTGeometricShape MyPoints="50,0 0,100 100,100 100,0" StrokeThickness="20" Stroke="Red"
                                   MyShapeType="Line" MyLineSmoothJoin="True" HeadBeginType="Arrow" HeadEndType="Arrow" TTFill="Blue"/>-->
         </local:TTRoot>
@@ -280,8 +281,9 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               Cursor="Cross" Background="Transparent">
       </Canvas>
       <Canvas Grid.Row="1" Grid.Column="1">
-        <local:PolylineZ x:Name="MyPolyZ" MyPoints="200,0 450,100 00,100 300,150" IsBezier="True" Stroke="Red" StrokeThickness="10"/>
-        <!--<local:GeometricShape MyPoints="50,100 200,150" HeadBeginType="Arrow" Stroke="Blue" StrokeThickness="20"/>-->
+        
+        <!--<local:GeometricShape MyPoints="150,100 0,50 250,0 50,150" MyShapeType="Bezier"
+                              MyAnchorVisible="Visible" HeadBeginType="Arrow" Stroke="Gray" StrokeThickness="10"/>-->
         <!--<Canvas Grid.Row="1" Grid.Column="1"
               x:Name="MyAnchorPointEditCanvas" Visibility="Collapsed"
               Background="Transparent">
@@ -751,7 +753,12 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <tomato:NumericUpDown x:Name="MyNumeStrokeThickness" MyValue="10" MyStringFormat="太さ 0" MyMinValue="1" MyMaxValue="100"/>
             <ComboBox x:Name="MyComboBoxLineHeadBeginType"/>
             <ComboBox x:Name="MyComboBoxLineHeadEndType"/>
-            <CheckBox x:Name="MyCheckBoxIsBezier" Content="曲線" HorizontalAlignment="Center"/>
+            <ComboBox x:Name="MyComboBoxShapeType"/>
+            <UniformGrid Rows="1">
+              <CheckBox x:Name="MyCheckBoxIsBezier" Content="曲線" HorizontalAlignment="Center"/>
+              <CheckBox x:Name="MyChecBoxIsLineSmoothJoin" Content="角丸" HorizontalAlignment="Center"/>
+              <CheckBox x:Name="MyChecBoxIsLineClose" Content="閉じる" HorizontalAlignment="Center"/>
+            </UniformGrid>
             <UniformGrid Rows="1">
               <UniformGrid Rows="1">
                 <TextBlock Text="色" VerticalAlignment="Center" HorizontalAlignment="Center"/>

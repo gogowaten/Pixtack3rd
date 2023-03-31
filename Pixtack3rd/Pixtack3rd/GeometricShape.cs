@@ -136,6 +136,75 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
+        //頂点編集状態
+        public bool MyIsEditing
+        {
+            get { return (bool)GetValue(MyIsEditingProperty); }
+            set { SetValue(MyIsEditingProperty, value); }
+        }
+        public static readonly DependencyProperty MyIsEditingProperty =
+            DependencyProperty.Register(nameof(MyIsEditing), typeof(bool), typeof(GeometricShape),
+                new FrameworkPropertyMetadata(false,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        //読み取り専用の依存関係プロパティ
+        //WPF4.5入門 その43 「読み取り専用の依存関係プロパティ」 - かずきのBlog@hatena
+        //        https://blog.okazuki.jp/entry/2014/08/18/083455
+        /// <summary>
+        /// Descendant、見た目上のRect
+        /// </summary>
+        private static readonly DependencyPropertyKey MyExternalBoundsPropertyKey =
+            DependencyProperty.RegisterReadOnly(nameof(MyExternalBounds), typeof(Rect), typeof(GeometricShape),
+                new FrameworkPropertyMetadata(Rect.Empty,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure));
+        public static readonly DependencyProperty MyExternalBoundsProperty =
+            MyExternalBoundsPropertyKey.DependencyProperty;
+        public Rect MyExternalBounds
+        {
+            get { return (Rect)GetValue(MyExternalBoundsProperty); }
+            private set { SetValue(MyExternalBoundsPropertyKey, value); }
+        }
+
+        private static readonly DependencyPropertyKey MyExternalWidenBoundsPropertyKey =
+            DependencyProperty.RegisterReadOnly(nameof(MyExternalWidenBounds), typeof(Rect), typeof(GeometricShape),
+                new FrameworkPropertyMetadata(Rect.Empty,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure));
+        public static readonly DependencyProperty MyExternalWidenBoundsProperty =
+            MyExternalWidenBoundsPropertyKey.DependencyProperty;
+
+        public Rect MyAllBounds
+        {
+            get { return (Rect)GetValue(MyAllBoundsProperty); }
+            set { SetValue(MyAllBoundsProperty, value); }
+        }
+        public static readonly DependencyProperty MyAllBoundsProperty =
+            DependencyProperty.Register(nameof(MyAllBounds), typeof(Rect), typeof(GeometricShape),
+                new FrameworkPropertyMetadata(Rect.Empty,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure));
+
+
+        public Rect MyExternalWidenBounds
+        {
+            get { return (Rect)GetValue(MyExternalWidenBoundsProperty); }
+            private set { SetValue(MyExternalWidenBoundsPropertyKey, value); }
+        }
+
+        public double MyAnchorThumbSize
+        {
+            get { return (double)GetValue(MyAnchorThumbSizeProperty); }
+            set { SetValue(MyAnchorThumbSizeProperty, value); }
+        }
+        public static readonly DependencyProperty MyAnchorThumbSizeProperty =
+        DependencyProperty.Register(nameof(MyAnchorThumbSize), typeof(double), typeof(GeometricShape),
+                new FrameworkPropertyMetadata(20.0,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void SetProperty<T>(ref T field, T value, [System.Runtime.CompilerServices.CallerMemberName] string? name = null)
@@ -149,31 +218,32 @@ namespace Pixtack3rd
         //private Rect _myBounds;
         //public Rect MyBounds { get => _myBounds; set => SetProperty(ref _myBounds, value); }
 
-        private Rect _myTFBounds;
-        public Rect MyTFBounds { get => _myTFBounds; set => SetProperty(ref _myTFBounds, value); }
+        //private Rect _myTFBounds;
+        //public Rect MyTFBounds { get => _myTFBounds; set => SetProperty(ref _myTFBounds, value); }
 
-        private double _myTFWidth;
-        public double MyTFWidth { get => _myTFWidth; set => SetProperty(ref _myTFWidth, value); }
+        //private double _myTFWidth;
+        //public double MyTFWidth { get => _myTFWidth; set => SetProperty(ref _myTFWidth, value); }
 
-        private double _myTFHeight;
-        public double MyTFHeight { get => _myTFHeight; set => SetProperty(ref _myTFHeight, value); }
+        //private double _myTFHeight;
+        //public double MyTFHeight { get => _myTFHeight; set => SetProperty(ref _myTFHeight, value); }
 
 
         #endregion 依存関係プロパティと通知プロパティ
 
 
         public Geometry MyGeometry { get; protected set; }
-        public Rect MyExternalBoundsNotTF { get; protected set; }//外観のRect、変形なし時
-        public Rect MyExternalBounds { get; protected set; }//外観のRect、変形加味
-        public Rect MyInternalBoundsNotTF { get; protected set; }//PointsだけのRect、変形なし時
-        public Rect MyInternalBounds { get; protected set; }//PointsだけのRect、変形なし時
+        //public Rect MyExternalBoundsNotTF { get; protected set; }//外観のRect、変形なし時
+        //public Rect MyExternalBounds { get; protected set; }//外観のRect、変形加味
+        //public Rect MyInternalBoundsNotTF { get; protected set; }//PointsだけのRect、変形なし時
+        //public Rect MyInternalBounds { get; protected set; }//PointsだけのRect、変形なし時
 
 
         //public List<Thumb> MyThumbs { get; protected set; } = new();
-        public TTGeometricShape? MyOwnerTThumb { get; set; }
+        //public TTGeometricShape? MyOwnerTThumb { get; set; }
         public GeometryAdorner MyAdorner { get; protected set; }
 
         public AdornerLayer? MyAdornerLayer { get; protected set; }
+        public Rect MyExWidenRenderBounds { get; private set; }
 
         #region コンストラクタ
         public GeometricShape()
@@ -184,20 +254,58 @@ namespace Pixtack3rd
             MyAdorner = new GeometryAdorner(this);
             MyGeometry = this.DefiningGeometry.Clone();
             Loaded += This_Loaded;
-            MySetBinding();
+            SizeChanged += GeometricShape_SizeChanged;
+
         }
         #endregion コンストラクタ
 
+        private void This_Loaded(object sender, RoutedEventArgs e)
+        {
+            SetMyBounds();
+            //アドーナーの登録
+            //グループ化の処理直後にも、なぜかLoadedが発生するので
+            //二重登録にならないようにParentを調べてから登録処理している
+            MyAdornerLayer = AdornerLayer.GetAdornerLayer(this);
+            if (MyAdornerLayer != MyAdorner.Parent)
+            {
+                MyAdornerLayer.Add(MyAdorner);
+            }
+            MySetBinding();
+            SetMyBounds();
+        }
+
+
+
         private void MySetBinding()
         {
+            SetBinding(MyAnchorVisibleProperty, new Binding() { Source = this, Path = new PropertyPath(MyIsEditingProperty), Converter = new MyConverterBoolVisible() });
             MyAdorner.SetBinding(VisibilityProperty, new Binding() { Source = this, Path = new PropertyPath(MyAnchorVisibleProperty) });
+            MyAdorner.SetBinding(GeometryAdorner.MyAnchorThumbSizeProperty, new Binding() { Source = this, Path = new PropertyPath(MyAnchorThumbSizeProperty) });
+
+            MultiBinding mb = new();
+            Binding b0 = new() { Source = MyAdorner, Path = new PropertyPath(GeometryAdorner.MyVThumbsBoundsProperty) };
+            Binding b1 = new() { Source = this, Path = new PropertyPath(MyExternalBoundsProperty) };
+            mb.Bindings.Add(b0); mb.Bindings.Add(b1);
+            mb.Converter = new MyConverterRectRect();
+            SetBinding(MyAllBoundsProperty, mb);
+        }
+
+        private void GeometricShape_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            //いらない？MeasureOverrideのときだけでいい？
+            SetMyBounds();
+        }
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            SetMyBounds();
+            return base.ArrangeOverride(finalSize);
         }
 
         //未使用
         //Thumbの位置修正、再配置、Pointに合わせる
         public void RelocationAdornerThumbs()
         {
-            MyAdorner.RelocationThumbs();
+            MyAdorner.FixThumbsLocate();
         }
         //未使用
         //一旦Thumbを削除して、表示し直す
@@ -213,21 +321,10 @@ namespace Pixtack3rd
                 MyAdornerLayer.Add(new GeometryAdorner(this));
             }
         }
-        private void This_Loaded(object sender, RoutedEventArgs e)
-        {
-            //アドーナーの登録
-            //グループ化の処理直後にも、なぜかLoadedが発生するので
-            //二重登録にならないようにParentを調べてから登録処理している
-            MyAdornerLayer = AdornerLayer.GetAdornerLayer(this);
-            if(MyAdornerLayer != MyAdorner.Parent)
-            {
-                MyAdornerLayer.Add(MyAdorner);
-            }
-            
-            //MyAdornerLayer.Add(new BoundsAdorner(this));
-        }
 
-        //protected override Geometry DefiningGeometry => Geometry.Empty;
+
+
+        #region 描画
 
         /// <summary>
         /// ベジェ曲線部分の描画
@@ -396,6 +493,9 @@ namespace Pixtack3rd
             }
         }
 
+        #endregion 描画
+
+
         ////変形時にBoundsを更新、これは変形してもArrangeは無反応だから→
         ////Arrangeでも反応していた
         //protected override Geometry GetLayoutClip(Size layoutSlotSize)
@@ -404,29 +504,40 @@ namespace Pixtack3rd
         //}
 
         //各種Bounds更新
-        protected override Size ArrangeOverride(Size finalSize)
+
+        private void SetMyBounds()
         {
             Pen pen = new(Stroke, StrokeThickness);
-            Geometry geo = this.DefiningGeometry.Clone();
-            MyInternalBoundsNotTF = geo.Bounds;//内部Rect
-            MyExternalBoundsNotTF = geo.GetRenderBounds(pen);//外部Rect
 
-            Geometry exGeo = geo.Clone();
-            exGeo.Transform = RenderTransform;//変形
-            MyInternalBounds = exGeo.Bounds;//変形内部Rect
+            //Geometry geo = this.DefiningGeometry.Clone();
+            //MyInternalBoundsNotTF = geo.Bounds;//内部Rect
+            //MyExternalBoundsNotTF = geo.GetRenderBounds(pen);//外部Rect
+
+            //Geometry exGeo = geo.Clone();
+            //exGeo.Transform = RenderTransform;//変形
+            //MyInternalBounds = exGeo.Bounds;//変形内部Rect
             //MyInternalBounds = this.RenderTransform.TransformBounds(MyInternalBoundsNotTF);//変形内部Rect
-            MyExternalBounds = exGeo.GetRenderBounds(pen);//変形外部Rect
+            //MyExternalBounds = exGeo.GetRenderBounds(pen);//変形外部Rect
 
+            //MyTFBounds = MyExternalBounds;
+            //MyTFWidth = MyExternalBounds.Width;
+            //MyTFHeight = MyExternalBounds.Height;
 
-            MyTFBounds = MyExternalBounds;
-            MyTFWidth = MyExternalBounds.Width;
-            MyTFHeight = MyExternalBounds.Height;
+            //変形がなければGetDescendantBoundsだけでboundsが得られる
+            var bb = VisualTreeHelper.GetDescendantBounds(this);
+            if (bb.IsEmpty) return;
+            MyExternalBounds = bb;
 
-
-
-            return base.ArrangeOverride(finalSize);
+            var geo = DefiningGeometry.Clone();
+            var render = geo.GetRenderBounds(pen);
+            var widenGeo = geo.GetWidenedPathGeometry(pen);
+            var widenRect = widenGeo.Bounds;
+            var widenRenderRect = widenGeo.GetRenderBounds(pen);
+            MyExWidenRenderBounds = widenRenderRect;
+            MyExternalWidenBounds = widenRenderRect;
+            //MyExternalBounds = widenRenderRect;
         }
-
+        
         /// <summary>
         /// ピッタリのサイズのBitmap取得
         /// </summary>
@@ -452,108 +563,25 @@ namespace Pixtack3rd
     }
 
 
-    /// <summary>
-    /// 頂点座標にThumb表示するアドーナー。GeometricShape専用
-    /// VisualCollectionにはCanvasだけを追加
-    /// ThumbはCanvasに追加
-    /// </summary>
-    public class GeometryAdorner : Adorner
-    {
-        public VisualCollection MyVisuals { get; private set; }
-        protected override int VisualChildrenCount => MyVisuals.Count;
-        protected override Visual GetVisualChild(int index) => MyVisuals[index];
-
-        public Canvas MyCanvas { get; private set; } = new();
-        public List<AnchorThumb> MyThumbs { get; private set; } = new();
-        //public List<Thumb> MyThumbs { get; private set; } = new();
-        public GeometricShape MyTargetGeoShape { get; private set; }
-        public GeometryAdorner(GeometricShape adornedElement) : base(adornedElement)
-        {
-            MyVisuals = new VisualCollection(this)
-            {
-                MyCanvas
-            };
-            MyTargetGeoShape = adornedElement;
-            Loaded += GeometryAdorner_Loaded;
-        }
-
-        /// <summary>
-        /// Thumbの再配置、Pointと位置がずれたときに使う
-        /// </summary>
-        public void RelocationThumbs()
-        {
-            for (int i = 0; i < MyTargetGeoShape.MyPoints.Count; i++)
-            {
-                SetLocate(MyThumbs[i], MyTargetGeoShape.MyPoints[i]);
-            }
-        }
-        private void InitializeThumbs()
-        {
-            foreach (var item in MyTargetGeoShape.MyPoints)
-            {
-                AnchorThumb thumb = new(item) { Width = 20, Height = 20 };
-                MyThumbs.Add(thumb);
-                MyCanvas.Children.Add(thumb);
-                SetLocate(thumb, item);
-                thumb.DragDelta += Thumb_DragDelta;
-                thumb.DragCompleted += Thumb_DragCompleted;
-            }
-        }
-
-        private void GeometryAdorner_Loaded(object sender, RoutedEventArgs e)
-        {
-            InitializeThumbs();
-        }
-
-        //ドラッグ移動終了後に親Thumbを位置修正＋頂点Thumbの位置修正
-        private void Thumb_DragCompleted(object sender, DragCompletedEventArgs e)
-        {
-            if (MyTargetGeoShape.MyOwnerTThumb?.FixLocate() == true)
-            {
-                RelocationThumbs();
-            }
-
-        }
 
 
-        private void Thumb_DragDelta(object sender, DragDeltaEventArgs e)
-        {
-            if (sender is AnchorThumb t)
-            {
-                int i = MyThumbs.IndexOf(t);
-                PointCollection points = MyTargetGeoShape.MyPoints;
-                double x = points[i].X + e.HorizontalChange;
-                double y = points[i].Y + e.VerticalChange;
-                points[i] = new Point(x, y);
-                SetLocate(t, points[i]);
-            }
-        }
 
-        private static void SetLocate(Thumb thumb, Point point)
-        {
-            Canvas.SetLeft(thumb, point.X);
-            Canvas.SetTop(thumb, point.Y);
-        }
+    //public class MyConverterBoolVisible : IValueConverter
+    //{
+    //    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        bool b = (bool)value;
+    //        if (b) return Visibility.Visible;
+    //        else return Visibility.Collapsed;
+    //    }
 
-        protected override Size ArrangeOverride(Size finalSize)
-        {
-            //Thumbが収まるRectをCanvasのArrangeに指定する
-            Rect canvasRect = VisualTreeHelper.GetDescendantBounds(MyCanvas);
-            if (canvasRect.IsEmpty)
-            {
-                MyCanvas.Arrange(new Rect(finalSize));
-            }
-            else
-            {
-                //座標を0,0したRectにする、こうしないとマイナス座表示に不具合
-                canvasRect = new(canvasRect.Size);
-                MyCanvas.Arrange(canvasRect);
-            }
-            return base.ArrangeOverride(finalSize);
-        }
-
-    }
-
+    //    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        Visibility vis = (Visibility)value;
+    //        if (vis == Visibility.Visible) return true;
+    //        else return false;
+    //    }
+    //}
 
 
 
