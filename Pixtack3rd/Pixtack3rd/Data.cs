@@ -17,7 +17,7 @@ namespace Pixtack3rd
 {
     public enum TType
     {
-        None = 0, Root, Group, TextBlock, TextBox, Image, Rectangle, 
+        None = 0, Root, Group, TextBlock, TextBox, Image, Rectangle,
         //Polyline,
         Geometric
     }
@@ -168,16 +168,16 @@ namespace Pixtack3rd
         [DataMember] public double HeadAngle { get => _headAngle; set => SetProperty(ref _headAngle, value); }
 
         private bool _isBezier;
-        public bool IsBezier { get => _isBezier; set => SetProperty(ref _isBezier, value); }
+        [DataMember] public bool IsBezier { get => _isBezier; set => SetProperty(ref _isBezier, value); }
 
         private ShapeType _shapeType;
-        public ShapeType ShapeType { get => _shapeType; set => SetProperty(ref _shapeType, value); }
+        [DataMember] public ShapeType ShapeType { get => _shapeType; set => SetProperty(ref _shapeType, value); }
 
         private bool _isSmoothJoin;
-        public bool IsSmoothJoin { get => _isSmoothJoin; set => SetProperty(ref _isSmoothJoin, value); }
+        [DataMember] public bool IsSmoothJoin { get => _isSmoothJoin; set => SetProperty(ref _isSmoothJoin, value); }
 
         private bool _isLineClose;
-        public bool IsLineClose { get => _isLineClose; set => SetProperty(ref _isLineClose, value); }
+        [DataMember] public bool IsLineClose { get => _isLineClose; set => SetProperty(ref _isLineClose, value); }
 
 
         #endregion 図形
@@ -206,6 +206,8 @@ namespace Pixtack3rd
                 case TType.Rectangle:
                     break;
                 case TType.TextBox:
+                    break;
+                case TType.Geometric:
                     break;
                 default:
                     break;

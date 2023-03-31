@@ -2229,15 +2229,12 @@ namespace Pixtack3rd
         {
             ShapeEditEndForClickedThumb();
         }
-
-
-
-
-
-
         #endregion 図形のアンカーポイント編集開始、終了
 
-        #region 追加
+
+
+
+        #region 図形追加
         private void AddShapePolyline2(PointCollection points, bool locateFix = true)
         {
             Data data = new(TType.Geometric)
@@ -2266,7 +2263,7 @@ namespace Pixtack3rd
         }
 
 
-        #endregion 追加
+        #endregion 図形追加
         #endregion 図形関連
 
 
