@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Windows;
 using System.Windows.Shapes;
 using System.Windows.Data;
+using System.Windows.Input;
 
 namespace Pixtack3rd
 {
@@ -21,10 +22,12 @@ namespace Pixtack3rd
     /// </summary>
     public class GeometryAdorner : Adorner
     {
+        #region 必要
 
         public VisualCollection MyVisuals { get; private set; }
         protected override int VisualChildrenCount => MyVisuals.Count;
         protected override Visual GetVisualChild(int index) => MyVisuals[index];
+        #endregion 必要
 
         #region 依存関係プロパティ
         public PointCollection MyPoints
@@ -72,15 +75,17 @@ namespace Pixtack3rd
         #endregion 依存関係プロパティ
 
 
+        #region その他プロパティ
 
         public Canvas MyCanvas { get; private set; } = new();
         public List<AnchorThumb> MyThumbs { get; private set; } = new();
         public TwoColorDashLine MyDirectionLine { get; private set; }
-        //public PathFigureCollection MyControlLines { get; private set; } = new();
-
         public GeometricShape MyTargetGeoShape { get; private set; }
+        public AnchorThumb? MyCurrentAnchorThumb { get; private set; }
+        #endregion その他プロパティ
 
-        //private readonly double ThumbSize = 20.0;
+        public ContextMenu MyAnchorContextMenu { get; private set; }
+        private MenuItem MyMenuItemRemoveThumb;
 
         //コンストラクタ
         //Canvas要素をVisualCollectionに追加
@@ -91,8 +96,108 @@ namespace Pixtack3rd
             MyVisuals = new VisualCollection(this) { MyCanvas, };
             MyDirectionLine = new TwoColorDashLine();
             MyCanvas.Children.Add(MyDirectionLine);
+            MyAnchorContextMenu = new ContextMenu();
+            MyAnchorContextMenu.Opened += MyAnchorContextMenu_Opened;
+            MyMenuItemRemoveThumb = new() { Header = "頂点削除" };
+            MyMenuItemRemoveThumb.Click += Item_Click;
+            MyAnchorContextMenu.Items.Add(MyMenuItemRemoveThumb);
 
             Loaded += GeometryAdorner_Loaded;
+        }
+
+
+        //頂点Thumbの右クリックメニュー開いたとき
+        //頂点削除の項目の有無効化を設定
+        private void MyAnchorContextMenu_Opened(object sender, RoutedEventArgs e)
+        {
+            if (MyCurrentAnchorThumb is AnchorThumb anchor)
+            {
+                int ii = MyThumbs.IndexOf(anchor);
+                if (MyTargetGeoShape.MyShapeType == ShapeType.Line)
+                {
+                    if (MyPoints.Count >= 2)
+                    {
+                        MyMenuItemRemoveThumb.IsEnabled = true;
+                    }
+                    else MyMenuItemRemoveThumb.IsEnabled = false;
+                }
+                else if (MyTargetGeoShape.MyShapeType == ShapeType.Bezier)
+                {
+                    if (ii % 3 == 0 && MyPoints.Count >= 7)
+                    {
+                        MyMenuItemRemoveThumb.IsEnabled = true;
+                    }
+                    else
+                    {
+                        MyMenuItemRemoveThumb.IsEnabled = false;
+                    }
+                }
+
+            }
+        }
+
+        //右クリックメニュー、頂点Thumb削除
+        private void Item_Click(object sender, RoutedEventArgs e)
+        {
+            RemovePointAndAnchor();
+        }
+        private void RemovePointAndAnchor()
+        {
+            if (MyCurrentAnchorThumb is AnchorThumb anchor)
+            {
+                int ii = MyThumbs.IndexOf(anchor);
+                if (MyTargetGeoShape.MyShapeType == ShapeType.Line && MyPoints.Count > 2)
+                {
+                    RemovePointAndAnchor(anchor);
+                }
+                else if (MyTargetGeoShape.MyShapeType == ShapeType.Bezier
+                    && MyPoints.Count >= 7)
+                {
+                    if (ii == 0)
+                    {
+                        RemovePointAndAnchor(ii);
+                        RemovePointAndAnchor(ii);
+                        RemovePointAndAnchor(ii);
+                    }
+                    else if (ii == MyPoints.Count - 1)
+                    {
+                        RemovePointAndAnchor(MyPoints.Count - 1);
+                        RemovePointAndAnchor(MyPoints.Count - 1);
+                        RemovePointAndAnchor(MyPoints.Count - 1);
+                    }
+                    else if (ii % 3 == 0)
+                    {
+                        RemovePointAndAnchor(ii - 1);
+                        RemovePointAndAnchor(ii - 1);
+                        RemovePointAndAnchor(ii - 1);
+                    }
+
+                }
+            }
+        }
+        /// <summary>
+        /// 頂点Thumbと対応Pointを削除する
+        /// </summary>
+        /// <param name="anchor"></param>
+        private void RemovePointAndAnchor(AnchorThumb anchor)
+        {
+            int ii = MyThumbs.IndexOf(anchor);
+            MyPoints.RemoveAt(ii);
+            anchor.DragDelta -= Thumb_DragDelta;
+            anchor.DragCompleted -= Thumb_DragCompleted;
+            anchor.PreviewMouseDown -= Thumb_PreviewMouseDown;
+            MyThumbs.Remove(anchor);
+            MyCanvas.Children.Remove(anchor);
+        }
+        private void RemovePointAndAnchor(int ii)
+        {
+            MyPoints.RemoveAt(ii);
+            AnchorThumb anchor = MyThumbs[ii];
+            anchor.DragDelta -= Thumb_DragDelta;
+            anchor.DragCompleted -= Thumb_DragCompleted;
+            anchor.PreviewMouseDown -= Thumb_PreviewMouseDown;
+            MyThumbs.Remove(anchor);
+            MyCanvas.Children.Remove(anchor);
         }
 
 
@@ -124,7 +229,15 @@ namespace Pixtack3rd
                 SetAnchorLocate(thumb, item);
                 thumb.DragDelta += Thumb_DragDelta;
                 thumb.DragCompleted += Thumb_DragCompleted;
+                thumb.PreviewMouseDown += Thumb_PreviewMouseDown;
+                thumb.Cursor = Cursors.Hand;
+                thumb.ContextMenu = MyAnchorContextMenu;
             }
+        }
+
+        private void Thumb_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is AnchorThumb anchor) { MyCurrentAnchorThumb = anchor; }
         }
 
 
@@ -141,6 +254,7 @@ namespace Pixtack3rd
 
         #region ドラッグ移動
 
+
         //ドラッグ移動終了後に、そのことをイベント通知
         public event Action<object, Vector>? ThumbDragConpleted;
         private void Thumb_DragCompleted(object sender, DragCompletedEventArgs e)
@@ -149,8 +263,15 @@ namespace Pixtack3rd
             ThumbDragConpleted?.Invoke(this, new Vector(Canvas.GetLeft(t), Canvas.GetTop(t)));
         }
 
+        //ベジェ曲線の方向線とアンカーポイント、制御点を表示してみた - 午後わてんのブログ
+        //        https://gogowaten.hatenablog.com/entry/15547295
+        //20180226forMyBlog/20180612_ベジェ曲線のアンカーと制御点までの直線 at master · gogowaten/20180226forMyBlog
+        //        https://github.com/gogowaten/20180226forMyBlog/tree/master/20180612_%E3%83%99%E3%82%B8%E3%82%A7%E6%9B%B2%E7%B7%9A%E3%81%AE%E3%82%A2%E3%83%B3%E3%82%AB%E3%83%BC%E3%81%A8%E5%88%B6%E5%BE%A1%E7%82%B9%E3%81%BE%E3%81%A7%E3%81%AE%E7%9B%B4%E7%B7%9A
+
+
         private void Thumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
+
             //ベジェ曲線のときは操作によって他の頂点も連動させたい
             //+ctrlで対角線上連動、これは使わないからいらないかも
             //+shiftで対角線上連動＋距離連動、+shiftは取り消し、初期値true
@@ -163,8 +284,6 @@ namespace Pixtack3rd
                 PointCollection points = MyPoints;
                 double x = points[i].X + e.HorizontalChange;
                 double y = points[i].Y + e.VerticalChange;
-                //points[i] = new Point(x, y);
-                //SetAnchorLocate(t, points[i]);
 
                 if (MyTargetGeoShape.MyShapeType == ShapeType.Line)
                 {
@@ -175,69 +294,80 @@ namespace Pixtack3rd
                 //ベジェ曲線のとき、今のところ固定点移動時に制御点も同時移動、制御点移動は対角線上になるように移動
                 else if (MyTargetGeoShape.MyShapeType == ShapeType.Bezier)
                 {
-                    //前制御点、固定点、後制御点の判定
-                    Point frontP, anchorP, rearP;
-                    int mod = i % 3;
-                    double xAdd = e.HorizontalChange;
-                    double yAdd = e.VerticalChange;
-                    //自身が固定点の場合
-                    if (mod == 0)
+                    if (Keyboard.Modifiers == ModifierKeys.Shift)
                     {
-                        //固定点、前後の制御点も同じ移動
-                        anchorP = points[i];
-                        SetAnchorLocate2(i, new Point(anchorP.X + xAdd, anchorP.Y + yAdd));
-
-                        //自身が先頭固定点じゃないときは前制御点があるので移動させる
-                        if (i != 0)
-                        {
-                            frontP = points[i - 1];
-                            SetAnchorLocate2(i - 1, new Point(frontP.X + xAdd, frontP.Y + yAdd));
-                        }
-
-                        //自身が最終固定点じゃないときは後制御点があるので移動させる
-                        if (i != points.Count - 1)
-                        {
-                            rearP = points[i + 1];
-                            SetAnchorLocate2(i + 1, new Point(rearP.X + xAdd, rearP.Y + yAdd));
-                        }
+                        points[i] = new Point(x, y);
+                        SetAnchorLocate(t, points[i]);
 
                     }
-                    //自身が後制御点
-                    else if (mod == 1)
-                    {
-                        rearP = points[i];
-                        SetAnchorLocate2(i, new Point(rearP.X + xAdd, rearP.Y + yAdd));
-
-                        //前制御点の移動、対角線上になるように移動
-                        if (i != 1)
-                        {
-                            anchorP = points[i - 1];
-                            double xDiff = rearP.X - anchorP.X;
-                            double yDiff = rearP.Y - anchorP.Y;
-                            SetAnchorLocate2(i - 2, new Point(anchorP.X - xDiff, anchorP.Y - yDiff));
-                        }
-                    }
-                    //自身が前制御点
                     else
                     {
-                        //後制御点の移動、対角線上になるように移動
-                        frontP = points[i];
-                        SetAnchorLocate2(i, new Point(frontP.X + xAdd, frontP.Y + yAdd));
-
-                        if (i != points.Count - 2)
+                        //前制御点、固定点、後制御点の判定
+                        Point frontP, anchorP, rearP;
+                        int mod = i % 3;
+                        double xAdd = e.HorizontalChange;
+                        double yAdd = e.VerticalChange;
+                        //自身が固定点の場合
+                        if (mod == 0)
                         {
-                            anchorP = points[i + 1];
-                            double xDiff = frontP.X - anchorP.X;
-                            double yDiff = frontP.Y - anchorP.Y;
-                            SetAnchorLocate2(i + 2, new Point(anchorP.X - xDiff, anchorP.Y - yDiff));
+                            //固定点、前後の制御点も同じ移動
+                            anchorP = points[i];
+                            SetAnchorLocate2(i, new Point(anchorP.X + xAdd, anchorP.Y + yAdd));
+
+                            //自身が先頭固定点じゃないときは前制御点があるので移動させる
+                            if (i != 0)
+                            {
+                                frontP = points[i - 1];
+                                SetAnchorLocate2(i - 1, new Point(frontP.X + xAdd, frontP.Y + yAdd));
+                            }
+
+                            //自身が最終固定点じゃないときは後制御点があるので移動させる
+                            if (i != points.Count - 1)
+                            {
+                                rearP = points[i + 1];
+                                SetAnchorLocate2(i + 1, new Point(rearP.X + xAdd, rearP.Y + yAdd));
+                            }
+
+                        }
+                        //自身が後制御点
+                        else if (mod == 1)
+                        {
+                            rearP = points[i];
+                            SetAnchorLocate2(i, new Point(rearP.X + xAdd, rearP.Y + yAdd));
+
+                            //前制御点の移動、対角線上になるように移動
+                            if (i != 1)
+                            {
+                                anchorP = points[i - 1];
+                                double xDiff = rearP.X - anchorP.X;
+                                double yDiff = rearP.Y - anchorP.Y;
+                                SetAnchorLocate2(i - 2, new Point(anchorP.X - xDiff, anchorP.Y - yDiff));
+                            }
+                        }
+                        //自身が前制御点
+                        else
+                        {
+                            //後制御点の移動、対角線上になるように移動
+                            frontP = points[i];
+                            SetAnchorLocate2(i, new Point(frontP.X + xAdd, frontP.Y + yAdd));
+
+                            if (i != points.Count - 2)
+                            {
+                                anchorP = points[i + 1];
+                                double xDiff = frontP.X - anchorP.X;
+                                double yDiff = frontP.Y - anchorP.Y;
+                                SetAnchorLocate2(i + 2, new Point(anchorP.X - xDiff, anchorP.Y - yDiff));
+                            }
                         }
                     }
+
                 }
 
 
             }
         }
         #endregion ドラッグ移動
+
 
         private void SetAnchorLocate2(int index, Point point)
         {

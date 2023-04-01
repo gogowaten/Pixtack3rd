@@ -2028,10 +2028,10 @@ namespace Pixtack3rd
 
 
             if (MyRoot.ClickedThumb == null) return;
-            
+
             var neko2 = MyRoot.ClickedThumb.Data.StrokeA;
             //MyRoot.ClickedThumb.Data.PointCollection[0] = new Point(200,200);
-            
+
         }
 
 
@@ -2077,7 +2077,7 @@ namespace Pixtack3rd
         {
             if (MyTempPoints.Count >= 2)
             {
-                AddShapePolyline2(new(MyTempPoints), false);                
+                AddShapePolyline2(new(MyTempPoints), false);
             }
 
             //後片付け
@@ -2131,29 +2131,31 @@ namespace Pixtack3rd
             //ベジェ曲線の場合、2個前までのアンカー点まで考慮して制御点座標を計算
             else if (MyTempShape?.MyShapeType == ShapeType.Bezier)
             {
+                //最終アンカー点座標は、今のマウスの位置
+                MyTempPoints[^1] = mousePoint;
+                Point pre1Anchor = MyTempPoints[^4];//1個前のアンカー点
+                Point pre2Anchor;//2個前のアンカー点
                 if (MyTempPoints.Count <= 4)
                 {
-                    MyTempPoints[^1] = mousePoint;
+                    double diffX = (mousePoint.X - pre1Anchor.X) / 4.0;
+                    double diffY = (mousePoint.Y - pre1Anchor.Y) / 4.0;
+                    MyTempPoints[^3] = new Point(pre1Anchor.X + diffX, pre1Anchor.Y + diffY);
+
+                    //最終アンカー点の制御点座標を決定
+                    diffX = (mousePoint.X - MyTempPoints[^3].X) / 4.0;
+                    diffY = (mousePoint.Y - MyTempPoints[^3].Y) / 4.0;
+                    MyTempPoints[^2] = new Point(mousePoint.X - diffX, mousePoint.Y - diffY);
+
                 }
                 else
                 {
-                    //最終アンカー点座標は、今のマウスの位置
-                    MyTempPoints[^1] = mousePoint;
-
-                    Point prevPoint1 = MyTempPoints[^4];//1個前のアンカー点
-                    Point prevPoint2;//2個前のアンカー点
-                    if (MyTempPoints.Count < 7)
-                    {
-                        prevPoint2 = MyTempPoints[^1];
-                    }
-                    else { prevPoint2 = MyTempPoints[^7]; }
-
+                    pre2Anchor = MyTempPoints[^7];
                     //マウス座標と2個前のアンカー点との差の1/4、これを使って
                     //一個前のアンカー点の制御点座標を決定
-                    double diffX = (mousePoint.X - prevPoint2.X) / 4.0;
-                    double diffY = (mousePoint.Y - prevPoint2.Y) / 4.0;
-                    MyTempPoints[^3] = new Point(prevPoint1.X + diffX, prevPoint1.Y + diffY);
-                    MyTempPoints[^5] = new Point(prevPoint1.X - diffX, prevPoint1.Y - diffY);
+                    double diffX = (mousePoint.X - pre2Anchor.X) / 4.0;
+                    double diffY = (mousePoint.Y - pre2Anchor.Y) / 4.0;
+                    MyTempPoints[^3] = new Point(pre1Anchor.X + diffX, pre1Anchor.Y + diffY);
+                    MyTempPoints[^5] = new Point(pre1Anchor.X - diffX, pre1Anchor.Y - diffY);
 
                     //最終アンカー点の制御点座標を決定
                     diffX = (mousePoint.X - MyTempPoints[^3].X) / 4.0;
@@ -2354,9 +2356,23 @@ namespace Pixtack3rd
 
         private void ButtonAddShape_Click(object sender, RoutedEventArgs e)
         {
-            AddShapePolyline2(new PointCollection() { new Point(0, 0), new Point(100, 100) });
-            //AddShapePolyline(new PointCollection() { new Point(0, 0), new Point(100, 100) });
+            if (MyComboBoxShapeType.SelectedItem is ShapeType type)
+            {
+                switch (type)
+                {
+                    case ShapeType.Line:
+                        AddShapePolyline2(new PointCollection()
+                    { new Point(0, 0), new Point(100, 100) });
+                        break;
+                    case ShapeType.Bezier:
+                        AddShapePolyline2(new PointCollection()
+                    { new Point(0, 0), new Point(100, 0) ,new Point(100, 100), new Point(0, 100) });
+                        break;
+                }
+            }
+
         }
+
     }
 
     public class MyConverterBrush : IMultiValueConverter
