@@ -2645,13 +2645,29 @@ namespace Pixtack3rd
             //Loaded時にPointsを関連付け
             //起動時だと早すぎでMyPointsに値が入っていないのでloaded時
             Loaded += TTGeometricShape_Loaded;
-
+            MyShape.MyAdorner.PointRemoved += MyAdorner_PointRemoved;
         }
         #endregion コンストラクタ
 
+        //表示更新と座標修正、頂点削除処理後に実行
+        private void MyAdorner_PointRemoved(object obj)
+        {
+            //この順番で表示更新
+            TTParent?.TTGroupUpdateLayout();
+            FixCanvasLocate04();
+            //↑だけだと足りない、よくわからん
+            TTParent?.TTGroupUpdateLayout();
+            FixCanvasLocate04();
+            //これだけの処理でもまだ足りないようで、全体サイズが更新されないけど
+            //実用上は問題なさそう
+        }
+
+
         private void TTGeometricShape_Loaded(object sender, RoutedEventArgs e)
         {
+            //頂点Thumb移動後
             MyShape.MyAdorner.ThumbDragConpleted += MyAdorner_ThumbDragConpleted;
+
             //Pointsの共有
             if (Data.PointCollection.Count == 0)
             {
@@ -2674,6 +2690,7 @@ namespace Pixtack3rd
             }
         }
 
+        //頂点Thumb移動後には座標修正
         private void MyAdorner_ThumbDragConpleted(object arg1, Vector arg2)
         {
             FixCanvasLocate04();
@@ -2842,10 +2859,6 @@ namespace Pixtack3rd
                     MyPoints[i] = new Point(pp.X - minX, pp.Y - minY);
                 }
 
-                //double left = Canvas.GetLeft(this);
-                //double top = Canvas.GetTop(this);
-                //Canvas.SetLeft(this, left + minX);
-                //Canvas.SetTop(this, top + minY);
                 TTLeft += minX;
                 TTTop += minY;
 
@@ -2872,6 +2885,7 @@ namespace Pixtack3rd
                 TTTop += all.Y - ex.Y;
                 Canvas.SetLeft(MyShape, -all.X);
                 Canvas.SetTop(MyShape, -all.Y);
+                FixCanvasLocate04();
             }
             else
             {
