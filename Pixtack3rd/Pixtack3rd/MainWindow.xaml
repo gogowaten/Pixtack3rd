@@ -268,7 +268,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                              HeadBeginType="Arrow" HeadEndType="Arrow" Angle="30" Stroke="SeaGreen" 
                             StrokeThickness="20" IsBezier="True"/>-->
           <local:TTGeometricShape x:Name="MyTTGermtricShape" MyPoints="50,0 0,100 150,0 120,100" StrokeThickness="20" Stroke="Gold"
-                                  MyShapeType="Bezier" HeadBeginType="None" MyLineClose="False" TTFill="Blue"
+                                  MyShapeType="Line" HeadBeginType="None" MyLineClose="False" TTFill="Blue"
                                   TTLeft="100" TTTop="100"/>
           <!--<local:TTGeometricShape MyPoints="50,0 0,100 100,100 100,0" StrokeThickness="20" Stroke="Red"
                                   MyShapeType="Line" MyLineSmoothJoin="True" HeadBeginType="Arrow" HeadEndType="Arrow" TTFill="Blue"/>-->

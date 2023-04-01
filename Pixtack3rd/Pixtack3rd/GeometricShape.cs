@@ -14,8 +14,23 @@ using System.Globalization;
 using System.ComponentModel;
 using System.Windows.Media.Imaging;
 
+//WPF Arrow and Custom Shapes - CodeProject
+//https://www.codeproject.com/Articles/23116/WPF-Arrow-and-Custom-Shapes
+
+//2022WPF/Arrow.cs at master · gogowaten/2022WPF
+//https://github.com/gogowaten/2022WPF/blob/master/20221203_%E7%9F%A2%E5%8D%B0%E5%9B%B3%E5%BD%A2/20221203_%E7%9F%A2%E5%8D%B0%E5%9B%B3%E5%BD%A2/Arrow.cs
+
+//E:\オレ\エクセル\WPFでPixtack紫陽花.xlsm_三角関数_$B$95
+
+//WPFで矢印直線描画、Shapeクラスを継承して作成してみた - 午後わてんのブログ
+//https://gogowaten.hatenablog.com/entry/2023/02/20/162212
+
+//2023WPF/20230331_BezierCanvasThumb/20230331_BezierCanvasThumb at main · gogowaten/2023WPF
+//https://github.com/gogowaten/2023WPF/tree/main/20230331_BezierCanvasThumb/20230331_BezierCanvasThumb
+
 namespace Pixtack3rd
 {
+    public enum HeadType { None = 0, Arrow, }
     public enum ShapeType { Line = 0, Bezier, }
     public class GeometricShape : Shape, INotifyPropertyChanged
     {
@@ -232,11 +247,6 @@ namespace Pixtack3rd
 
 
         public Geometry MyGeometry { get; protected set; }
-        //public Rect MyExternalBoundsNotTF { get; protected set; }//外観のRect、変形なし時
-        //public Rect MyExternalBounds { get; protected set; }//外観のRect、変形加味
-        //public Rect MyInternalBoundsNotTF { get; protected set; }//PointsだけのRect、変形なし時
-        //public Rect MyInternalBounds { get; protected set; }//PointsだけのRect、変形なし時
-
 
         //public List<Thumb> MyThumbs { get; protected set; } = new();
         //public TTGeometricShape? MyOwnerTThumb { get; set; }
