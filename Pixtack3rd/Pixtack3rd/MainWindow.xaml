@@ -280,21 +280,130 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               x:Name="MyDrawCanvas" Visibility="Collapsed"
               Cursor="Cross" Background="Transparent">
       </Canvas>
-      <Canvas Grid.Row="1" Grid.Column="1">
-        
-        <!--<local:GeometricShape MyPoints="150,100 0,50 250,0 50,150" MyShapeType="Bezier"
-                              MyAnchorVisible="Visible" HeadBeginType="Arrow" Stroke="Gray" StrokeThickness="10"/>-->
-        <!--<Canvas Grid.Row="1" Grid.Column="1"
-              x:Name="MyAnchorPointEditCanvas" Visibility="Collapsed"
+
+
+
+      <!--テスト用Canvas-->
+      <Canvas Grid.Row="1" Grid.Column="1" Margin="200"
+              x:Name="MyAnchorPointEditCanvas" Visibility="Visible"
               Background="Transparent">
-          <Canvas.ContextMenu>
-            <ContextMenu>
-              <MenuItem x:Name="ContextAddAnchor" Header="中間点追加" Click="ContextAddAnchor_Click"/>
-              <MenuItem x:Name="ContextAddAnchorExtend" Header="端点追加" Click="ContextAddAnchorExtend_Click"/>
-            </ContextMenu>
-          </Canvas.ContextMenu>
-        </Canvas>-->
+
+        <Canvas.ContextMenu>
+          <ContextMenu x:Name="MyTestContextMenu" d:DataContext="{d:DesignInstance Type=local:TTRoot}">
+            <ContextMenu.Background>
+              <SolidColorBrush>
+                <SolidColorBrush.Color>
+                  <Color A="100" R="255" G="255" B="255"/>
+                </SolidColorBrush.Color>
+              </SolidColorBrush>
+            </ContextMenu.Background>
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              
+              <Border Grid.Column="0" Grid.ColumnSpan="2"
+                      Width="{Binding RelativeSource={ RelativeSource Mode=Self}, Path=ActualHeight}">
+                <Border.Background>
+                  <VisualBrush Visual="{Binding Path=ActiveThumb}" Stretch="Uniform" Opacity="0.5"/>
+                </Border.Background>
+              </Border>
+
+              <StackPanel Name="MenuItemPanel" Grid.Column="0">
+                <GroupBox Header="画像として">
+                  <StackPanel>
+                    <MenuItem Header="コピー" Click="ContextAddAnchor_Click"/>
+                    <MenuItem Header="保存" Click="ContextAddAnchorExtend_Click"/>
+                    <MenuItem Header="複製" Click="ContextAddAnchorExtend_Click"/>
+                  </StackPanel>
+                </GroupBox>
+                <GroupBox Header="Dataを">
+                  <StackPanel>
+                    <MenuItem Header="保存" Click="ContextAddAnchorExtend_Click"/>
+                    <MenuItem Header="複製" Click="ContextAddAnchorExtend_Click"/>
+                  </StackPanel>
+                </GroupBox>
+                <GroupBox Header="編集">
+                  <StackPanel>
+                    <MenuItem Header="開始"/>
+                    <MenuItem Header="終了"/>
+                  </StackPanel>
+                </GroupBox>
+              </StackPanel>
+              <StackPanel Grid.Column="1">
+                <GroupBox Header="Activeグループ変更">
+                  <StackPanel>
+                    <MenuItem Header="InClickedまで"/>
+                    <MenuItem Header="In2"/>
+                    <MenuItem Header="In2"/>
+                    <MenuItem Header="In2"/>
+                  </StackPanel>
+                </GroupBox>
+                <GroupBox Header="移動">
+                  <StackPanel>
+                    <MenuItem Header="最前面"/>
+                    <MenuItem Header="最前面"/>
+                    <MenuItem Header="最前面"/>
+                    <MenuItem Header="最前面"/>
+                  </StackPanel>
+                </GroupBox>
+              </StackPanel>
+            </Grid>
+            <Separator Margin="10" Background="White"/>
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <Border Grid.Column="0" Grid.ColumnSpan="2" 
+                      Width="{Binding RelativeSource={ RelativeSource Mode=Self}, Path=ActualHeight}">
+                <Border.Background>
+                  <VisualBrush Visual="{Binding Path=ClickedThumb}" Stretch="Uniform" Opacity="0.5"/>
+                </Border.Background>
+              </Border>
+
+              <StackPanel Name="MenuItemPanel2" Grid.Column="0">
+                <GroupBox Header="画像として">
+                  <StackPanel>
+                    <MenuItem Header="コピー" Click="ContextAddAnchor_Click"/>
+                    <MenuItem Header="保存" Click="ContextAddAnchorExtend_Click"/>
+                    <MenuItem Header="複製" Click="ContextAddAnchorExtend_Click"/>
+                  </StackPanel>
+                </GroupBox>
+                <GroupBox Header="Dataを">
+                  <StackPanel>
+                    <MenuItem Header="保存" Click="ContextAddAnchorExtend_Click"/>
+                    <MenuItem Header="複製" Click="ContextAddAnchorExtend_Click"/>
+                  </StackPanel>
+                </GroupBox>
+
+              </StackPanel>
+              <StackPanel Grid.Column="1">
+                <GroupBox Header="Activeグループ変更">
+                  <StackPanel>
+                    <MenuItem Header="InClickedまで"/>
+                  </StackPanel>
+                </GroupBox>
+                <GroupBox Header="移動">
+                  <StackPanel>
+                    <MenuItem Header="最前面"/>
+                    <MenuItem Header="最前面"/>
+                    <MenuItem Header="最前面"/>
+                    <MenuItem Header="最前面"/>
+                  </StackPanel>
+                </GroupBox>
+              </StackPanel>
+            </Grid>
+
+            <!--<Rectangle Width="200" Height="200" Fill="Red"/>
+            <MenuItem x:Name="ContextAddAnchor" Header="中間点追加" Click="ContextAddAnchor_Click" Background="Transparent"/>
+            <MenuItem x:Name="ContextAddAnchorExtend" Header="端点追加" Click="ContextAddAnchorExtend_Click"/>-->
+          </ContextMenu>
+        </Canvas.ContextMenu>
       </Canvas>
+      <!--テスト用Canvasここまで-->
 
     </Grid>
     <TabControl Grid.Row="1" Grid.Column="0" x:Name="MyTabControl" TabStripPlacement="Top">
@@ -391,22 +500,6 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               </UniformGrid>
             </GroupBox>
 
-            <!--<GroupBox Header="グリッドスナップ移動、対象はActiveThumb">
-              <UniformGrid Rows="1">
-                <Button x:Name="ButtonGoUpGrid" Content="上" Click="ButtonGoUpGrid_Click"/>
-                <Button x:Name="ButtonGoDownGrid" Content="下" Click="ButtonGoDownGrid_Click"/>
-                <Button x:Name="ButtonGoLeftGrid" Content="左" Click="ButtonGoLeftGrid_Click"/>
-                <Button x:Name="ButtonGoRightGrid" Content="右" Click="ButtonGoRightGrid_Click"/>
-              </UniformGrid>
-            </GroupBox>
-            <GroupBox Header="1ピクセル移動、対象はActiveThumb">
-              <UniformGrid Rows="1">
-                <RepeatButton x:Name="Button1Up" Content="上" Click="Button1Up_Click"/>
-                <RepeatButton x:Name="Button1Down" Content="下" Click="Button1Down_Click"/>
-                <RepeatButton x:Name="Button1Left" Content="左" Click="Button1Left_Click"/>
-                <RepeatButton x:Name="Button1Right" Content="右" Click="Button1Right_Click"/>
-              </UniformGrid>
-            </GroupBox>-->
 
           </StackPanel>
         </StackPanel>

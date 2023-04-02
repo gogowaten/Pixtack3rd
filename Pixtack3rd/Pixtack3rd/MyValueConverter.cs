@@ -364,4 +364,116 @@ namespace Pixtack3rd
             throw new NotImplementedException();
         }
     }
+
+
+    public class MyConverterBrush : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            byte a = (byte)(decimal)values[0];
+            byte r = (byte)(decimal)values[1];
+            byte g = (byte)(decimal)values[2];
+            byte b = (byte)(decimal)values[3];
+            return new SolidColorBrush(Color.FromArgb(a, r, g, b));
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            SolidColorBrush brush = (SolidColorBrush)value;
+            object[] array = new object[4];
+            array[0] = brush.Color.A;
+            array[1] = brush.Color.R;
+            array[2] = brush.Color.G;
+            array[3] = brush.Color.B;
+            return array;
+        }
+    }
+    public class MyConverterBrushByte : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            byte a = (byte)values[0];
+            byte r = (byte)values[1];
+            byte g = (byte)values[2];
+            byte b = (byte)values[3];
+            return new SolidColorBrush(Color.FromArgb(a, r, g, b));
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            SolidColorBrush brush = (SolidColorBrush)value;
+            object[] array = new object[4];
+            array[0] = brush.Color.A;
+            array[1] = brush.Color.R;
+            array[2] = brush.Color.G;
+            array[3] = brush.Color.B;
+            return array;
+        }
+    }
+
+    //public class MyConverterBrushColorA : IValueConverter
+    //{
+    //    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        SolidColorBrush brush = (SolidColorBrush)value;
+    //        return brush.Color.A;
+    //    }
+
+    //    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        SolidColorBrush brush = (SolidColorBrush)parameter;
+    //        Color c = brush.Color;
+    //        byte v = (byte)(decimal)value;
+    //        return new SolidColorBrush(Color.FromArgb(v, c.R, c.G, c.B));
+    //    }
+    //}
+    //public class MyConverterBrushColorR : IValueConverter
+    //{
+    //    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        SolidColorBrush brush = (SolidColorBrush)value;
+    //        return brush.Color.R;
+    //    }
+
+    //    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        SolidColorBrush brush = (SolidColorBrush)parameter;
+    //        Color c = brush.Color;
+    //        byte v = (byte)(decimal)value;
+    //        return new SolidColorBrush(Color.FromArgb(c.A, v, c.G, c.B));
+    //    }
+    //}
+    //public class MyConverterBrushColorG : IValueConverter
+    //{
+    //    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        SolidColorBrush brush = (SolidColorBrush)value;
+    //        return brush.Color.G;
+    //    }
+
+    //    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        SolidColorBrush brush = (SolidColorBrush)parameter;
+    //        Color c = brush.Color;
+    //        byte v = (byte)(decimal)value;
+    //        return new SolidColorBrush(Color.FromArgb(c.A, c.R, v, c.B));
+    //    }
+    //}
+    //public class MyConverterBrushColorB : IValueConverter
+    //{
+    //    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        SolidColorBrush brush = (SolidColorBrush)value;
+    //        return brush.Color.B;
+    //    }
+
+    //    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        SolidColorBrush brush = (SolidColorBrush)parameter;
+    //        Color c = brush.Color;
+    //        byte v = (byte)(decimal)value;
+    //        return new SolidColorBrush(Color.FromArgb(c.A, c.R, c.G, v));
+    //    }
+    //}
+
 }
