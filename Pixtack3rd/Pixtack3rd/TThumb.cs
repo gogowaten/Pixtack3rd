@@ -134,7 +134,8 @@ namespace Pixtack3rd
         }
 
 
-        //ショートカットキー
+        #region ショートカットキー
+
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
@@ -248,7 +249,7 @@ namespace Pixtack3rd
                     break;
             }
         }
-
+        #endregion ショートカットキー
 
         //#endregion XYZ移動
         //サイズ変更時には親要素の位置とサイズ更新
@@ -2641,7 +2642,7 @@ namespace Pixtack3rd
             MyCanvas.Children.Add(MyShape);
 
             SetBinding4();
-            
+
             //Loaded時にPointsを関連付け
             //起動時だと早すぎでMyPointsに値が入っていないのでloaded時
             Loaded += TTGeometricShape_Loaded;

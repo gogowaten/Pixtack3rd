@@ -84,6 +84,7 @@ namespace Pixtack3rd
         public AnchorThumb? MyCurrentAnchorThumb { get; private set; }
         #endregion その他プロパティ
 
+        //頂点Thumbの右クリックメニュー、頂点削除
         public ContextMenu MyAnchorContextMenu { get; private set; }
         private MenuItem MyMenuItemRemoveThumb;
 
