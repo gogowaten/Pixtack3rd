@@ -15,6 +15,111 @@ using System.Windows.Input;
 namespace Pixtack3rd
 {
 
+    //How to Create a Resize Adorner in WPF - YouTube
+    //https://www.youtube.com/watch?v=ddVXKMpWGME
+
+
+    //ドラッグ移動中はTTRootでのLayoutUpdateは実行しないで、
+    //ドラッグ移動終了後に実行する
+    public class RangeAdorner : Adorner
+    {
+        VisualCollection MyVisuals;
+        protected override int VisualChildrenCount => MyVisuals.Count;
+        protected override Visual GetVisualChild(int index) => MyVisuals[index];
+
+
+        TwoColorWakuThumb thumbTopL, thumbBotR;
+        TThumb MyTarget;
+        public double ThumbSize { get; private set; } = 30.0;
+
+        public RangeAdorner(TThumb adornedElement) : base(adornedElement)
+        {
+            MyTarget = adornedElement;
+            MyVisuals = new VisualCollection(this);
+            thumbTopL = new TwoColorWakuThumb() { Width = ThumbSize, Height = ThumbSize };
+            thumbBotR = new TwoColorWakuThumb() { Width = ThumbSize, Height = ThumbSize };
+
+            thumbTopL.DragDelta += Thumb1_DragDelta;
+            thumbBotR.DragDelta += Thumb2_DragDelta;
+            thumbTopL.DragCompleted += Thumb1_DragCompleted;
+            thumbBotR.DragCompleted += Thumb1_DragCompleted;
+
+            MyVisuals.Add(thumbTopL);
+            MyVisuals.Add(thumbBotR);
+
+        }
+
+        //ドラッグ移動終了後にLayoutUpdateを実行
+        private void Thumb1_DragCompleted(object sender, DragCompletedEventArgs e)
+        {
+            MyTarget.TTParent?.TTGroupUpdateLayout();
+        }
+
+        private void Thumb2_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+            if (AdornedElement is FrameworkElement elem)
+            {
+                var w = elem.Width + e.HorizontalChange;
+                if (w < 1)
+                {
+                    w = 1;
+                    MyTarget.TTLeft += e.HorizontalChange;
+                }
+
+                elem.Width = w;
+                var h = elem.Height + e.VerticalChange;
+                if (h < 1)
+                {
+                    h = 1;
+                    MyTarget.TTTop += e.VerticalChange;
+                }
+
+                elem.Height = h;
+            }
+        }
+
+        //左上
+        private void Thumb1_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+            //移動中はマイナス座標でも修正しない
+            var w = MyTarget.Width - e.HorizontalChange;
+            if (w < 1) w = 1;
+            MyTarget.Width = w;
+            MyTarget.TTLeft += e.HorizontalChange;
+
+            var h = MyTarget.Height - e.VerticalChange;
+            if (h < 1) h = 1;
+            MyTarget.Height = h;
+            MyTarget.TTTop += e.VerticalChange;
+        }
+
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            double half = ThumbSize / 2.0;
+            thumbTopL.Arrange(new Rect(-ThumbSize / 2.0, -ThumbSize / 2.0, ThumbSize, ThumbSize));
+            thumbBotR.Arrange(new Rect(AdornedElement.DesiredSize.Width - half, AdornedElement.DesiredSize.Height - half, ThumbSize, ThumbSize));
+
+            return base.ArrangeOverride(finalSize);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     /// <summary>
     /// GeometricShape専用アドーナー、頂点座標にThumb表示と制御線も表示
     /// VisualCollectionにはCanvasだけを追加

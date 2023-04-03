@@ -70,7 +70,7 @@ namespace Pixtack3rd
             InitializeComponent();
 
             //右クリックメニューテスト
-            MyTestContextMenu.DataContext = MyRoot;
+            //MyTestContextMenu.DataContext = MyRoot;
 
             MyAppConfig = GetAppConfig(APP_CONFIG_FILE_NAME);
 

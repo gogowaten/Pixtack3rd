@@ -1,3 +1,4 @@
 ﻿TThumbに新しい種類を増やしたときにすること
 	TThumb.csのpublic TThumb BuildThumb(Data data)に種類を追加
-	Data.csのコンストラクタでTypeを追加
+	Data.csのpublic enum TTypeに追加
+	Data.csのコンストラクタでTypeを追加(switch (type)にカーソルを置いてAlt+Enterで欠落ケースを追加)

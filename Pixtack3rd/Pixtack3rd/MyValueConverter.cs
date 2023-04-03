@@ -13,7 +13,7 @@ namespace Pixtack3rd
     class MyValueConverter
     {
     }
-    public class ConverterThickness : IValueConverter
+    public class MyConverterThickness : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -29,7 +29,7 @@ namespace Pixtack3rd
     }
 
     //フォントの斜体
-    public class ConverterFontStyleIsItalic : IValueConverter
+    public class MyConverterFontStyleIsItalic : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -46,7 +46,7 @@ namespace Pixtack3rd
     }
 
     //フォントの太字
-    public class ConverterFontWeightIsBold : IValueConverter
+    public class MyConverterFontWeightIsBold : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -63,7 +63,7 @@ namespace Pixtack3rd
     }
 
     //ARGB各値からSolidBrush作成
-    public class ConverterArgbNumericToBrush : IMultiValueConverter
+    public class MyConverterArgbNumericToBrush : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
@@ -81,7 +81,7 @@ namespace Pixtack3rd
     }
 
     //ColorとSolidBrushの変換＋色反転、テキストボックスのカーソルの色に使用
-    public class ConverterColorSolidBrushNegative : IValueConverter
+    public class MyConverterColorSolidBrushNegative : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -98,7 +98,7 @@ namespace Pixtack3rd
             return negative;
         }
     }
-    public class ConverterColorSolidBrush : IValueConverter
+    public class MyConverterColorSolidBrush : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -113,7 +113,7 @@ namespace Pixtack3rd
         }
     }
 
-    public class ConverterFontFamilyName : IValueConverter
+    public class MyConverterFontFamilyName : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -133,7 +133,7 @@ namespace Pixtack3rd
         }
     }
 
-    public class ConverterWakuBrush : IMultiValueConverter
+    public class MyConverterWakuBrush : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
@@ -162,7 +162,7 @@ namespace Pixtack3rd
             throw new NotImplementedException();
         }
     }
-    public class ConverterWakuBrushForTTGroup : IMultiValueConverter
+    public class MyConverterWakuBrushForTTGroup : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
@@ -210,7 +210,7 @@ namespace Pixtack3rd
     //wpf - How to bind RadioButtons to an enum? - Stack Overflow
     //    https://stackoverflow.com/questions/397556/how-to-bind-radiobuttons-to-an-enum
 
-    public class ConverterEnumToBool : IValueConverter
+    public class MyConverterEnumToBool : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -232,7 +232,7 @@ namespace Pixtack3rd
     }
 
     //表示非表示の切り替え用
-    public class ConverterVisible : IValueConverter
+    public class MyConverterVisible : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -255,7 +255,7 @@ namespace Pixtack3rd
         }
     }
 
-    public class ConverterBoolInverse : IValueConverter
+    public class MyConverterBoolInverse : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
