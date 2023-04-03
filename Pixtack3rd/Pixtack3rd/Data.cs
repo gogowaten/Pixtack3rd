@@ -19,7 +19,7 @@ namespace Pixtack3rd
     {
         None = 0, Root, Group, TextBlock, TextBox, Image, Rectangle,
         //Polyline,
-        Geometric
+        Geometric,Range
     }
 
 
@@ -208,6 +208,8 @@ namespace Pixtack3rd
                 case TType.TextBox:
                     break;
                 case TType.Geometric:
+                    break;
+                case TType.Range:
                     break;
                 default:
                     break;

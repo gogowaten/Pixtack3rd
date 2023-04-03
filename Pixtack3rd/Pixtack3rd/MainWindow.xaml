@@ -12,7 +12,7 @@
         AllowDrop="True" Name="Main">
   <!--フォーカス時の点線を表示しない-->
   <Window.Resources>
-    <local:ConverterArgbNumericToBrush x:Key="color"/>
+    <local:MyConverterArgbNumericToBrush x:Key="color"/>
   </Window.Resources>
 
   <Grid Name="MyGrid">
@@ -270,8 +270,8 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
           <local:TTGeometricShape x:Name="MyTTGermtricShape" MyPoints="50,0 0,100 150,0 120,100" StrokeThickness="20" Stroke="Gold"
                                   MyShapeType="Line" HeadBeginType="None" MyLineClose="False" TTFill="Blue"
                                   TTLeft="100" TTTop="100"/>
-          <!--<local:TTGeometricShape MyPoints="50,0 0,100 100,100 100,0" StrokeThickness="20" Stroke="Red"
-                                  MyShapeType="Line" MyLineSmoothJoin="True" HeadBeginType="Arrow" HeadEndType="Arrow" TTFill="Blue"/>-->
+          <local:TTRange Width="100" Height="100" Background="Black" TTLeft="10" TTTop="100"/>
+          
         </local:TTRoot>
         <!--</Grid>-->
       </ScrollViewer>
@@ -279,12 +279,13 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
       <Canvas Grid.Row="1" Grid.Column="1"
               x:Name="MyDrawCanvas" Visibility="Collapsed"
               Cursor="Cross" Background="Transparent">
+        
       </Canvas>
 
 
 
       <!--テスト用Canvas-->
-      <Canvas Grid.Row="1" Grid.Column="1" Margin="200"
+      <!--<Canvas Grid.Row="1" Grid.Column="1" Margin="200"
               x:Name="MyAnchorPointEditCanvas" Visibility="Visible"
               Background="Transparent">
 
@@ -397,12 +398,12 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               </StackPanel>
             </Grid>
 
-            <!--<Rectangle Width="200" Height="200" Fill="Red"/>
+            --><!--<Rectangle Width="200" Height="200" Fill="Red"/>
             <MenuItem x:Name="ContextAddAnchor" Header="中間点追加" Click="ContextAddAnchor_Click" Background="Transparent"/>
-            <MenuItem x:Name="ContextAddAnchorExtend" Header="端点追加" Click="ContextAddAnchorExtend_Click"/>-->
+            <MenuItem x:Name="ContextAddAnchorExtend" Header="端点追加" Click="ContextAddAnchorExtend_Click"/>--><!--
           </ContextMenu>
         </Canvas.ContextMenu>
-      </Canvas>
+      </Canvas>-->
       <!--テスト用Canvasここまで-->
 
     </Grid>
@@ -731,9 +732,9 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               <Style TargetType="tomato:NumericUpDown">
                 <Setter Property="Margin" Value="1,0"/>
               </Style>
-              <local:ConverterFontWeightIsBold x:Key="isBold"/>
-              <local:ConverterFontStyleIsItalic x:Key="isItalic"/>
-              <local:ConverterThickness x:Key="thickness"/>
+              <local:MyConverterFontWeightIsBold x:Key="isBold"/>
+              <local:MyConverterFontStyleIsItalic x:Key="isItalic"/>
+              <local:MyConverterThickness x:Key="thickness"/>
             </StackPanel.Resources>
             <Grid Height="100">
               <TextBox Text="見本"  HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -895,7 +896,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
 
           <GroupBox Header="枠表示設定">
             <GroupBox.Resources>
-              <local:ConverterEnumToBool x:Key="waku"/>
+              <local:MyConverterEnumToBool x:Key="waku"/>
             </GroupBox.Resources>
             <WrapPanel Name="MyWrap">
               <RadioButton Content="表示しない" IsChecked="{Binding

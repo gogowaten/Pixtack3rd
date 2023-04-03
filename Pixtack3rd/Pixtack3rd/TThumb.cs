@@ -23,6 +23,7 @@ using System.Dynamic;
 using System.Xml.Linq;
 using System.Windows.Ink;
 using ControlLibraryCore20200620;
+using System.Windows.Documents;
 
 namespace Pixtack3rd
 {
@@ -256,7 +257,11 @@ namespace Pixtack3rd
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
             base.OnRenderSizeChanged(sizeInfo);
-            TTParent?.TTGroupUpdateLayout();
+            if (this.Type != TType.Range)
+            {
+                TTParent?.TTGroupUpdateLayout();
+
+            }
         }
 
         protected T? MakeTemplate<T>()
@@ -273,7 +278,7 @@ namespace Pixtack3rd
             mb.Bindings.Add(b2);
             mb.Bindings.Add(b3);
             mb.Bindings.Add(bType);
-            mb.Converter = new ConverterWakuBrush();
+            mb.Converter = new MyConverterWakuBrush();
             mb.ConverterParameter = WakuBrush;
             waku.SetBinding(Rectangle.StrokeProperty, mb);
             waku.SetValue(Panel.ZIndexProperty, 1);
@@ -452,7 +457,7 @@ namespace Pixtack3rd
             SetBinding(TTGridProperty, nameof(Data.Grid));
             //SetBinding(IsVisibleProperty, nameof(data.IsVisiblleThumb));
             Binding myB = new(nameof(data.IsNotVisiblle));
-            myB.Converter = new ConverterVisible();
+            myB.Converter = new MyConverterVisible();
             myB.Mode = BindingMode.TwoWay;
             SetBinding(VisibilityProperty, myB);
 
@@ -495,7 +500,7 @@ namespace Pixtack3rd
             mb.Bindings.Add(b4);
             mb.Bindings.Add(bType);
             mb.ConverterParameter = WakuBrush;
-            mb.Converter = new ConverterWakuBrushForTTGroup();
+            mb.Converter = new MyConverterWakuBrushForTTGroup();
             fWaku.SetBinding(Rectangle.StrokeProperty, mb);
 
             //fWaku.SetValue(Panel.ZIndexProperty, 1);
@@ -1256,6 +1261,9 @@ namespace Pixtack3rd
                 //    break;
                 case TType.Geometric:
                     result = new TTGeometricShape(data);
+                    break;
+                case TType.Range:
+                    result = new TTRange(data);
                     break;
                 //case TType.Polyline2:
                 //result = new TTPolyline(data);
@@ -2254,7 +2262,7 @@ namespace Pixtack3rd
 
             Binding b = new(nameof(data.FontName));
             b.Mode = BindingMode.TwoWay;
-            b.Converter = new ConverterFontFamilyName();
+            b.Converter = new MyConverterFontFamilyName();
             SetBinding(FontFamilyProperty, b);
             MyTemplateElement.SetBinding(FontFamilyProperty, b);
 
@@ -2263,13 +2271,13 @@ namespace Pixtack3rd
             SetBinding(FontSizeProperty, b);
 
             b = new(nameof(data.ForeColor));
-            b.Converter = new ConverterColorSolidBrush();
+            b.Converter = new MyConverterColorSolidBrush();
             b.Mode = BindingMode.TwoWay;
             SetBinding(ForegroundProperty, b);
             MyTemplateElement.SetBinding(ForegroundProperty, b);
 
             b = new(nameof(data.BackColor));
-            b.Converter = new ConverterColorSolidBrush();
+            b.Converter = new MyConverterColorSolidBrush();
             b.Mode = BindingMode.TwoWay;
             SetBinding(BackgroundProperty, b);
             MyTemplateElement.SetBinding(BackgroundProperty, b);
@@ -2280,22 +2288,22 @@ namespace Pixtack3rd
             MyTemplateElement.SetBinding(BorderThicknessProperty, b);
 
             b = new(nameof(data.BorderColor));
-            b.Converter = new ConverterColorSolidBrush();
+            b.Converter = new MyConverterColorSolidBrush();
             b.Mode = BindingMode.TwoWay;
             SetBinding(BorderBrushProperty, b);
             MyTemplateElement.SetBinding(BorderBrushProperty, b);
 
             b = new(nameof(data.BackColor));
-            b.Converter = new ConverterColorSolidBrushNegative();
+            b.Converter = new MyConverterColorSolidBrushNegative();
             b.Mode = BindingMode.TwoWay;
             MyTemplateElement.SetBinding(HutaTextBox.CaretBrushProperty, b);
 
             b = new(nameof(data.IsBold));
-            b.Converter = new ConverterFontWeightIsBold();
+            b.Converter = new MyConverterFontWeightIsBold();
             MyTemplateElement.SetBinding(FontWeightProperty, b);
 
             b = new(nameof(data.IsItalic));
-            b.Converter = new ConverterFontStyleIsItalic();
+            b.Converter = new MyConverterFontStyleIsItalic();
             MyTemplateElement.SetBinding(FontStyleProperty, b);
 
 
@@ -2943,9 +2951,6 @@ namespace Pixtack3rd
             }
         }
 
-        //public readonly Image MyTemplateElement;
-
-
         public TTImage() : this(new Data(TType.Image)) { }
         public TTImage(Data data) : base(data)
         {
@@ -2956,6 +2961,57 @@ namespace Pixtack3rd
 
             MyTemplateElement.SetBinding(Image.SourceProperty, nameof(Data.BitmapSource));
             //MySetXYBinging(this.Data);
+        }
+
+    }
+
+    //範囲選択用TThumb
+    public class TTRange : TThumb
+    {
+        #region 依存関係プロパティ
+
+
+        #endregion 依存関係プロパティ
+
+        public Canvas MyTemplateCanvas { get; private set; }
+
+        public TTRange() : this(new Data(TType.Range)) { }
+        public TTRange(Data data) : base(data)
+        {
+            Data = data;
+            this.DataContext = Data;
+            if (MakeTemplate<Canvas>() is Canvas element) { MyTemplateElement = element; }
+            else { throw new ArgumentException("テンプレート作成できんかった"); }
+            MyTemplateCanvas = (Canvas)MyTemplateElement;
+            Loaded += TTRange_Loaded;
+            Opacity = 0.2;
+
+            //BindingタイミングはLoadedイベントでは遅い、
+            //ModeがTwowayのBindingでもLoadedで実行するとXAMLで指定したものよりDataの初期値が優先される
+            SetMyBindings();
+        }
+
+        private void TTRange_Loaded(object sender, RoutedEventArgs e)
+        {
+
+            AdornerLayer.GetAdornerLayer(this).Add(new RangeAdorner(this));
+        }
+
+        private void SetMyBindings()
+        {
+            SetBinding(BackgroundProperty, new Binding(nameof(Data.BackColor)) { Source = Data, Converter = new MyConverterColorSolidBrush(), Mode = BindingMode.TwoWay });
+            MyTemplateCanvas.SetBinding(BackgroundProperty, new Binding() { Source = this, Path = new PropertyPath(BackgroundProperty), Mode = BindingMode.TwoWay });
+
+
+
+            //Binding b;
+            //b = new(nameof(Data.BackColor));
+            //b.Converter = new MyConverterColorSolidBrush();
+            //b.Mode = BindingMode.TwoWay;
+            //SetBinding(BackgroundProperty, b);
+            //MyTemplateElement.SetBinding(BackgroundProperty, b);
+
+
         }
 
     }
