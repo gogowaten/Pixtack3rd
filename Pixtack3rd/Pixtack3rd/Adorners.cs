@@ -21,6 +21,9 @@ namespace Pixtack3rd
 
     //ドラッグ移動中はTTRootでのLayoutUpdateは実行しないで、
     //ドラッグ移動終了後に実行する
+    /// <summary>
+    /// 範囲選択用ThumbのTTRange専用Adorner、ハンドル形状は○
+    /// </summary>
     public class RangeAdorner : Adorner
     {
         VisualCollection MyVisuals;
@@ -28,76 +31,177 @@ namespace Pixtack3rd
         protected override Visual GetVisualChild(int index) => MyVisuals[index];
 
 
-        TwoColorWakuThumb thumbTopL, thumbBotR;
-        TThumb MyTarget;
+        private readonly TwoColorWakuEllipseThumb thumbTopL, thumbBotR, thumbTopR, thumbBotL, thumbTop, thumbBot, thumbL, thumbR;
+        private readonly TThumb MyTarget;
         public double ThumbSize { get; private set; } = 30.0;
 
         public RangeAdorner(TThumb adornedElement) : base(adornedElement)
         {
             MyTarget = adornedElement;
             MyVisuals = new VisualCollection(this);
-            thumbTopL = new TwoColorWakuThumb() { Width = ThumbSize, Height = ThumbSize };
-            thumbBotR = new TwoColorWakuThumb() { Width = ThumbSize, Height = ThumbSize };
+            thumbTop = new TwoColorWakuEllipseThumb() { Width = ThumbSize, Height = ThumbSize };
+            thumbTopL = new TwoColorWakuEllipseThumb() { Width = ThumbSize, Height = ThumbSize };
+            thumbTopR = new TwoColorWakuEllipseThumb() { Width = ThumbSize, Height = ThumbSize };
+            thumbBot = new TwoColorWakuEllipseThumb() { Width = ThumbSize, Height = ThumbSize };
+            thumbBotL = new TwoColorWakuEllipseThumb() { Width = ThumbSize, Height = ThumbSize };
+            thumbBotR = new TwoColorWakuEllipseThumb() { Width = ThumbSize, Height = ThumbSize };
+            thumbL = new TwoColorWakuEllipseThumb() { Width = ThumbSize, Height = ThumbSize };
+            thumbR = new TwoColorWakuEllipseThumb() { Width = ThumbSize, Height = ThumbSize };
 
-            thumbTopL.DragDelta += Thumb1_DragDelta;
-            thumbBotR.DragDelta += Thumb2_DragDelta;
-            thumbTopL.DragCompleted += Thumb1_DragCompleted;
-            thumbBotR.DragCompleted += Thumb1_DragCompleted;
+            thumbTopL.DragDelta += ThumbTopL_DragDelta;
+            thumbBotR.DragDelta += ThumbBotR_DragDelta;
+            thumbTop.DragDelta += ThumbTop_DragDelta;
+            thumbTopR.DragDelta += ThumbTopR_DragDelta;
+            thumbBot.DragDelta += ThumbBot_DragDelta;
+            thumbBotL.DragDelta += ThumbBotL_DragDelta;
+            thumbL.DragDelta += ThumbL_DragDelta;
+            thumbR.DragDelta += ThumbR_DragDelta;
 
+            thumbTop.DragCompleted += Thumb_DragCompleted;
+            thumbTopL.DragCompleted += Thumb_DragCompleted;
+            thumbTopR.DragCompleted += Thumb_DragCompleted;
+            thumbBot.DragCompleted += Thumb_DragCompleted;
+            thumbBotL.DragCompleted += Thumb_DragCompleted;
+            thumbBotR.DragCompleted += Thumb_DragCompleted;
+            thumbL.DragCompleted += Thumb_DragCompleted;
+            thumbR.DragCompleted += Thumb_DragCompleted;
+
+            MyVisuals.Add(thumbTop);
             MyVisuals.Add(thumbTopL);
+            MyVisuals.Add(thumbTopR);
+            MyVisuals.Add(thumbBot);
+            MyVisuals.Add(thumbBotL);
+            MyVisuals.Add(thumbL);
+            MyVisuals.Add(thumbR);
+            //右下を最後に追加
             MyVisuals.Add(thumbBotR);
 
         }
 
+        #region ドラッグ移動時の動作
+
+        //移動中はマイナス座標でも修正しない
+        /// <summary>
+        /// ハンドルの横移動時に使う
+        /// </summary>
+        /// <param name="horizontalChange"></param>
+        /// <param name="toLeft">左要素のハンドルならtrue指定、右ならfalse</param>
+        private void DeltaHorizontal(double horizontalChange, bool toLeft)
+        {
+            double w;
+            if (toLeft)
+            {
+                w = MyTarget.Width - horizontalChange;
+                MyTarget.TTLeft += horizontalChange;
+            }
+            else
+            {
+                w = MyTarget.Width + horizontalChange;
+                if (w < 1)
+                {
+                    MyTarget.TTLeft += horizontalChange;
+                }
+            }
+            if (w < 1) w = 1;
+            MyTarget.Width = w;
+        }
+        private void DeltaVertical(double verticalChange, bool toTop)
+        {
+            double h;
+            if (toTop)
+            {
+                h = MyTarget.Height - verticalChange;
+                MyTarget.TTTop += verticalChange;
+            }
+            else
+            {
+                h = MyTarget.Height + verticalChange;
+                if (h < 1)
+                {
+                    MyTarget.TTTop += verticalChange;
+                }
+            }
+            if (h < 1) h = 1;
+            MyTarget.Height = h;
+        }
+        //右
+        private void ThumbR_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+            DeltaHorizontal(e.HorizontalChange, false);
+        }
+
+        //左
+        private void ThumbL_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+            DeltaHorizontal(e.HorizontalChange, true);
+        }
+
+        //左下
+        private void ThumbBotL_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+            DeltaHorizontal(e.HorizontalChange, true);
+            DeltaVertical(e.VerticalChange, false);
+        }
+
+        //下
+        private void ThumbBot_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+            DeltaVertical(e.VerticalChange, false);
+        }
+
+        //右上
+        private void ThumbTopR_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+            DeltaVertical(e.VerticalChange, true);
+            DeltaHorizontal(e.HorizontalChange, false);
+        }
+
+        //上
+        private void ThumbTop_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+            DeltaVertical(e.VerticalChange, true);
+        }
+
+        //右下
+        private void ThumbBotR_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+            DeltaHorizontal(e.HorizontalChange, false);
+            DeltaVertical(e.VerticalChange, false);
+        }
+
+        //左上
+        private void ThumbTopL_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+            DeltaHorizontal(e.HorizontalChange, true);
+            DeltaVertical(e.VerticalChange, true);
+        }
+        #endregion ドラッグ移動時の動作
+
         //ドラッグ移動終了後にLayoutUpdateを実行
-        private void Thumb1_DragCompleted(object sender, DragCompletedEventArgs e)
+        private void Thumb_DragCompleted(object sender, DragCompletedEventArgs e)
         {
             MyTarget.TTParent?.TTGroupUpdateLayout();
         }
 
-        private void Thumb2_DragDelta(object sender, DragDeltaEventArgs e)
-        {
-            if (AdornedElement is FrameworkElement elem)
-            {
-                var w = elem.Width + e.HorizontalChange;
-                if (w < 1)
-                {
-                    w = 1;
-                    MyTarget.TTLeft += e.HorizontalChange;
-                }
-
-                elem.Width = w;
-                var h = elem.Height + e.VerticalChange;
-                if (h < 1)
-                {
-                    h = 1;
-                    MyTarget.TTTop += e.VerticalChange;
-                }
-
-                elem.Height = h;
-            }
-        }
-
-        //左上
-        private void Thumb1_DragDelta(object sender, DragDeltaEventArgs e)
-        {
-            //移動中はマイナス座標でも修正しない
-            var w = MyTarget.Width - e.HorizontalChange;
-            if (w < 1) w = 1;
-            MyTarget.Width = w;
-            MyTarget.TTLeft += e.HorizontalChange;
-
-            var h = MyTarget.Height - e.VerticalChange;
-            if (h < 1) h = 1;
-            MyTarget.Height = h;
-            MyTarget.TTTop += e.VerticalChange;
-        }
-
         protected override Size ArrangeOverride(Size finalSize)
         {
-            double half = ThumbSize / 2.0;
-            thumbTopL.Arrange(new Rect(-ThumbSize / 2.0, -ThumbSize / 2.0, ThumbSize, ThumbSize));
-            thumbBotR.Arrange(new Rect(AdornedElement.DesiredSize.Width - half, AdornedElement.DesiredSize.Height - half, ThumbSize, ThumbSize));
+            double tsHalf = ThumbSize / 2.0;
+            double w = AdornedElement.DesiredSize.Width;
+            double h = AdornedElement.DesiredSize.Height;
+
+            double horizontalCenter = (w / 2.0) - tsHalf;
+            double verticalCenter = (h / 2.0) - tsHalf;
+            double horizontalRight = w - tsHalf;
+            double verticalBottom = h - tsHalf;
+            thumbTop.Arrange(new Rect(horizontalCenter, -tsHalf, ThumbSize, ThumbSize));
+            thumbTopL.Arrange(new Rect(-tsHalf, -tsHalf, ThumbSize, ThumbSize));
+            thumbTopR.Arrange(new Rect(horizontalRight, -tsHalf, ThumbSize, ThumbSize));
+            thumbBot.Arrange(new Rect(horizontalCenter, verticalBottom, ThumbSize, ThumbSize));
+            thumbBotL.Arrange(new Rect(-tsHalf, verticalBottom, ThumbSize, ThumbSize));
+            thumbBotR.Arrange(new Rect(horizontalRight, verticalBottom, ThumbSize, ThumbSize));
+            thumbL.Arrange(new Rect(-tsHalf, verticalCenter, ThumbSize, ThumbSize));
+            thumbR.Arrange(new Rect(horizontalRight, verticalCenter, ThumbSize, ThumbSize));
+
 
             return base.ArrangeOverride(finalSize);
         }

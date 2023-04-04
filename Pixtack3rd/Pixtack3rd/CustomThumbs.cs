@@ -16,7 +16,8 @@ namespace Pixtack3rd
     {
     }
 
-    public class TwoColorWakuThumb : Thumb
+    //TemplateをCanvasにして、そこにサイズ違いのEllipseを2つ乗せる
+    public class TwoColorWakuEllipseThumb : Thumb
     {
         #region 依存関係プロパティ
 
@@ -26,7 +27,7 @@ namespace Pixtack3rd
             set { SetValue(MyWakuSotoColorProperty, value); }
         }
         public static readonly DependencyProperty MyWakuSotoColorProperty =
-            DependencyProperty.Register(nameof(MyWakuSotoColor), typeof(Brush), typeof(TwoColorWakuThumb),
+            DependencyProperty.Register(nameof(MyWakuSotoColor), typeof(Brush), typeof(TwoColorWakuEllipseThumb),
                 new FrameworkPropertyMetadata(Brushes.Red,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
@@ -37,7 +38,7 @@ namespace Pixtack3rd
             set { SetValue(MyWakuNakaColorProperty, value); }
         }
         public static readonly DependencyProperty MyWakuNakaColorProperty =
-            DependencyProperty.Register(nameof(MyWakuNakaColor), typeof(Brush), typeof(TwoColorWakuThumb),
+            DependencyProperty.Register(nameof(MyWakuNakaColor), typeof(Brush), typeof(TwoColorWakuEllipseThumb),
                 new FrameworkPropertyMetadata(Brushes.White,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
@@ -47,12 +48,11 @@ namespace Pixtack3rd
 
         #endregion 依存関係プロパティ
 
-        //public Rectangle MyMarker1 { get; private set; } = new();
-        //public Rectangle MyMarker2 { get; private set; } = new();
+        
         public Ellipse MyMarker1 { get; private set; } = new();
         public Ellipse MyMarker2 { get; private set; } = new();
         public Canvas MyCanvas { get; private set; }
-        public TwoColorWakuThumb()
+        public TwoColorWakuEllipseThumb()
         {
             MyCanvas = SetTemplate();
             MyCanvas.Children.Add(MyMarker1);
@@ -100,82 +100,82 @@ namespace Pixtack3rd
 
     //2色の点線枠のThumb
     //塗りつぶしは透明で決め打ち
-    //public class TwoToneWakuThumb : Thumb
-    //{
-    //    #region 依存関係プロパティ
+    public class TwoToneWakuThumb : Thumb
+    {
+        #region 依存関係プロパティ
 
-    //    public Brush MyWakuColor1
-    //    {
-    //        get { return (Brush)GetValue(MyWakuColor1Property); }
-    //        set { SetValue(MyWakuColor1Property, value); }
-    //    }
-    //    public static readonly DependencyProperty MyWakuColor1Property =
-    //        DependencyProperty.Register(nameof(MyWakuColor1), typeof(Brush), typeof(TwoToneWakuThumb),
-    //            new FrameworkPropertyMetadata(Brushes.Red,
-    //                FrameworkPropertyMetadataOptions.AffectsRender |
-    //                FrameworkPropertyMetadataOptions.AffectsMeasure |
-    //                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-    //    public Brush MyWakuColor2
-    //    {
-    //        get { return (Brush)GetValue(MyWakuColor2Property); }
-    //        set { SetValue(MyWakuColor2Property, value); }
-    //    }
-    //    public static readonly DependencyProperty MyWakuColor2Property =
-    //        DependencyProperty.Register(nameof(MyWakuColor2), typeof(Brush), typeof(TwoToneWakuThumb),
-    //            new FrameworkPropertyMetadata(Brushes.White,
-    //                FrameworkPropertyMetadataOptions.AffectsRender |
-    //                FrameworkPropertyMetadataOptions.AffectsMeasure |
-    //                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+        public Brush MyWakuColor1
+        {
+            get { return (Brush)GetValue(MyWakuColor1Property); }
+            set { SetValue(MyWakuColor1Property, value); }
+        }
+        public static readonly DependencyProperty MyWakuColor1Property =
+            DependencyProperty.Register(nameof(MyWakuColor1), typeof(Brush), typeof(TwoToneWakuThumb),
+                new FrameworkPropertyMetadata(Brushes.Red,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+        public Brush MyWakuColor2
+        {
+            get { return (Brush)GetValue(MyWakuColor2Property); }
+            set { SetValue(MyWakuColor2Property, value); }
+        }
+        public static readonly DependencyProperty MyWakuColor2Property =
+            DependencyProperty.Register(nameof(MyWakuColor2), typeof(Brush), typeof(TwoToneWakuThumb),
+                new FrameworkPropertyMetadata(Brushes.White,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-    //    public DoubleCollection MyWakuDash
-    //    {
-    //        get { return (DoubleCollection)GetValue(MyWakuDashProperty); }
-    //        set { SetValue(MyWakuDashProperty, value); }
-    //    }
-    //    public static readonly DependencyProperty MyWakuDashProperty =
-    //        DependencyProperty.Register(nameof(MyWakuDash), typeof(DoubleCollection), typeof(TwoToneWakuThumb),
-    //            new FrameworkPropertyMetadata(new DoubleCollection() { 4.0 },
-    //                FrameworkPropertyMetadataOptions.AffectsRender |
-    //                FrameworkPropertyMetadataOptions.AffectsMeasure |
-    //                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+        public DoubleCollection MyWakuDash
+        {
+            get { return (DoubleCollection)GetValue(MyWakuDashProperty); }
+            set { SetValue(MyWakuDashProperty, value); }
+        }
+        public static readonly DependencyProperty MyWakuDashProperty =
+            DependencyProperty.Register(nameof(MyWakuDash), typeof(DoubleCollection), typeof(TwoToneWakuThumb),
+                new FrameworkPropertyMetadata(new DoubleCollection() { 4.0 },
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-    //    #endregion 依存関係プロパティ
+        #endregion 依存関係プロパティ
 
-    //    public Rectangle MyRect1 { get; private set; } = new();
-    //    public Rectangle MyRect2 { get; private set; } = new();
-    //    public Canvas MyCanvas { get; private set; }
-    //    public TwoToneWakuThumb()
-    //    {
-    //        MyCanvas = SetTemplate();
-    //        MyCanvas.Children.Add(MyRect1);
-    //        MyCanvas.Children.Add(MyRect2);
-    //        MyCanvas.Background = Brushes.Transparent;
-    //        SetMyBindings();
-    //    }
-    //    private Canvas SetTemplate()
-    //    {
-    //        FrameworkElementFactory factory = new(typeof(Canvas), "nemo");
-    //        this.Template = new() { VisualTree = factory };
-    //        this.ApplyTemplate();
-    //        if (Template.FindName("nemo", this) is Canvas panel)
-    //        {
-    //            return panel;
-    //        }
-    //        else throw new ArgumentException();
-    //    }
-    //    private void SetMyBindings()
-    //    {
-    //        //MyCanvas.SetBinding(Canvas.BackgroundProperty, new Binding() { Source = this, Path = new PropertyPath(BackgroundProperty) ,Mode= BindingMode.TwoWay});
+        public Rectangle MyRect1 { get; private set; } = new();
+        public Rectangle MyRect2 { get; private set; } = new();
+        public Canvas MyCanvas { get; private set; }
+        public TwoToneWakuThumb()
+        {
+            MyCanvas = SetTemplate();
+            MyCanvas.Children.Add(MyRect1);
+            MyCanvas.Children.Add(MyRect2);
+            MyCanvas.Background = Brushes.Transparent;
+            SetMyBindings();
+        }
+        private Canvas SetTemplate()
+        {
+            FrameworkElementFactory factory = new(typeof(Canvas), "nemo");
+            this.Template = new() { VisualTree = factory };
+            this.ApplyTemplate();
+            if (Template.FindName("nemo", this) is Canvas panel)
+            {
+                return panel;
+            }
+            else throw new ArgumentException();
+        }
+        private void SetMyBindings()
+        {
+            //MyCanvas.SetBinding(Canvas.BackgroundProperty, new Binding() { Source = this, Path = new PropertyPath(BackgroundProperty) ,Mode= BindingMode.TwoWay});
 
-    //        MyRect1.SetBinding(Rectangle.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(MyWakuColor1Property) });
-    //        MyRect1.SetBinding(Rectangle.WidthProperty, new Binding() { Source = this, Path = new PropertyPath(ActualWidthProperty) });
-    //        MyRect1.SetBinding(Rectangle.HeightProperty, new Binding() { Source = this, Path = new PropertyPath(ActualHeightProperty) });
+            MyRect1.SetBinding(Rectangle.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(MyWakuColor1Property) });
+            MyRect1.SetBinding(Rectangle.WidthProperty, new Binding() { Source = this, Path = new PropertyPath(ActualWidthProperty) });
+            MyRect1.SetBinding(Rectangle.HeightProperty, new Binding() { Source = this, Path = new PropertyPath(ActualHeightProperty) });
 
-    //        MyRect2.SetBinding(Rectangle.WidthProperty, new Binding() { Source = this, Path = new PropertyPath(ActualWidthProperty) });
-    //        MyRect2.SetBinding(Rectangle.HeightProperty, new Binding() { Source = this, Path = new PropertyPath(ActualHeightProperty) });
-    //        MyRect2.SetBinding(Rectangle.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(MyWakuColor2Property) });
-    //        MyRect2.SetBinding(Rectangle.StrokeDashArrayProperty, new Binding() { Source = this, Path = new PropertyPath(MyWakuDashProperty), Mode = BindingMode.TwoWay });
-    //    }
-    //}
+            MyRect2.SetBinding(Rectangle.WidthProperty, new Binding() { Source = this, Path = new PropertyPath(ActualWidthProperty) });
+            MyRect2.SetBinding(Rectangle.HeightProperty, new Binding() { Source = this, Path = new PropertyPath(ActualHeightProperty) });
+            MyRect2.SetBinding(Rectangle.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(MyWakuColor2Property) });
+            MyRect2.SetBinding(Rectangle.StrokeDashArrayProperty, new Binding() { Source = this, Path = new PropertyPath(MyWakuDashProperty), Mode = BindingMode.TwoWay });
+        }
+    }
 
 }
