@@ -15,6 +15,23 @@ using System.Windows.Input;
 namespace Pixtack3rd
 {
 
+    public class RangeTransparentAdorner : Adorner
+    {
+        VisualCollection MyVisuals;
+        protected override int VisualChildrenCount => MyVisuals.Count;
+        protected override Visual GetVisualChild(int index) => MyVisuals[index];
+        private readonly TTRange MyTarget;
+        private readonly TransparentThumb thumbTopL, thumbBotR, thumbTopR, thumbBotL, thumbTop, thumbBot, thumbL, thumbR;
+
+        public RangeTransparentAdorner(TTRange adornedElement) : base(adornedElement)
+        {
+            MyTarget = adornedElement;
+            MyVisuals = new VisualCollection(this);
+
+        }
+        
+    }
+
     //How to Create a Resize Adorner in WPF - YouTube
     //https://www.youtube.com/watch?v=ddVXKMpWGME
 
@@ -33,7 +50,22 @@ namespace Pixtack3rd
 
         private readonly TwoColorWakuEllipseThumb thumbTopL, thumbBotR, thumbTopR, thumbBotL, thumbTop, thumbBot, thumbL, thumbR;
         private readonly TThumb MyTarget;
-        public double ThumbSize { get; private set; } = 30.0;
+        //public double ThumbSize { get; private set; } = 30.0;
+
+
+        public double ThumbSize
+        {
+            get { return (double)GetValue(ThumbSizeProperty); }
+            set { SetValue(ThumbSizeProperty, value); }
+        }
+        public static readonly DependencyProperty ThumbSizeProperty =
+            DependencyProperty.Register(nameof(ThumbSize), typeof(double), typeof(RangeAdorner),
+                new FrameworkPropertyMetadata(40.0,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+
 
         public RangeAdorner(TThumb adornedElement) : base(adornedElement)
         {
@@ -76,6 +108,23 @@ namespace Pixtack3rd
             //右下を最後に追加
             MyVisuals.Add(thumbBotR);
 
+            thumbTop.SetBinding(WidthProperty, new Binding() { Source = this, Path = new PropertyPath(ThumbSizeProperty) });
+            thumbTop.SetBinding(HeightProperty, new Binding() { Source = this, Path = new PropertyPath(ThumbSizeProperty) });
+            thumbTopL.SetBinding(WidthProperty, new Binding() { Source = this, Path = new PropertyPath(ThumbSizeProperty) });
+            thumbTopL.SetBinding(HeightProperty, new Binding() { Source = this, Path = new PropertyPath(ThumbSizeProperty) });
+            thumbTopR.SetBinding(WidthProperty, new Binding() { Source = this, Path = new PropertyPath(ThumbSizeProperty) });
+            thumbTopR.SetBinding(HeightProperty, new Binding() { Source = this, Path = new PropertyPath(ThumbSizeProperty) });
+            thumbBot.SetBinding(WidthProperty, new Binding() { Source = this, Path = new PropertyPath(ThumbSizeProperty) });
+            thumbBot.SetBinding(HeightProperty, new Binding() { Source = this, Path = new PropertyPath(ThumbSizeProperty) });
+            thumbBotL.SetBinding(WidthProperty, new Binding() { Source = this, Path = new PropertyPath(ThumbSizeProperty) });
+            thumbBotL.SetBinding(HeightProperty, new Binding() { Source = this, Path = new PropertyPath(ThumbSizeProperty) });
+            thumbBotR.SetBinding(WidthProperty, new Binding() { Source = this, Path = new PropertyPath(ThumbSizeProperty) });
+            thumbBotR.SetBinding(HeightProperty, new Binding() { Source = this, Path = new PropertyPath(ThumbSizeProperty) });
+            thumbR.SetBinding(WidthProperty, new Binding() { Source = this, Path = new PropertyPath(ThumbSizeProperty) });
+            thumbR.SetBinding(HeightProperty, new Binding() { Source = this, Path = new PropertyPath(ThumbSizeProperty) });
+            thumbL.SetBinding(WidthProperty, new Binding() { Source = this, Path = new PropertyPath(ThumbSizeProperty) });
+            thumbL.SetBinding(HeightProperty, new Binding() { Source = this, Path = new PropertyPath(ThumbSizeProperty) });
+            
         }
 
         #region ドラッグ移動時の動作

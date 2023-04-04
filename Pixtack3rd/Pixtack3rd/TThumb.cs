@@ -2993,8 +2993,8 @@ namespace Pixtack3rd
 
         private void TTRange_Loaded(object sender, RoutedEventArgs e)
         {
-
-            AdornerLayer.GetAdornerLayer(this).Add(new RangeAdorner(this));
+            RangeAdorner rangeAdorner = new(this) { ThumbSize = 20.0 };
+            AdornerLayer.GetAdornerLayer(this).Add(rangeAdorner);
         }
 
         private void SetMyBindings()

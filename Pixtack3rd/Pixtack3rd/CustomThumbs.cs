@@ -16,6 +16,30 @@ namespace Pixtack3rd
     {
     }
 
+    /// <summary>
+    /// BorderをTemplateにした透明色のThumb
+    /// </summary>
+    public class TransparentThumb : Thumb
+    {
+        public Border MyTemplateBorder { get; private set; }
+        public TransparentThumb()
+        {
+            MyTemplateBorder = SetTemplate();
+            MyTemplateBorder.Background = Brushes.Transparent;
+        }
+        private Border SetTemplate()
+        {
+            FrameworkElementFactory factory = new(typeof(Border), "nemo");
+            Template = new() { VisualTree = factory };
+            if (Template.FindName("nemo", this) is Border border)
+            {
+                return border;
+            }
+            else throw new Exception();
+        }
+    }
+
+
     //TemplateをCanvasにして、そこにサイズ違いのEllipseを2つ乗せる
     public class TwoColorWakuEllipseThumb : Thumb
     {
@@ -28,7 +52,7 @@ namespace Pixtack3rd
         }
         public static readonly DependencyProperty MyWakuSotoColorProperty =
             DependencyProperty.Register(nameof(MyWakuSotoColor), typeof(Brush), typeof(TwoColorWakuEllipseThumb),
-                new FrameworkPropertyMetadata(Brushes.Red,
+                new FrameworkPropertyMetadata(Brushes.White,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
@@ -39,7 +63,7 @@ namespace Pixtack3rd
         }
         public static readonly DependencyProperty MyWakuNakaColorProperty =
             DependencyProperty.Register(nameof(MyWakuNakaColor), typeof(Brush), typeof(TwoColorWakuEllipseThumb),
-                new FrameworkPropertyMetadata(Brushes.White,
+                new FrameworkPropertyMetadata(Brushes.Red,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
@@ -48,7 +72,7 @@ namespace Pixtack3rd
 
         #endregion 依存関係プロパティ
 
-        
+
         public Ellipse MyMarker1 { get; private set; } = new();
         public Ellipse MyMarker2 { get; private set; } = new();
         public Canvas MyCanvas { get; private set; }
@@ -57,7 +81,8 @@ namespace Pixtack3rd
             MyCanvas = SetTemplate();
             MyCanvas.Children.Add(MyMarker1);
             MyCanvas.Children.Add(MyMarker2);
-            
+            MyMarker1.StrokeThickness = 2;
+
             MyCanvas.Background = Brushes.Transparent;
             SetMyBindings();
             Loaded += TwoColorWakuThumb_Loaded;
@@ -65,10 +90,10 @@ namespace Pixtack3rd
 
         private void TwoColorWakuThumb_Loaded(object sender, RoutedEventArgs e)
         {
-            MyMarker2.Height = MyMarker1.Height - 2;
-            MyMarker2.Width = MyMarker1.Width - 2;
-            Canvas.SetLeft(MyMarker2, 1);
-            Canvas.SetTop(MyMarker2, 1);
+            //MyMarker2.Height = MyMarker1.Height - 2;
+            //MyMarker2.Width = MyMarker1.Width - 2;
+            //Canvas.SetLeft(MyMarker2, 1);
+            //Canvas.SetTop(MyMarker2, 1);
         }
 
         private Canvas SetTemplate()
@@ -91,8 +116,8 @@ namespace Pixtack3rd
             MyMarker1.SetBinding(Rectangle.HeightProperty, new Binding() { Source = this, Path = new PropertyPath(ActualHeightProperty) });
 
             MyMarker2.SetBinding(Rectangle.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(MyWakuNakaColorProperty) });
-            //MyRect2.SetBinding(Rectangle.WidthProperty, new Binding() { Source = this, Path = new PropertyPath(ActualWidthProperty) });
-            //MyRect2.SetBinding(Rectangle.HeightProperty, new Binding() { Source = this, Path = new PropertyPath(ActualHeightProperty) });
+            MyMarker2.SetBinding(Rectangle.WidthProperty, new Binding() { Source = this, Path = new PropertyPath(ActualWidthProperty) });
+            MyMarker2.SetBinding(Rectangle.HeightProperty, new Binding() { Source = this, Path = new PropertyPath(ActualHeightProperty) });
 
         }
     }
