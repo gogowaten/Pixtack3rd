@@ -231,7 +231,7 @@ namespace Pixtack3rd
         }
     }
 
-    //表示非表示の切り替え用
+    //表示非表示の切り替え用、見た目だけ隠す
     public class MyConverterVisible : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -240,6 +240,29 @@ namespace Pixtack3rd
             if (bb)
             {
                 return Visibility.Hidden;
+            }
+            else
+            {
+                return Visibility.Visible;
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            Visibility vi = (Visibility)value;
+            if (vi == Visibility.Visible) { return false; }
+            else { return true; }
+        }
+    }
+    //表示非表示の切り替え用、サイズ自体も隠す
+    public class MyConverterVisibleCollapsed : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            bool bb = (bool)value;
+            if (bb)
+            {
+                return Visibility.Collapsed;
             }
             else
             {

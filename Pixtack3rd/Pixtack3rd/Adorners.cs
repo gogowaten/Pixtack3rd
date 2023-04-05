@@ -15,22 +15,22 @@ using System.Windows.Input;
 namespace Pixtack3rd
 {
 
-    public class RangeTransparentAdorner : Adorner
-    {
-        VisualCollection MyVisuals;
-        protected override int VisualChildrenCount => MyVisuals.Count;
-        protected override Visual GetVisualChild(int index) => MyVisuals[index];
-        private readonly TTRange MyTarget;
-        private readonly TransparentThumb thumbTopL, thumbBotR, thumbTopR, thumbBotL, thumbTop, thumbBot, thumbL, thumbR;
+    //public class RangeTransparentAdorner : Adorner
+    //{
+    //    VisualCollection MyVisuals;
+    //    protected override int VisualChildrenCount => MyVisuals.Count;
+    //    protected override Visual GetVisualChild(int index) => MyVisuals[index];
+    //    private readonly TTRange MyTarget;
+    //    private readonly TransparentThumb thumbTopL, thumbBotR, thumbTopR, thumbBotL, thumbTop, thumbBot, thumbL, thumbR;
 
-        public RangeTransparentAdorner(TTRange adornedElement) : base(adornedElement)
-        {
-            MyTarget = adornedElement;
-            MyVisuals = new VisualCollection(this);
+    //    public RangeTransparentAdorner(TTRange adornedElement) : base(adornedElement)
+    //    {
+    //        MyTarget = adornedElement;
+    //        MyVisuals = new VisualCollection(this);
 
-        }
+    //    }
         
-    }
+    //}
 
     //How to Create a Resize Adorner in WPF - YouTube
     //https://www.youtube.com/watch?v=ddVXKMpWGME
@@ -124,7 +124,10 @@ namespace Pixtack3rd
             thumbR.SetBinding(HeightProperty, new Binding() { Source = this, Path = new PropertyPath(ThumbSizeProperty) });
             thumbL.SetBinding(WidthProperty, new Binding() { Source = this, Path = new PropertyPath(ThumbSizeProperty) });
             thumbL.SetBinding(HeightProperty, new Binding() { Source = this, Path = new PropertyPath(ThumbSizeProperty) });
-            
+
+            ContextMenu context = new();
+            this.ContextMenu = context;
+            context.Items.Add(new MenuItem() { Header = "test" });
         }
 
         #region ドラッグ移動時の動作

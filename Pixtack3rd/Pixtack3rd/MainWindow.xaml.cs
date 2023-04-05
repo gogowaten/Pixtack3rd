@@ -1100,7 +1100,7 @@ namespace Pixtack3rd
         //    return true;
         //}
 
-        private bool SaveBitmap2(BitmapSource bitmap)
+        public bool SaveBitmap2(BitmapSource bitmap)
         {
             Microsoft.Win32.SaveFileDialog dialog = new()
             {
@@ -2382,6 +2382,15 @@ namespace Pixtack3rd
 
         private void ContextAddAnchor_Click(object sender, RoutedEventArgs e)
         {
+
+        }
+
+        //範囲選択用Thumbの表示
+        private void ButtonAddTTRange_Click(object sender, RoutedEventArgs e)
+        {            
+            MyRoot.TTRangeVisible();
+            MyScrollViewer.ScrollToHorizontalOffset(MyRoot.MyTTRange.TTLeft);
+            MyScrollViewer.ScrollToVerticalOffset(MyRoot.MyTTRange.TTTop);
 
         }
     }
