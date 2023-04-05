@@ -270,8 +270,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
           <local:TTGeometricShape x:Name="MyTTGermtricShape" MyPoints="50,0 0,100 150,0 120,100" StrokeThickness="20" Stroke="Gold"
                                   MyShapeType="Line" HeadBeginType="None" MyLineClose="False" TTFill="Blue"
                                   TTLeft="100" TTTop="100"/>
-          <local:TTRange Width="100" Height="100" Background="Black" TTLeft="10" TTTop="50"/>
-          
+
         </local:TTRoot>
         <!--</Grid>-->
       </ScrollViewer>
@@ -279,7 +278,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
       <Canvas Grid.Row="1" Grid.Column="1"
               x:Name="MyDrawCanvas" Visibility="Collapsed"
               Cursor="Cross" Background="Transparent">
-        
+
       </Canvas>
 
 
@@ -398,9 +397,11 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               </StackPanel>
             </Grid>
 
-            --><!--<Rectangle Width="200" Height="200" Fill="Red"/>
+            -->
+      <!--<Rectangle Width="200" Height="200" Fill="Red"/>
             <MenuItem x:Name="ContextAddAnchor" Header="中間点追加" Click="ContextAddAnchor_Click" Background="Transparent"/>
-            <MenuItem x:Name="ContextAddAnchorExtend" Header="端点追加" Click="ContextAddAnchorExtend_Click"/>--><!--
+            <MenuItem x:Name="ContextAddAnchorExtend" Header="端点追加" Click="ContextAddAnchorExtend_Click"/>-->
+      <!--
           </ContextMenu>
         </Canvas.ContextMenu>
       </Canvas>-->
@@ -882,52 +883,61 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
       </TabItem>
 
       <TabItem Header="その他">
-        <ScrollViewer>
-          <StackPanel>            
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <StackPanel DataContext="{Binding ElementName=MyRoot, Path=MyTTRange.Data}">
             <Button Content="範囲選択用Thumb表示" Click="ButtonAddTTRange_Click"/>
+            <Button Content="ClicedThumbからサイズ取得" Click="ButtonSetNumeSizeClickedThumb_Click"/>
+            <Button Content="ActiveThumbからサイズ取得" Click="ButtonSetNumeSizeActiveThumb_Click"/>
+            <Button Content="ActiveGroupからサイズ取得" Click="ButtonSetNumeSizeActiveGroup_Click"/>
+            <UniformGrid Rows="1">
+              <tomato:NumericUpDown x:Name="MyNumeRangeWidth" MyMinValue="1" MyMaxValue="10000" MyStringFormat="幅 0"
+                                  MyValue="{Binding Width, Mode=TwoWay}" Margin="10,2,10,2"/>
+              <tomato:NumericUpDown x:Name="MyNumeRangeHeight" MyMinValue="1" MyMaxValue="10000" MyStringFormat="高 0"
+                                  MyValue="{Binding Height, Mode=TwoWay}" Margin="10,2,10,2"/>              
+            </UniformGrid>
           </StackPanel>
         </ScrollViewer>
       </TabItem>
-      
-      
+
+
       <TabItem Header="設定" DataContext="{Binding}">
-        <StackPanel>
-          <CheckBox Content="起動時に前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>
-          <CheckBox Content="複数追加時はファイル名昇順ソートで追加する" IsChecked="{Binding IsAscendingSort}"/>
-          <CheckBox Content="ファイルからのThumb追加は最上層にする" IsChecked="{Binding IsAddUpper}">
-            <CheckBox.ToolTip>
-              <TextBlock>
+                <StackPanel>
+                  <CheckBox Content="起動時に前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>
+                  <CheckBox Content="複数追加時はファイル名昇順ソートで追加する" IsChecked="{Binding IsAscendingSort}"/>
+                  <CheckBox Content="ファイルからのThumb追加は最上層にする" IsChecked="{Binding IsAddUpper}">
+                    <CheckBox.ToolTip>
+                      <TextBlock>
                 初期値On、<LineBreak/>
                 複製や貼付け時は常に上層へ追加になる
-              </TextBlock>
-            </CheckBox.ToolTip>
-          </CheckBox>
+                      </TextBlock>
+                    </CheckBox.ToolTip>
+                  </CheckBox>
 
-          <GroupBox Header="枠表示設定">
-            <GroupBox.Resources>
-              <local:MyConverterEnumToBool x:Key="waku"/>
-            </GroupBox.Resources>
-            <WrapPanel Name="MyWrap">
-              <RadioButton Content="表示しない" IsChecked="{Binding
+                  <GroupBox Header="枠表示設定">
+                    <GroupBox.Resources>
+                      <local:MyConverterEnumToBool x:Key="waku"/>
+                    </GroupBox.Resources>
+                    <WrapPanel Name="MyWrap">
+                      <RadioButton Content="表示しない" IsChecked="{Binding
               ConverterParameter={x:Static local:WakuVisibleType.None},
               Path=WakuVisibleType,
               Converter={StaticResource waku}}"/>
-              <RadioButton Content="全部表示" IsChecked="{Binding
+                      <RadioButton Content="全部表示" IsChecked="{Binding
               ConverterParameter={x:Static local:WakuVisibleType.All},
               Path=WakuVisibleType,
               Converter={StaticResource waku}}"/>
-              <RadioButton Content="Group以外表示" IsChecked="{Binding
+                      <RadioButton Content="Group以外表示" IsChecked="{Binding
               ConverterParameter={x:Static local:WakuVisibleType.NotGroup},
               Path=WakuVisibleType,
               Converter={StaticResource waku}}"/>
-              <RadioButton Content="ActiveGroupだけ" IsChecked="{Binding
+                      <RadioButton Content="ActiveGroupだけ" IsChecked="{Binding
               ConverterParameter={x:Static local:WakuVisibleType.OnlyActiveGroup},
               Path=WakuVisibleType,
               Converter={StaticResource waku}}"/>
 
-            </WrapPanel>
-          </GroupBox>
-        </StackPanel>
+                    </WrapPanel>
+                  </GroupBox>
+                </StackPanel>
       </TabItem>
     </TabControl>
   </Grid>

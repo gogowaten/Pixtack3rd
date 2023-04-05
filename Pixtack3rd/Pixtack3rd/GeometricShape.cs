@@ -563,7 +563,7 @@ namespace Pixtack3rd
             {
                 context.DrawGeometry(Stroke, null, pg);
             }
-            RenderTargetBitmap bitmap = new((int)(rect.Width + 1), (int)(rect.Height + 1), 96, 96, PixelFormats.Pbgra32);
+            RenderTargetBitmap bitmap = new((int)Math.Ceiling( rect.Width + 1), (int)Math.Ceiling(rect.Height + 1), 96, 96, PixelFormats.Pbgra32);
             bitmap.Render(dv);
             return bitmap;
         }

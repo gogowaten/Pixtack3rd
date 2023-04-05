@@ -19,7 +19,7 @@ namespace Pixtack3rd
     {
         None = 0, Root, Group, TextBlock, TextBox, Image, Rectangle,
         //Polyline,
-        Geometric,Range
+        Geometric, Range
     }
 
 
@@ -181,6 +181,17 @@ namespace Pixtack3rd
 
 
         #endregion 図形
+
+        #region 範囲選択
+
+        private int _width = 100;
+        [DataMember] public int Width { get => _width; set => SetProperty(ref _width, value); }
+
+        private int _height = 100;
+        [DataMember] public int Height { get => _height; set => SetProperty(ref _height, value); }
+
+        #endregion 範囲選択
+
 
         #endregion 固有
 

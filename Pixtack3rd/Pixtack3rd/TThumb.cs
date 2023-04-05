@@ -31,6 +31,8 @@ namespace Pixtack3rd
     //public enum WakuType { None = 0, Selected, Group, ActiveGroup, Clicked, ActiveThumb }
     public enum WakuVisibleType { None = 0, All, OnlyActiveGroup, NotGroup }
 
+    #region TThumb
+    #endregion TThumb
     [DebuggerDisplay("Type = {" + nameof(Type) + "}")]
     public abstract class TThumb : Thumb, INotifyPropertyChanged
     {
@@ -151,6 +153,7 @@ namespace Pixtack3rd
                             //カーソルキーとPageupdownキーを含むキー操作の後にはe.Handled = true;
                             switch (e.Key)
                             {
+                                //Grid単位で移動
                                 case Key.Up:
                                     root.ActiveThumbGoUpGrid(); e.Handled = true; break;
                                 case Key.Down:
@@ -175,10 +178,11 @@ namespace Pixtack3rd
                     case ModifierKeys.Alt:
                         break;
                     case ModifierKeys.Control:
-                        if (e.Key == Key.Up) { e.Handled = true; }
-                        else if (e.Key == Key.Down) { e.Handled = true; }
-                        else if (e.Key == Key.Left) { e.Handled = true; }
-                        else if (e.Key == Key.Right) { e.Handled = true; }
+                        //カーソルキー、1ピクセル単位で移動
+                        if (e.Key == Key.Up) { root.ActiveThumbGoUp1Pix(); e.Handled = true; }
+                        else if (e.Key == Key.Down) { root.ActiveThumbGoDown1Pix(); e.Handled = true; }
+                        else if (e.Key == Key.Left) { root.ActiveThumbGoLeft1Pix(); e.Handled = true; }
+                        else if (e.Key == Key.Right) { root.ActiveThumbGoRight1Pix(); e.Handled = true; }
                         else if (e.Key == Key.PageUp) { e.Handled = true; }
                         else if (e.Key == Key.PageDown) { e.Handled = true; }
                         else if (e.Key == Key.Home) { root.ChangeActiveGroupToRoot(); e.Handled = true; }//最外
@@ -188,10 +192,11 @@ namespace Pixtack3rd
                         break;
                     case ModifierKeys.Shift:
                         {
-                            if (e.Key == Key.Up) { root.ActiveThumbGoUp1Pix(); e.Handled = true; }
-                            else if (e.Key == Key.Down) { root.ActiveThumbGoDown1Pix(); e.Handled = true; }
-                            else if (e.Key == Key.Left) { root.ActiveThumbGoLeft1Pix(); e.Handled = true; }
-                            else if (e.Key == Key.Right) { root.ActiveThumbGoRight1Pix(); e.Handled = true; }
+                            //カーソルキー、対象がRangeなら1ピクセル単位でサイズ変更
+                            if (e.Key == Key.Up) { root.RangeThumbHeightDown1Pix(); e.Handled = true; }
+                            else if (e.Key == Key.Down) { root.RangeThumbHeightUp1Pix(); e.Handled = true; }
+                            else if (e.Key == Key.Left) { root.RangeThumbWidthDown1Pix(); e.Handled = true; }
+                            else if (e.Key == Key.Right) { root.RangeThumbWidthUp1Pix(); e.Handled = true; }
                             else if (e.Key == Key.PageUp) { e.Handled = true; }
                             else if (e.Key == Key.PageDown) { e.Handled = true; }
                             else if (e.Key == Key.Home) { e.Handled = true; }
@@ -1124,7 +1129,7 @@ namespace Pixtack3rd
             }
         }
 
-        
+
 
 
         //対象のParentがActiveGroupなのかの判定
@@ -1348,7 +1353,7 @@ namespace Pixtack3rd
         /// </summary>
         /// <returns></returns>
         public bool RemoveThumb()
-        {            
+        {
             if (SelectedThumbs == null) return false;
             if (SelectedThumbs.Count == ActiveGroup.Thumbs.Count)
             {
@@ -1911,7 +1916,7 @@ namespace Pixtack3rd
                 context.DrawRectangle(vBrush, null, new Rect(bounds.Size));
             }
             RenderTargetBitmap bitmap
-                = new((int)bounds.Width, (int)bounds.Height, 96.0, 96.0, PixelFormats.Pbgra32);
+                = new((int)Math.Ceiling(bounds.Width), (int)Math.Ceiling(bounds.Height), 96.0, 96.0, PixelFormats.Pbgra32);
             bitmap.Render(dVisual);
 
             //枠表示を元に戻す
@@ -1919,48 +1924,6 @@ namespace Pixtack3rd
 
             return bitmap;
         }
-        /// <summary>
-        /// 要素をBitmapに変換したものを返す
-        /// </summary>
-        /// <param name="el">Bitmapにする要素</param>
-        /// <param name="parentPanel">Bitmapにする要素の親要素</param>
-        /// <returns></returns>
-        //private BitmapSource? MakeBitmapFromThumb(FrameworkElement? el, FrameworkElement? parentPanel)
-        //{
-        //    if (el == null || parentPanel == null) { return null; }
-        //    if (el.ActualHeight == 0 || el.ActualWidth == 0) { return null; }
-
-        //    //枠を一時的に非表示にする
-        //    WakuVisibleType waku = TTWakuVisibleType;
-        //    TTWakuVisibleType = WakuVisibleType.None;
-        //    UpdateLayout();//再描画？これで枠が消える
-
-
-        //    GeneralTransform gt = el.TransformToVisual(parentPanel);
-        //    Rect bounds = gt.TransformBounds(new Rect(0, 0, el.ActualWidth, el.ActualHeight));
-        //    DrawingVisual dVisual = new();
-        //    //var debounds = VisualTreeHelper.GetDescendantBounds(parentPanel);
-        //    //四捨五入しているけど、UselayoutRoundingをtrueにしていたら必要なさそう
-        //    bounds.Width = (int)(bounds.Width + 0.5);
-        //    bounds.Height = (int)(bounds.Height + 0.5);
-
-        //    using (DrawingContext context = dVisual.RenderOpen())
-        //    {
-        //        VisualBrush vBrush = new(el) { Stretch = Stretch.None };
-        //        //context.DrawRectangle(vBrush, null, new Rect(0, 0, bounds.Width, bounds.Height));
-        //        //context.DrawRectangle(vBrush, null, bounds);
-
-        //        context.DrawRectangle(vBrush, null, new Rect(bounds.Size));
-        //    }
-        //    RenderTargetBitmap bitmap
-        //        = new((int)bounds.Width, (int)bounds.Height, 96.0, 96.0, PixelFormats.Pbgra32);
-        //    bitmap.Render(dVisual);
-
-        //    //枠表示を元に戻す
-        //    TTWakuVisibleType = waku;
-
-        //    return bitmap;
-        //}
 
         #endregion 画像として取得
 
@@ -2256,6 +2219,24 @@ namespace Pixtack3rd
             }
             return null;
         }
+
+        public void RangeThumbWidthUp1Pix()
+        {
+            if (MyTTRange == ActiveThumb) MyTTRange.Width++;
+        }
+        public void RangeThumbWidthDown1Pix()
+        {
+            if (MyTTRange.Width > 1 && MyTTRange == ActiveThumb) MyTTRange.Width--;
+        }
+        public void RangeThumbHeightUp1Pix()
+        {
+            if (MyTTRange == ActiveThumb) MyTTRange.Height++;
+        }
+        public void RangeThumbHeightDown1Pix()
+        {
+            if (MyTTRange.Height>1&& MyTTRange == ActiveThumb) MyTTRange.Height--;
+        }
+
         #endregion 範囲選択系
 
     }
@@ -3108,13 +3089,13 @@ namespace Pixtack3rd
             MyRangeAdorner = new RangeAdorner(this) { ThumbSize = 20.0 };
             Loaded += TTRange_Loaded;
             Opacity = 0.2;
-            Width = 100;
-            Height = 100;
             SetMyContextMenu();
 
             //BindingタイミングはLoadedイベントでは遅いので起動時にBinding
             //ModeがTwowayのBindingでもLoadedで実行するとXAMLで指定したものよりDataの初期値が優先される
             SetMyBindings();
+            //Width = 100;
+            //Height = 100;
 
         }
         #endregion コンストラクタ
@@ -3198,7 +3179,7 @@ namespace Pixtack3rd
                 context.DrawRectangle(vb, null, VisualTreeHelper.GetDescendantBounds(MyRoot));
             }
             RenderTargetBitmap bitmap = new(
-                (int)(bounds.Width + 1.0), (int)(bounds.Height + 1.0)
+                (int)Math.Ceiling(bounds.Width), (int)Math.Ceiling(bounds.Height)
                 , 96, 96, PixelFormats.Pbgra32);
             bitmap.Render(dv);
 
@@ -3243,7 +3224,15 @@ namespace Pixtack3rd
             SetBinding(BackgroundProperty, b);
             MyTemplateElement.SetBinding(BackgroundProperty, b);
 
-            
+            b = new(nameof(Data.Width));
+            b.Mode = BindingMode.TwoWay;
+            SetBinding(WidthProperty, b);
+            MyTemplateCanvas.SetBinding(WidthProperty, b);
+            b = new(nameof(Data.Height));
+            b.Mode = BindingMode.TwoWay;
+            SetBinding(HeightProperty, b);
+            MyTemplateCanvas.SetBinding(HeightProperty, b);
+
         }
 
     }

@@ -87,7 +87,7 @@ namespace Pixtack3rd
             Drop += MainWindow_Drop;
             Closed += MainWindow_Closed;
 
-            MyTabControl.SelectedIndex = 3;
+            MyTabControl.SelectedIndex = 4;
 
             //string imagePath = "D:\\ブログ用\\テスト用画像\\collection5.png";
             //string imagePath1 = "D:\\ブログ用\\テスト用画像\\collection4.png";
@@ -2380,19 +2380,46 @@ namespace Pixtack3rd
 
         }
 
-        private void ContextAddAnchor_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
+        #region 範囲選択系
+        
 
         //範囲選択用Thumbの表示
         private void ButtonAddTTRange_Click(object sender, RoutedEventArgs e)
-        {            
+        {
             MyRoot.TTRangeVisible();
             MyScrollViewer.ScrollToHorizontalOffset(MyRoot.MyTTRange.TTLeft);
             MyScrollViewer.ScrollToVerticalOffset(MyRoot.MyTTRange.TTTop);
 
         }
+
+        private void ButtonSetNumeSizeClickedThumb_Click(object sender, RoutedEventArgs e)
+        {
+            SetRangeSize(MyRoot.ClickedThumb);
+        }
+
+        private void ButtonSetNumeSizeActiveThumb_Click(object sender, RoutedEventArgs e)
+        {
+            SetRangeSize(MyRoot.ActiveThumb);
+        }
+        private void SetRangeSize(TThumb? thumb)
+        {
+            if (thumb == null) return;
+            //切り上げで取得
+            MyNumeRangeHeight.MyValue = (int)(Math.Ceiling(thumb.ActualHeight));
+            MyNumeRangeWidth.MyValue = (int)(Math.Ceiling(thumb.ActualWidth));
+        }
+
+        private void ButtonSetNumeSizeActiveGroup_Click(object sender, RoutedEventArgs e)
+        {
+            SetRangeSize(MyRoot.ActiveGroup);
+        }
+        #endregion 範囲選択系
+
+
+
+
+
+
     }
 
 
