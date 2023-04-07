@@ -32,7 +32,7 @@ namespace Pixtack3rd
     public enum WakuVisibleType { None = 0, All, OnlyActiveGroup, NotGroup }
 
     #region TThumb
-    #endregion TThumb
+
     [DebuggerDisplay("Type = {" + nameof(Type) + "}")]
     public abstract class TThumb : Thumb, INotifyPropertyChanged
     {
@@ -371,7 +371,7 @@ namespace Pixtack3rd
         #endregion 枠線ブラシ作成
 
     }
-
+    #endregion TThumb
 
 
     #region TTGroup
@@ -736,6 +736,9 @@ namespace Pixtack3rd
         //選択範囲用の特殊Thumb
         public TTRange MyTTRange { get; private set; } = new(new Data(TType.Range) { BackColor = Color.FromArgb(255, 0, 0, 0) });
 
+        //右クリックメニュー
+        public ContextMenu MyContextMenu { get; private set; } = new();
+
 
         #region コンストラクタ、初期化
 
@@ -744,6 +747,7 @@ namespace Pixtack3rd
 
             _activeGroup ??= this;
             IsActiveGroup = true;
+            ContextMenu = MyContextMenu;//右クリックメニュー
 
             //SetBinding(TTWakuVisibleTypeProperty, new Binding(nameof(WakuVisibleType)) { Source = this });
             //起動直後に位置とサイズ更新
@@ -753,6 +757,8 @@ namespace Pixtack3rd
                 TTGroupUpdateLayout();
                 FixDataDatas();
                 MyMainWindow = GetMainWindow(this);
+                SetMyContextMenu();
+                this.ContextMenuOpening += ContextMenu_ContextMenuOpening;
                 if (SetMyTTRange() is TTRange range) { MyTTRange = range; }
                 else AddThumb(MyTTRange, this);
                 Panel.SetZIndex(MyTTRange, 10);//上に表示
@@ -760,9 +766,15 @@ namespace Pixtack3rd
 
             //Rootにはフォーカスを移動させない
             this.Focusable = false;
+
+
+
+
+
         }
 
 
+        //範囲選択Thumbの取得
         private TTRange? SetMyTTRange()
         {
             foreach (var item in Thumbs)
@@ -771,6 +783,7 @@ namespace Pixtack3rd
             }
             return null;
         }
+
         /// <summary>
         /// MainWindowの取得、Loadedに実行
         /// </summary>
@@ -856,6 +869,59 @@ namespace Pixtack3rd
 
         #endregion コンストラクタ、初期化
 
+
+        #region 右クリックメニュー
+
+        private void ContextMenu_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            foreach (var item in MyContextMenu.Items)
+            {
+                if (item is GroupBox box)
+                {
+                    var name = box.Name;
+                }
+            }
+        }
+
+        private void SetMyContextMenu()
+        {
+            MyContextMenu.Background = new SolidColorBrush(Color.FromArgb(100, 255, 255, 255));
+
+
+            Rectangle border = new() { Width = 100, Height = 100 };
+            MyContextMenu.Items.Add(border);
+
+            VisualBrush vb = new() { Stretch = Stretch.Uniform};
+            BindingOperations.SetBinding(vb, VisualBrush.VisualProperty, new Binding(nameof(ActiveThumb)) { Source = this });
+            //BindingOperations.SetBinding(vb, VisualBrush.VisualProperty, new Binding() { Source = ActiveThumb });
+            border.Fill = vb;
+
+
+            GroupBox box = new() { Header = "画像として", Name = "asImage" };
+            StackPanel stack = new();
+            stack.Children.Add(new MenuItem() { Header = "コピー" });
+            stack.Children.Add(new MenuItem() { Header = "複製" });
+            stack.Children.Add(new MenuItem() { Header = "保存" });
+            stack.Children.Add(new MenuItem() { Header = "グループ化" });
+            stack.Children.Add(new MenuItem() { Header = "グループ解除" });
+            box.Content = stack;
+            MyContextMenu.Items.Add(box);
+
+            MenuItem item;
+            item = new() { Header = "Data複製" };
+            item.Click += (sender, e) => { DuplicateDataSelectedThumbs(); };
+            MyContextMenu.Items.Add(item);
+            item = new() { Header = "Data保存" };
+            MyContextMenu.Items.Add(item);
+            item = new() { Header = "編集開始" };
+            MyContextMenu.Items.Add(item);
+            item = new() { Header = "編集終了" };
+            MyContextMenu.Items.Add(item);
+
+        }
+
+
+        #endregion 右クリックメニュー
 
         #region ドラッグ移動
 
@@ -962,15 +1028,23 @@ namespace Pixtack3rd
         }
 
         //クリックしたとき、ClickedThumbの更新とActiveThumbの更新、SelectedThumbsの更新
-        protected override void OnPreviewMouseLeftButtonDown(MouseButtonEventArgs e)
+        protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
-            base.OnPreviewMouseLeftButtonDown(e);
-
+            base.OnPreviewMouseDown(e);
             //OriginalSourceにテンプレートに使っている要素が入っているので、
             //そのTemplateParentプロパティから目的のThumbが取得できる
             //Clicked更新
             var clicked = GetClickedThumbFromMouseEvent(e.OriginalSource);
             ClickedThumb = clicked;
+
+            //クリックがTTRangeだった場合
+            if (clicked == MyTTRange)
+            {
+                ActiveThumb = MyTTRange;
+                SelectedThumbs.Clear();
+                SelectedThumbs.Add(MyTTRange);
+                return;
+            }
 
             //ClickedからActive取得、今のActiveと違うなら更新
             TThumb? active = GetActiveThumb(clicked);
@@ -1012,14 +1086,15 @@ namespace Pixtack3rd
             }
             else { IsSelectedPreviewMouseDown = false; }
 
-
         }
 
-        //マウスレフトアップ、フラグがあればSelectedThumbsから削除する
-        protected override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
+
+        //マウスアップ、フラグがあればSelectedThumbsから削除する
+        protected override void OnPreviewMouseUp(MouseButtonEventArgs e)
         {
-            //SelectedにTTRangeが含まれていたら削除するのは
-            //TTRangeはグループ化したくないから
+            base.OnPreviewMouseUp(e);
+
+            //SelectedにTTRangeが含まれていたら削除
             if (SelectedThumbs.Count > 1)
             {
                 foreach (var item in SelectedThumbs)
@@ -1030,17 +1105,18 @@ namespace Pixtack3rd
                         break;
                     }
                 }
-            }
-            //
-            if (SelectedThumbs.Count > 1 && IsSelectedPreviewMouseDown && ActiveThumb != null)
-            {
-                SelectedThumbs.Remove(ActiveThumb);//削除
-                IsSelectedPreviewMouseDown = false;//フラグ切り替え
-                ClickedThumb = SelectedThumbs[^1];
-                ActiveThumb = SelectedThumbs[^1];
+                if (IsSelectedPreviewMouseDown && ActiveThumb != null)
+                {
+                    SelectedThumbs.Remove(ActiveThumb);//削除
+                    IsSelectedPreviewMouseDown = false;//フラグ切り替え
+                    ClickedThumb = SelectedThumbs[^1];
+                    ActiveThumb = SelectedThumbs[^1];
+                }
             }
 
         }
+
+
 
         #endregion オーバーライド関連
 
@@ -2234,7 +2310,7 @@ namespace Pixtack3rd
         }
         public void RangeThumbHeightDown1Pix()
         {
-            if (MyTTRange.Height>1&& MyTTRange == ActiveThumb) MyTTRange.Height--;
+            if (MyTTRange.Height > 1 && MyTTRange == ActiveThumb) MyTTRange.Height--;
         }
 
         #endregion 範囲選択系
@@ -3023,6 +3099,7 @@ namespace Pixtack3rd
 
 
 
+    #region TTImage
 
     //画像用TThumb
     public class TTImage : TThumb
@@ -3058,6 +3135,7 @@ namespace Pixtack3rd
         }
 
     }
+    #endregion TTImage
 
     #region 範囲選択用TThumb
     //かなり特殊なTThumb、フィールドにTTRootを持つのは、これで画像として複製や枠の表示切り替えなどを行うため
@@ -3094,8 +3172,6 @@ namespace Pixtack3rd
             //BindingタイミングはLoadedイベントでは遅いので起動時にBinding
             //ModeがTwowayのBindingでもLoadedで実行するとXAMLで指定したものよりDataの初期値が優先される
             SetMyBindings();
-            //Width = 100;
-            //Height = 100;
 
         }
         #endregion コンストラクタ

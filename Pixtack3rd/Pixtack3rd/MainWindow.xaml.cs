@@ -2413,13 +2413,17 @@ namespace Pixtack3rd
         {
             SetRangeSize(MyRoot.ActiveGroup);
         }
+
+
+
+
+
         #endregion 範囲選択系
 
+        private void ContextAddAnchor_Click(object sender, RoutedEventArgs e)
+        {
 
-
-
-
-
+        }
     }
 
 
