@@ -30,6 +30,8 @@ namespace Pixtack3rd
 {
     //public enum WakuType { None = 0, Selected, Group, ActiveGroup, Clicked, ActiveThumb }
     public enum WakuVisibleType { None = 0, All, OnlyActiveGroup, NotGroup }
+    public enum SaveImageType { Png = 0, Jpeg, Bmp, Gif, Tiff }
+
 
     #region TThumb
 
@@ -736,8 +738,8 @@ namespace Pixtack3rd
         //選択範囲用の特殊Thumb
         public TTRange MyTTRange { get; private set; } = new(new Data(TType.Range) { BackColor = Color.FromArgb(255, 0, 0, 0) });
 
-        //右クリックメニュー
-        public ContextMenu MyContextMenu { get; private set; } = new();
+        ////右クリックメニュー
+        //public ContextMenu MyContextMenu { get; private set; } = new();
 
 
         #region コンストラクタ、初期化
@@ -747,7 +749,7 @@ namespace Pixtack3rd
 
             _activeGroup ??= this;
             IsActiveGroup = true;
-            ContextMenu = MyContextMenu;//右クリックメニュー
+            //ContextMenu = MyContextMenu;//右クリックメニュー
 
             //SetBinding(TTWakuVisibleTypeProperty, new Binding(nameof(WakuVisibleType)) { Source = this });
             //起動直後に位置とサイズ更新
@@ -756,9 +758,9 @@ namespace Pixtack3rd
             {
                 TTGroupUpdateLayout();
                 FixDataDatas();
-                MyMainWindow = GetMainWindow(this);
-                SetMyContextMenu();
-                this.ContextMenuOpening += ContextMenu_ContextMenuOpening;
+                //MyMainWindow = GetMainWindow(this);
+                //SetMyContextMenu();
+                //this.ContextMenuOpening += ContextMenu_ContextMenuOpening;
                 if (SetMyTTRange() is TTRange range) { MyTTRange = range; }
                 else AddThumb(MyTTRange, this);
                 Panel.SetZIndex(MyTTRange, 10);//上に表示
@@ -784,17 +786,17 @@ namespace Pixtack3rd
             return null;
         }
 
-        /// <summary>
-        /// MainWindowの取得、Loadedに実行
-        /// </summary>
-        /// <param name="element"></param>
-        /// <returns></returns>
-        private MainWindow? GetMainWindow(FrameworkElement? element)
-        {
-            if (element == null) return null;
-            if (element.Parent is MainWindow main) return main;
-            else return GetMainWindow(element.Parent as FrameworkElement);
-        }
+        ///// <summary>
+        ///// MainWindowの取得、Loadedに実行
+        ///// </summary>
+        ///// <param name="element"></param>
+        ///// <returns></returns>
+        //private MainWindow? GetMainWindow(FrameworkElement? element)
+        //{
+        //    if (element == null) return null;
+        //    if (element.Parent is MainWindow main) return main;
+        //    else return GetMainWindow(element.Parent as FrameworkElement);
+        //}
 
 
         /// <summary>
@@ -872,54 +874,93 @@ namespace Pixtack3rd
 
         #region 右クリックメニュー
 
-        private void ContextMenu_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        //private void ContextMenu_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        //{
+        //    foreach (var item in MyContextMenu.Items)
+        //    {
+        //        if (item is GroupBox box)
+        //        {
+        //            var name = box.Name;
+        //        }
+        //    }
+        //}
+
+        //private void SetMyContextMenu()
+        //{
+        //    MyContextMenu.Background = new SolidColorBrush(Color.FromArgb(100, 255, 255, 255));
+
+
+        //    Rectangle border = new() { Width = 100, Height = 100 };
+        //    MyContextMenu.Items.Add(border);
+
+        //    VisualBrush vb = new() { Stretch = Stretch.Uniform };
+        //    BindingOperations.SetBinding(vb, VisualBrush.VisualProperty, new Binding(nameof(ActiveThumb)) { Source = this });
+        //    //BindingOperations.SetBinding(vb, VisualBrush.VisualProperty, new Binding() { Source = ActiveThumb });
+        //    border.Fill = vb;
+
+
+        //    GroupBox box = new() { Header = "画像として", Name = "asImage" };
+        //    StackPanel stack = new();
+        //    stack.Children.Add(new MenuItem() { Header = "コピー" });
+        //    stack.Children.Add(new MenuItem() { Header = "複製" });
+        //    stack.Children.Add(new MenuItem() { Header = "保存" });
+        //    stack.Children.Add(new MenuItem() { Header = "グループ化" });
+        //    stack.Children.Add(new MenuItem() { Header = "グループ解除" });
+        //    box.Content = stack;
+        //    MyContextMenu.Items.Add(box);
+
+        //    MenuItem item;
+        //    item = new() { Header = "Data複製" };
+        //    item.Click += (sender, e) => { DuplicateDataSelectedThumbs(); };
+        //    MyContextMenu.Items.Add(item);
+        //    item = new() { Header = "Data保存" };
+        //    MyContextMenu.Items.Add(item);
+        //    item = new() { Header = "編集開始" };
+            
+        //    MyContextMenu.Items.Add(item);
+        //    item = new() { Header = "編集終了" };
+        //    MyContextMenu.Items.Add(item);
+
+        //}
+
+        private (BitmapEncoder? encoder, BitmapMetadata? meta) GetEncoderWithMetaData(int filterIndex,SaveImageType type,string software,int jpegQuality=90)
         {
-            foreach (var item in MyContextMenu.Items)
+            BitmapMetadata? meta = null;
+            //string software = APP_NAME + "_" + AppVersion;
+
+            switch (type)
             {
-                if (item is GroupBox box)
-                {
-                    var name = box.Name;
-                }
+                case SaveImageType.Png:
+                    meta = new BitmapMetadata("png");
+                    meta.SetQuery("/tEXt/Software", software);
+                    return (new PngBitmapEncoder(), meta);
+                case SaveImageType.Jpeg:
+                    meta = new BitmapMetadata("jpg");
+                    meta.SetQuery("/app1/ifd/{ushort=305}", software);
+                    var jpeg = new JpegBitmapEncoder
+                    {
+                        QualityLevel = jpegQuality
+                    };
+                    return (jpeg, meta);
+                case SaveImageType.Bmp:
+                    return (new BmpBitmapEncoder(), meta);
+                case SaveImageType.Gif:
+                    meta = new BitmapMetadata("Gif");
+                    //tData.SetQuery("/xmp/xmp:CreatorTool", "Pixtrim2");
+                    //tData.SetQuery("/XMP/XMP:CreatorTool", "Pixtrim2");
+                    meta.SetQuery("/XMP/XMP:CreatorTool", software);
+
+                    return (new GifBitmapEncoder(), meta);
+                case SaveImageType.Tiff:
+                    meta = new BitmapMetadata("tiff")
+                    {
+                        ApplicationName = software
+                    };
+                    return (new TiffBitmapEncoder(), meta);
+                default:
+                    throw new ApplicationException();
             }
         }
-
-        private void SetMyContextMenu()
-        {
-            MyContextMenu.Background = new SolidColorBrush(Color.FromArgb(100, 255, 255, 255));
-
-
-            Rectangle border = new() { Width = 100, Height = 100 };
-            MyContextMenu.Items.Add(border);
-
-            VisualBrush vb = new() { Stretch = Stretch.Uniform};
-            BindingOperations.SetBinding(vb, VisualBrush.VisualProperty, new Binding(nameof(ActiveThumb)) { Source = this });
-            //BindingOperations.SetBinding(vb, VisualBrush.VisualProperty, new Binding() { Source = ActiveThumb });
-            border.Fill = vb;
-
-
-            GroupBox box = new() { Header = "画像として", Name = "asImage" };
-            StackPanel stack = new();
-            stack.Children.Add(new MenuItem() { Header = "コピー" });
-            stack.Children.Add(new MenuItem() { Header = "複製" });
-            stack.Children.Add(new MenuItem() { Header = "保存" });
-            stack.Children.Add(new MenuItem() { Header = "グループ化" });
-            stack.Children.Add(new MenuItem() { Header = "グループ解除" });
-            box.Content = stack;
-            MyContextMenu.Items.Add(box);
-
-            MenuItem item;
-            item = new() { Header = "Data複製" };
-            item.Click += (sender, e) => { DuplicateDataSelectedThumbs(); };
-            MyContextMenu.Items.Add(item);
-            item = new() { Header = "Data保存" };
-            MyContextMenu.Items.Add(item);
-            item = new() { Header = "編集開始" };
-            MyContextMenu.Items.Add(item);
-            item = new() { Header = "編集終了" };
-            MyContextMenu.Items.Add(item);
-
-        }
-
 
         #endregion 右クリックメニュー
 

@@ -61,8 +61,9 @@ namespace Pixtack3rd
         private GeometricShape? MyTempShape;
 
         //
-        private List<AnchorThumb> MyAnchoredThumbs { get; set; } = new();
-
+        //private List<AnchorThumb> MyAnchoredThumbs { get; set; } = new();
+        //右クリックメニュー
+        private ContextMenu MyContextMenu { get; set; } = new();
 
 
         public MainWindow()
@@ -71,6 +72,24 @@ namespace Pixtack3rd
 
             //右クリックメニューテスト
             //MyTestContextMenu.DataContext = MyRoot;
+            MyContextMenu = MakeContextMenu();
+            this.ContextMenuOpening += (o, e) =>
+            {
+                var neko = e.OriginalSource;
+                if (e.Source == MyRoot)
+                {
+                    bool flag = false;
+                    if (ContextMenu == null) flag = true;
+                    ContextMenu = MyContextMenu;
+                    if (flag) { ContextMenu.IsOpen = true; }
+                }
+                else
+                {
+                    //if(ContextMenu != null) { ContextMenu = null; }
+                    ContextMenu = null;
+                    //e.Handled= true;
+                }
+            };
 
             MyAppConfig = GetAppConfig(APP_CONFIG_FILE_NAME);
 
@@ -108,7 +127,41 @@ namespace Pixtack3rd
             MyRoot.ClickedThumbChanging += MyRoot_ClickedThumbChanging;
         }
 
+        private ContextMenu MakeContextMenu()
+        {
+            ContextMenu context = new();
+            Rectangle border = new() { Width = 100, Height = 100 };
+            context.Items.Add(border);
 
+            VisualBrush vb = new() { Stretch = Stretch.Uniform };
+            BindingOperations.SetBinding(vb, VisualBrush.VisualProperty, new Binding(nameof(MyRoot.ActiveThumb)) { Source = this });
+            //BindingOperations.SetBinding(vb, VisualBrush.VisualProperty, new Binding() { Source = ActiveThumb });
+            border.Fill = vb;
+
+
+            GroupBox box = new() { Header = "画像として", Name = "asImage" };
+            StackPanel stack = new();
+            stack.Children.Add(new MenuItem() { Header = "コピー" });
+            stack.Children.Add(new MenuItem() { Header = "複製" });
+            stack.Children.Add(new MenuItem() { Header = "保存" });
+            stack.Children.Add(new MenuItem() { Header = "グループ化" });
+            stack.Children.Add(new MenuItem() { Header = "グループ解除" });
+            box.Content = stack;
+            context.Items.Add(box);
+
+            MenuItem item;
+            item = new() { Header = "Data複製" };
+            item.Click += (sender, e) => { DuplicateDataSelectedThumbs(); };
+            context.Items.Add(item);
+            item = new() { Header = "Data保存" };
+            context.Items.Add(item);
+            item = new() { Header = "編集開始" };
+
+            context.Items.Add(item);
+            item = new() { Header = "編集終了" };
+            context.Items.Add(item);
+            return context;
+        }
 
         #region 初期設定
         /// <summary>
@@ -2381,7 +2434,7 @@ namespace Pixtack3rd
         }
 
         #region 範囲選択系
-        
+
 
         //範囲選択用Thumbの表示
         private void ButtonAddTTRange_Click(object sender, RoutedEventArgs e)
