@@ -64,7 +64,7 @@ namespace Pixtack3rd
         //private List<AnchorThumb> MyAnchoredThumbs { get; set; } = new();
         //右クリックメニュー
         private ContextMenu MyContextMenu { get; set; } = new();
-
+        private ContextMenu ContextMenuForSelected = new();
 
         public MainWindow()
         {
@@ -72,7 +72,10 @@ namespace Pixtack3rd
 
             //右クリックメニューテスト
             //MyTestContextMenu.DataContext = MyRoot;
+            ContextMenuForSelected = MakeContextMenuForSelected();
             MyContextMenu = MakeContextMenu();
+
+
             this.ContextMenuOpening += (o, e) =>
             {
                 var neko = e.OriginalSource;
@@ -80,7 +83,17 @@ namespace Pixtack3rd
                 {
                     bool flag = false;
                     if (ContextMenu == null) flag = true;
-                    ContextMenu = MyContextMenu;
+                    //ContextMenu = MyContextMenu;
+                    //if (flag) { ContextMenu.IsOpen = true; }
+
+                    if (MyRoot.SelectedThumbs.Count >= 2)
+                    {
+                        ContextMenu = ContextMenuForSelected;
+                    }
+                    else
+                    {
+                        ContextMenu = MyContextMenu;
+                    }
                     if (flag) { ContextMenu.IsOpen = true; }
                 }
                 else
@@ -89,6 +102,7 @@ namespace Pixtack3rd
                     ContextMenu = null;
                     //e.Handled= true;
                 }
+                //this.ContextMenu = new AAA();
             };
 
             MyAppConfig = GetAppConfig(APP_CONFIG_FILE_NAME);
@@ -127,41 +141,140 @@ namespace Pixtack3rd
             MyRoot.ClickedThumbChanging += MyRoot_ClickedThumbChanging;
         }
 
+        #region 右クリックメニュー
+
+        //複数選択時用
+        private ContextMenu MakeContextMenuForSelected()
+        {
+            ContextMenu menu = new();
+            MenuItem item;
+            item = new() { Header = "グループ化" }; menu.Items.Add(item);
+            item.Click += (s, e) => { MyRoot.AddGroup(); };
+            item = new() { Header = "画像で複製" }; menu.Items.Add(item);
+            item.Click += (s, e) => { MyRoot.DuplicateImageSelectedThumbs(); };
+            item = new() { Header = "Dataで複製" }; menu.Items.Add(item);
+            item.Click += (s, e) => { MyRoot.DuplicateDataSelectedThumbs(); };
+
+            menu.Items.Add(new Separator() { Height = 10 });
+            item = new() { Header = "削除" }; menu.Items.Add(item);
+            item.Click += (s, e) => { MyRoot.RemoveThumb(); };
+            menu.Items.Add(new Separator() { Height = 10 });
+
+            //item = new() { Header = "Z移動" };
+            menu.Items.Add(MakeMenuItemZMove());
+
+            item = new() { Header = "複数選択解除" }; menu.Items.Add(item);
+            item.Click += (s, e) => { throw new ArgumentException(); };
+
+            return menu;
+        }
+
+        //Z移動サブメニュー
+        private MenuItem MakeMenuItemZMove()
+        {
+            MenuItem item = new() { Header = "Z移動" };
+            item.MouseEnter += (s, e) => { item.IsSubmenuOpen = true; };
+            item.MouseLeave += (s, e) => { item.IsSubmenuOpen = false; };
+            MenuItem subItem;
+            subItem = new() { Header = "最前面" }; item.Items.Add(subItem);
+            subItem.Click += (s, e) => { MyRoot.ZUpFrontMost(); };
+            subItem = new() { Header = "前面" }; item.Items.Add(subItem);
+            subItem.Click += (s, e) => { MyRoot.ZUp(); };
+            subItem = new() { Header = "背面" }; item.Items.Add(subItem);
+            subItem.Click += (s, e) => { MyRoot.ZDown(); };
+            subItem = new() { Header = "再背面" }; item.Items.Add(subItem);
+            subItem.Click += (s, e) => { MyRoot.ZDownBackMost(); };
+            return item;
+        }
+
+        //単数選択用(ActiveThumb、Clicked)
         private ContextMenu MakeContextMenu()
         {
+            TabControl tab = new();
+            tab.MouseWheel += (s, e) =>
+            {
+                int index = tab.SelectedIndex;
+                if (e.Delta > 0 && index < tab.Items.Count - 1)
+                {
+                    tab.SelectedIndex++;
+                }
+                else if (index > 0) { tab.SelectedIndex--; }
+            };
+            tab.Items.Add(MakeTabItemForActiveThumbMenu());
+            tab.Items.Add(MakeTabItemForClickedThumbMenu());
+
             ContextMenu context = new();
-            Rectangle border = new() { Width = 100, Height = 100 };
-            context.Items.Add(border);
-
-            VisualBrush vb = new() { Stretch = Stretch.Uniform };
-            BindingOperations.SetBinding(vb, VisualBrush.VisualProperty, new Binding(nameof(MyRoot.ActiveThumb)) { Source = this });
-            //BindingOperations.SetBinding(vb, VisualBrush.VisualProperty, new Binding() { Source = ActiveThumb });
-            border.Fill = vb;
-
-
-            GroupBox box = new() { Header = "画像として", Name = "asImage" };
-            StackPanel stack = new();
-            stack.Children.Add(new MenuItem() { Header = "コピー" });
-            stack.Children.Add(new MenuItem() { Header = "複製" });
-            stack.Children.Add(new MenuItem() { Header = "保存" });
-            stack.Children.Add(new MenuItem() { Header = "グループ化" });
-            stack.Children.Add(new MenuItem() { Header = "グループ解除" });
-            box.Content = stack;
-            context.Items.Add(box);
-
-            MenuItem item;
-            item = new() { Header = "Data複製" };
-            item.Click += (sender, e) => { DuplicateDataSelectedThumbs(); };
-            context.Items.Add(item);
-            item = new() { Header = "Data保存" };
-            context.Items.Add(item);
-            item = new() { Header = "編集開始" };
-
-            context.Items.Add(item);
-            item = new() { Header = "編集終了" };
-            context.Items.Add(item);
+            context.Items.Add(tab);
             return context;
         }
+
+        //ActiveThumb用
+        private TabItem MakeTabItemForActiveThumbMenu()
+        {
+            StackPanel main = new();
+            //MenuItem main = new();
+            MenuItem item;
+            item = new() { Header = "画像でコピー" }; main.Children.Add(item);
+            item.Click += (s, e) => { MyRoot.CopyImageActiveThumb(); };
+            item = new() { Header = "画像で複製" }; main.Children.Add(item);
+            item.Click += (s, e) => { MyRoot.DuplicateImageSelectedThumbs(); };
+            item = new() { Header = "画像で保存" }; main.Children.Add(item);
+            item = new() { Header = "Dataで複製" }; main.Children.Add(item);
+            item.Click += (s, e) => { MyRoot.DuplicateDataSelectedThumbs(); };
+            item = new() { Header = "Dataで保存" }; main.Children.Add(item);
+
+            item = new() { Header = "削除" }; main.Children.Add(item);
+            item = new() { Header = "編集開始" }; main.Children.Add(item);
+
+            item = new() { Header = "グループ解除" }; main.Children.Add(item);
+            item.Click += (s, e) => { MyRoot.UnGroup(); };
+            item = new() { Header = "IN" }; main.Children.Add(item);
+            item = new() { Header = "OUT" }; main.Children.Add(item);
+
+            //Z移動
+            main.Children.Add(MakeMenuItemZMove());
+
+
+            Rectangle border = new() { Width = 100, Height = 100 };
+            VisualBrush vb = new() { Stretch = Stretch.Uniform };
+            BindingOperations.SetBinding(vb, VisualBrush.VisualProperty, new Binding(nameof(MyRoot.ActiveThumb)) { Source = MyRoot });
+            border.Fill = vb;
+            TabItem ti = new() { Header = border };
+            ti.Content = main;
+            return ti;
+        }
+
+        //Clicked用
+        private TabItem MakeTabItemForClickedThumbMenu()
+        {
+            StackPanel main = new();
+            MenuItem item;
+            item = new() { Header = "画像でコピー" }; main.Children.Add(item);
+            item.Click += (s, e) => { var neko = 0; };
+            item = new() { Header = "画像で複製" }; main.Children.Add(item);
+            item.Click += (s, o) => { };
+            item = new() { Header = "画像で保存" }; main.Children.Add(item);
+
+            item = new() { Header = "Dataで複製" }; main.Children.Add(item);
+            item = new() { Header = "Dataで保存" }; main.Children.Add(item);
+
+            item = new() { Header = "削除" }; main.Children.Add(item);
+            item = new() { Header = "編集開始" }; main.Children.Add(item);
+            //Z移動
+            main.Children.Add(MakeMenuItemZMove());
+
+
+
+            Rectangle border = new() { Width = 100, Height = 100 };
+            VisualBrush vb = new() { Stretch = Stretch.Uniform };
+            BindingOperations.SetBinding(vb, VisualBrush.VisualProperty, new Binding(nameof(MyRoot.ClickedThumb)) { Source = MyRoot });
+            border.Fill = vb;
+            TabItem ti = new() { Header = border };
+            ti.Content = main;
+            return ti;
+        }
+        #endregion 右クリックメニュー
+
 
         #region 初期設定
         /// <summary>
@@ -1719,11 +1832,15 @@ namespace Pixtack3rd
 
             if (MyRoot.GetBitmapActiveThumb() is BitmapSource bitmap)
             {
-                if (SaveBitmap2(bitmap))
-                {
-
-                }
+                if (SaveBitmap2(bitmap)) { }
                 else { MessageBox.Show("保存できなかった"); }
+            }
+        }
+        private void SaveImageActiveThumb()
+        {
+            if(MyRoot.GetBitmapActiveThumb() is BitmapSource bmp)
+            {
+                SaveBitmap2(bmp);
             }
         }
 
@@ -2702,6 +2819,46 @@ namespace Pixtack3rd
         AddPreviewWindowFromClopboard
     }
     #endregion 列挙型
+
+    //public class AAA : ContextMenu
+    //{
+    //    private TabControl TempTabControl;
+    //    public AAA()
+    //    {
+    //        TempTabControl = SetTemplate();
+
+    //        MenuItem menu = new() { Header = "item" };
+    //        menu.PreviewMouseDown += (s, e) =>
+    //        {
+    //            menu.IsSubmenuOpen = true;
+    //        };
+    //        menu.DragOver += (s, e) => { var neko = 0; };
+    //        menu.Items.Add(new MenuItem() { Header = "subitem" });
+    //        menu.Items.Add(new MenuItem() { Header = "subitem2" });
+
+    //        StackPanel stack = new();
+    //        stack.Children.Add(menu);
+
+    //        TabItem tabItem = new() { Header = "tab1" };
+    //        tabItem.Content = stack;
+    //        TempTabControl.Items.Add(tabItem);
+
+
+    //        TempTabControl.Items.Add(new TabItem() { Header = "test1" });
+    //        TempTabControl.Items.Add(new TabItem() { Header = "test2" });
+    //    }
+    //    private TabControl SetTemplate()
+    //    {
+    //        FrameworkElementFactory factory = new(typeof(TabControl), "nemo");
+    //        Template = new() { VisualTree = factory };
+    //        ApplyTemplate();
+    //        if (Template.FindName("nemo", this) is TabControl tab)
+    //        {
+    //            return tab;
+    //        }
+    //        else throw new ArgumentException();
+    //    }
+    //}
 
 
 }
