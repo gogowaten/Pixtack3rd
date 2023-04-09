@@ -219,27 +219,39 @@ namespace Pixtack3rd
             item = new() { Header = "画像で複製" }; main.Children.Add(item);
             item.Click += (s, e) => { MyRoot.DuplicateImageSelectedThumbs(); };
             item = new() { Header = "画像で保存" }; main.Children.Add(item);
+            item.Click += (s, e) => { SaveImageActiveThumb(); };
             item = new() { Header = "Dataで複製" }; main.Children.Add(item);
             item.Click += (s, e) => { MyRoot.DuplicateDataSelectedThumbs(); };
             item = new() { Header = "Dataで保存" }; main.Children.Add(item);
-
+            item.Click += (s, e) => { SaveDataForActiveThumb(); };
             item = new() { Header = "削除" }; main.Children.Add(item);
+            item.Click += (s, e) => { MyRoot.RemoveThumb(); };
             item = new() { Header = "編集開始" }; main.Children.Add(item);
+            item.Click += (s, e) =>
+            {
+                if (MyRoot.ActiveThumb is TTGeometricShape) { ShapeEditStart(); }
+                else if(MyRoot.ActiveThumb is TTGroup) { MyRoot.ChangeActiveGroupInside(); }
+            };
 
             item = new() { Header = "グループ解除" }; main.Children.Add(item);
             item.Click += (s, e) => { MyRoot.UnGroup(); };
             item = new() { Header = "IN" }; main.Children.Add(item);
+            item.Click += (s, e) => { MyRoot.ChangeActiveGroupInside(); };
             item = new() { Header = "OUT" }; main.Children.Add(item);
+            item.Click += (s, e) => { MyRoot.ChangeActiveGroupOutside(); };
 
             //Z移動
             main.Children.Add(MakeMenuItemZMove());
 
 
-            Rectangle border = new() { Width = 100, Height = 100 };
+            Rectangle rect = new() { Width = 100, Height = 100 };
             VisualBrush vb = new() { Stretch = Stretch.Uniform };
             BindingOperations.SetBinding(vb, VisualBrush.VisualProperty, new Binding(nameof(MyRoot.ActiveThumb)) { Source = MyRoot });
-            border.Fill = vb;
-            TabItem ti = new() { Header = border };
+            rect.Fill = vb;
+            StackPanel header = new();
+            header.Children.Add(new TextBlock() { Text = "Active" });
+            header.Children.Add(rect);
+            TabItem ti = new() { Header = header };
             ti.Content = main;
             return ti;
         }
@@ -250,26 +262,42 @@ namespace Pixtack3rd
             StackPanel main = new();
             MenuItem item;
             item = new() { Header = "画像でコピー" }; main.Children.Add(item);
-            item.Click += (s, e) => { var neko = 0; };
-            item = new() { Header = "画像で複製" }; main.Children.Add(item);
-            item.Click += (s, o) => { };
+            item.Click += (s, e) => { MyRoot.CopyImageClickedThumb(); };
+            //item = new() { Header = "画像で複製" }; main.Children.Add(item);
+            //item.Click += (s, o) => { };
             item = new() { Header = "画像で保存" }; main.Children.Add(item);
-
-            item = new() { Header = "Dataで複製" }; main.Children.Add(item);
+            item.Click += (s, e) => { SaveImageClickedThumb(); };
+            //item = new() { Header = "Dataで複製" }; main.Children.Add(item);
+            //item.Click += (s, e) => {  };
             item = new() { Header = "Dataで保存" }; main.Children.Add(item);
-
-            item = new() { Header = "削除" }; main.Children.Add(item);
+            item.Click += (s, e) => { SaveDataForClickedThumb(); };
+            //Clickedに削除はいらない、要素数が2個のグループのときに削除すると
+            //要素数1個のグループになってしまう
+            //item = new() { Header = "削除" }; main.Children.Add(item);
+            //item.Click += (s, e) =>
+            //{
+            //    if (MyRoot.ClickedThumb is TThumb clicked && clicked.TTParent is TTGroup group)
+            //    {
+            //        MyRoot.RemoveThumb(clicked, group);
+            //    }
+            //};
             item = new() { Header = "編集開始" }; main.Children.Add(item);
+            item.Click += (s, e) => { };
             //Z移動
             main.Children.Add(MakeMenuItemZMove());
+            item = new() { Header = "ここまでIN" }; main.Children.Add(item);
+            item.Click += (s, e) => { MyRoot.ChangeActiveGroupInsideClickedParent(); };
+            item = new() { Header = "RootまでOUT" }; main.Children.Add(item);
+            item.Click += (s, e) => { MyRoot.ChangeActiveGroupToRoot(); };
 
-
-
-            Rectangle border = new() { Width = 100, Height = 100 };
+            Rectangle rect = new() { Width = 100, Height = 100 };
             VisualBrush vb = new() { Stretch = Stretch.Uniform };
             BindingOperations.SetBinding(vb, VisualBrush.VisualProperty, new Binding(nameof(MyRoot.ClickedThumb)) { Source = MyRoot });
-            border.Fill = vb;
-            TabItem ti = new() { Header = border };
+            rect.Fill = vb;
+            StackPanel header = new();
+            header.Children.Add(new TextBlock() { Text = "Clicked" });
+            header.Children.Add(rect);
+            TabItem ti = new() { Header = header };
             ti.Content = main;
             return ti;
         }
@@ -1818,27 +1846,30 @@ namespace Pixtack3rd
         //Rootを画像ファイルとして保存
         private void ButtonSaveToImage_Click(object sender, RoutedEventArgs e)
         {
-            if (MyRoot.GetBitmapRoot() is BitmapSource bitmap)
-            {
-                if (SaveBitmap2(bitmap))
-                {
-
-                }
-                else { MessageBox.Show("保存できなかった"); }
-            }
+            SaveImageRootThumb();
+            //if (MyRoot.GetBitmapRoot() is BitmapSource bitmap)
+            //{
+            //    if (SaveBitmap2(bitmap)) { }
+            //    else { MessageBox.Show("保存できなかった"); }
+            //}
         }
+        private void SaveImageRootThumb()
+        {
+            if (MyRoot.GetBitmapRoot() is BitmapSource bmp) { SaveBitmap2(bmp); };
+        }
+
         private void ButtonSaveToImageActive_Click(object sender, RoutedEventArgs e)
         {//ActiveThumb
-
-            if (MyRoot.GetBitmapActiveThumb() is BitmapSource bitmap)
-            {
-                if (SaveBitmap2(bitmap)) { }
-                else { MessageBox.Show("保存できなかった"); }
-            }
+            SaveImageActiveThumb();
+            //if (MyRoot.GetBitmapActiveThumb() is BitmapSource bitmap)
+            //{
+            //    if (SaveBitmap2(bitmap)) { }
+            //    else { MessageBox.Show("保存できなかった"); }
+            //}
         }
         private void SaveImageActiveThumb()
         {
-            if(MyRoot.GetBitmapActiveThumb() is BitmapSource bmp)
+            if (MyRoot.GetBitmapActiveThumb() is BitmapSource bmp)
             {
                 SaveBitmap2(bmp);
             }
@@ -1846,15 +1877,18 @@ namespace Pixtack3rd
 
         private void ButtonSaveToImageClicked_Click(object sender, RoutedEventArgs e)
         {//ClickedThumb
-            if (MyRoot.GetBitmapClickedThumb() is BitmapSource bitmap)
-            {
-                if (SaveBitmap2(bitmap))
-                {
-
-                }
-                else { MessageBox.Show("保存できなかった"); }
-            }
+            SaveImageClickedThumb();
+            //if (MyRoot.GetBitmapClickedThumb() is BitmapSource bitmap)
+            //{
+            //    if (SaveBitmap2(bitmap)) { }
+            //    else { MessageBox.Show("保存できなかった"); }
+            //}
         }
+        private void SaveImageClickedThumb()
+        {
+            if (MyRoot.GetBitmapClickedThumb() is BitmapSource bmp) { SaveBitmap2(bmp); };
+        }
+
         //TTRootのDataとアプリの設定を保存
         private void ButtonSaveData_Click(object sender, RoutedEventArgs e)
         {
@@ -1945,14 +1979,23 @@ namespace Pixtack3rd
 
         private void ButtonSaveCickedThumb_Click(object sender, RoutedEventArgs e)
         {
+            SaveDataForClickedThumb();
+        }
+        //名前をつけてClickedThumbのDataを保存
+        private void SaveDataForClickedThumb()
+        {
             if (MyRoot.ClickedThumb?.Data == null) { return; }
             if (GetSaveDataFilePath(EXTENSION_FILTER_P3D) is string path)
             {
                 SaveRootDataWithConfig(path, MyRoot.ClickedThumb.Data, false);
             }
         }
-
         private void ButtonSaveActiveThumb_Click(object sender, RoutedEventArgs e)
+        {
+            SaveDataForActiveThumb();
+        }
+        //名前をつけてActiveThumbのDataを保存
+        private void SaveDataForActiveThumb()
         {
             if (MyRoot.ActiveThumb?.Data == null) { return; }
             if (GetSaveDataFilePath(EXTENSION_FILTER_P3D) is string path)
