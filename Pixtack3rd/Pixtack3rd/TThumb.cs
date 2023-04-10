@@ -609,6 +609,9 @@ namespace Pixtack3rd
         #region イベント
         //ClickedThumbが変更されるとき発生、引数左がoldvalue、右がnewvalue
         public event Action<TThumb?, TThumb?>? ClickedThumbChanging;
+
+        //ドラッグ移動終了を通知、スクロールバーの位置修正に使用
+        public event Action<TThumb>? ThumbDragCompleted;
         #endregion イベント
 
         #region 通知プロパティ
@@ -916,14 +919,14 @@ namespace Pixtack3rd
         //    item = new() { Header = "Data保存" };
         //    MyContextMenu.Items.Add(item);
         //    item = new() { Header = "編集開始" };
-            
+
         //    MyContextMenu.Items.Add(item);
         //    item = new() { Header = "編集終了" };
         //    MyContextMenu.Items.Add(item);
 
         //}
 
-        private (BitmapEncoder? encoder, BitmapMetadata? meta) GetEncoderWithMetaData(int filterIndex,SaveImageType type,string software,int jpegQuality=90)
+        private (BitmapEncoder? encoder, BitmapMetadata? meta) GetEncoderWithMetaData(int filterIndex, SaveImageType type, string software, int jpegQuality = 90)
         {
             BitmapMetadata? meta = null;
             //string software = APP_NAME + "_" + AppVersion;
@@ -1023,7 +1026,12 @@ namespace Pixtack3rd
         }
         private void Thumb_DragCompleted(object sender, DragCompletedEventArgs e)
         {
-            if (sender is TThumb thumb) { thumb.TTParent?.TTGroupUpdateLayout(); }
+            if (sender is TThumb thumb)
+            {
+                thumb.TTParent?.TTGroupUpdateLayout();
+                //イベント発生通知
+                ThumbDragCompleted?.Invoke(thumb);
+            }
         }
         #endregion ドラッグ移動
 
@@ -1078,33 +1086,50 @@ namespace Pixtack3rd
             var clicked = GetClickedThumbFromMouseEvent(e.OriginalSource);
             ClickedThumb = clicked;
 
-            //クリックがTTRangeだった場合
+
+
+            //クリックがTTRangeだった場合、Selectedをクリア、TTRangeだけにする
             if (clicked == MyTTRange)
             {
                 ActiveThumb = MyTTRange;
                 SelectedThumbs.Clear();
                 SelectedThumbs.Add(MyTTRange);
+                ActiveGroup = this;
                 return;
             }
 
-            //ClickedからActive取得、今のActiveと違うなら更新
-            TThumb? active = GetActiveThumb(clicked);
-            if (active != ActiveThumb)
+            //ActiveThumbの更新
+            //ClickedからActiveThumb取得、nullならRootをActiveGroupに指定
+            //今のActiveThumbと違うなら更新
+            TThumb? newActive = GetActiveThumb(clicked);
+            if (newActive != ActiveThumb)
             {
-                if (active == null && Thumbs.Count != 0) { return; }
-                ActiveThumb = active;
+                if (newActive == null)
+                {
+                    ActiveGroup = this;
+                    ActiveThumb = GetActiveThumb(clicked);
+                    SelectedThumbs.Clear();
+                    if (ActiveThumb != null) SelectedThumbs.Add(ActiveThumb);
+                }
+                else ActiveThumb = newActive;
             }
 
-            //SelectedThumbsの更新
-            //crtlキーが押されている＆ActiveがSelectedに存在なら削除フラグ
-            //crtlキーなし＆SelectedなしならSelectedをクリアしてActiveだけ追加する
-            if (active != null)
+            ////今のActiveGroup内に新Clickedがなければ、ActiveGroupをTTRootに変更
+            //if (IsExistsInActiveGroup(clicked) == false)
+            //{
+            //    ActiveGroup = this;
+            //}
+
+            if (newActive != null)
             {
+                //SelectedThumbsの更新
+                //crtlキーが押されている＆ActiveがSelectedに存在なら削除フラグ
+                //crtlキーなし＆SelectedなしならSelectedをクリアしてActiveだけ追加する
                 if (Keyboard.Modifiers == ModifierKeys.Control)
                 {
-                    if (SelectedThumbs.Contains(active) == false)
+                    if (SelectedThumbs.Contains(newActive) == false)
                     {
-                        SelectedThumbs.Add(active);
+                        SelectedThumbs.Add(newActive);
                         IsSelectedPreviewMouseDown = false;
                     }
                     else
@@ -1117,10 +1142,10 @@ namespace Pixtack3rd
                 }
                 else
                 {
-                    if (SelectedThumbs.Contains(active) == false)
+                    if (SelectedThumbs.Contains(newActive) == false)
                     {
                         SelectedThumbs.Clear();
-                        SelectedThumbs.Add(active);
+                        SelectedThumbs.Add(newActive);
                         IsSelectedPreviewMouseDown = false;
                     }
                 }
@@ -1165,6 +1190,22 @@ namespace Pixtack3rd
 
 
         /// <summary>
+        /// ActiveGroupに対象の存在の有無を返す
+        /// </summary>
+        /// <param name="thumb"></param>
+        /// <returns></returns>
+        private bool IsExistsInActiveGroup(TThumb? thumb)
+        {
+            if (thumb == null) return false;
+            string id = thumb.Data.Guid;
+            foreach (var item in ActiveGroup.Thumbs)
+            {
+                if (item.Data.Guid == id) return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// 画像ファイルからBitmapImageを作成、ファイルロックなし
         /// </summary>
         /// <param name="filePath"></param>
@@ -1183,22 +1224,31 @@ namespace Pixtack3rd
         public void ChangeActiveThumbToFrontThumb()
         {
             if (ActiveThumb == null) return;
-            if (Thumbs[^1] == ActiveThumb) { return; }
-            if (Thumbs.Count == 1) { return; }
-            int ii = Thumbs.IndexOf(ActiveThumb);
-            ActiveThumb = Thumbs[ii + 1];
-            SelectedThumbs.Clear();
-            SelectedThumbs.Add(ActiveThumb);
+            if (ActiveThumb.TTParent is TTGroup parent)
+            {
+                if (parent.Thumbs[^1] == ActiveThumb) { return; }
+                if (parent.Thumbs.Count == 1) { return; }
+                int ii = parent.Thumbs.IndexOf(ActiveThumb);
+                ActiveThumb = parent.Thumbs[ii + 1];
+                SelectedThumbs.Clear();
+                SelectedThumbs.Add(ActiveThumb);
+            }
+
         }
         public void ChangeActiveThumbToBackThumb()
         {
             if (ActiveThumb == null) return;
-            if (Thumbs[0] == ActiveThumb) { return; }
-            if (Thumbs.Count == 1) { return; }
-            int ii = Thumbs.IndexOf(ActiveThumb);
-            ActiveThumb = Thumbs[ii - 1];
-            SelectedThumbs.Clear();
-            SelectedThumbs.Add(ActiveThumb);
+            if (ActiveThumb.TTParent is TTGroup parent)
+            {
+                if (parent.Thumbs[0] == ActiveThumb) return;
+                if (parent.Thumbs.Count == 1) { return; }
+                int ii = parent.Thumbs.IndexOf(ActiveThumb);
+                ActiveThumb = parent.Thumbs[ii - 1];
+                SelectedThumbs.Clear();
+                SelectedThumbs.Add(ActiveThumb);
+
+            }
+
         }
 
 
@@ -1259,7 +1309,7 @@ namespace Pixtack3rd
             return false;
         }
 
-        //起点からActiveThumbを探索取得
+        //起点(通常はClickedThumb)からActiveThumbを探索取得
         //ActiveはActiveThumbのChildrenの中で起点に連なるもの
         private TThumb? GetActiveThumb(TThumb? start)
         {
@@ -1785,6 +1835,15 @@ namespace Pixtack3rd
             ActiveThumb = GetActiveThumb(ClickedThumb);
             SelectedThumbs.Clear();
         }
+
+        //ClickedThumbのParentをActiveGroupに指定する、主に右クリックメニューからの編集開始時に使用
+        public void ChangeActiveGroupFromClickedThumb()
+        {
+            if (ClickedThumb?.TTParent is TTGroup parent)
+            {
+                ActiveGroup = parent;
+            }
+        }
         #endregion ActiveGroupの切り替え
         #region ZIndex
         //ZIndexが同じ場合はThumbsIndexが前後関係になるのを利用して
@@ -1798,6 +1857,7 @@ namespace Pixtack3rd
         /// <returns></returns>
         public bool ZDownBackMost()
         {
+            if (SelectedThumbs.Count == 0) return false;
             //範囲選択用ThumbはZ移動の対象外
             if (SelectedThumbs[0].Type == TType.Range) return false;
             //処理
@@ -1843,6 +1903,7 @@ namespace Pixtack3rd
         /// <returns></returns>
         public bool ZDown(IEnumerable<TThumb> thumbs, TTGroup group)
         {
+            if (group.Thumbs.Count == 0) return false;
             //範囲選択用ThumbはZ移動の対象外
             if (SelectedThumbs[0].Type == TType.Range) return false;
 
@@ -1908,6 +1969,7 @@ namespace Pixtack3rd
         /// <returns></returns>
         public bool ZUpFrontMost()
         {
+            if (SelectedThumbs.Count == 0) return false;
             //範囲選択用ThumbはZ移動の対象外
             if (SelectedThumbs[0].Type == TType.Range) return false;
 
@@ -1922,6 +1984,7 @@ namespace Pixtack3rd
         /// <returns></returns>
         public bool ZUp(IEnumerable<TThumb> thumbs, TTGroup group)
         {
+            if (group.Thumbs.Count == 0) return false;
             //範囲選択用ThumbはZ移動の対象外
             if (SelectedThumbs[0].Type == TType.Range) return false;
             if (IsAllContains(thumbs, group) == false) { return false; }
@@ -2213,6 +2276,7 @@ namespace Pixtack3rd
         /// <returns>複製した個数</returns>
         public int DuplicateDataSelectedThumbs()
         {
+            if (SelectedThumbs.Count == 0) return 0;
             //TTRangeは複製しない
             if (SelectedThumbs[0].Type == TType.Range) return 0;
 
@@ -2438,9 +2502,9 @@ namespace Pixtack3rd
         /// <param name="e"></param>
         private static void OnIsEditChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is TTTextBox ttt && e.NewValue is bool b && b == false)
+            if (d is TTTextBox box && e.NewValue is bool b && b == false)
             {
-                ttt.Focus();
+                box.Focus();
             }
         }
 
