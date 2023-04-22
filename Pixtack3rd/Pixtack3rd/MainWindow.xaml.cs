@@ -86,7 +86,7 @@ namespace Pixtack3rd
             Drop += MainWindow_Drop;
             Closed += MainWindow_Closed;
 
-            MyTabControl.SelectedIndex = 4;
+            MyTabControl.SelectedIndex = 0;
 
             //string imagePath = "D:\\ブログ用\\テスト用画像\\collection5.png";
             //string imagePath1 = "D:\\ブログ用\\テスト用画像\\collection4.png";
@@ -2248,6 +2248,9 @@ namespace Pixtack3rd
 
         private void ButtonTest_Click(object sender, RoutedEventArgs e)
         {
+            ColorWindow cw = new();
+            cw.Show();
+
             var direc = Canvas.GetLeft(MyTTGermtricShape.MyShape);
 
 
