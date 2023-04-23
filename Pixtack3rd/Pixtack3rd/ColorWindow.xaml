@@ -34,22 +34,22 @@
         <nume:NumericUpDown MyMinValue="0" MyMaxValue="360" MySmallChange="1" MyLargeChange="30" MyValue="{Binding ElementName=SV, Path=H}" MyStringFormat="H 000"/>
         <nume:NumericUpDown MyMinValue="0" MyMaxValue="1" MySmallChange="0.01" MyLargeChange="0.1" MyValue="{Binding ElementName=SV, Path=S}" MyStringFormat="S 0.00"/>
         <nume:NumericUpDown MyMinValue="0" MyMaxValue="1" MySmallChange="0.01" MyLargeChange="0.1" MyValue="{Binding ElementName=SV, Path=V}" MyStringFormat="V 0.00"/>
-        <Button Content="決定"/>
-        <Button Content="中止"/>
+       
       </StackPanel>
       <Slider x:Name="MySliderHue" Minimum="0" Maximum="360" SmallChange="1" LargeChange="30" Orientation="Vertical" RenderTransformOrigin="0.5,0.5" Value="{Binding ElementName=SV, Path=H}"/>
         
         <StackPanel>
           <Grid>
             <Rectangle Height="{Binding ElementName=TextBlockSampleColor, Path=ActualWidth}"
-                       Fill="{Binding ElementName=SV, Path=PickColorBrush}"/>
-            <!--<Rectangle Height="10" Fill="{Binding ElementName=SV, Path=PickColorBrush}"/>-->
+                       Fill="{Binding ElementName=MyPicker, Path=PickColorBrush}"/>
           </Grid>
-          <TextBlock x:Name="TextBlockSampleColor" Text="見本" Foreground="{Binding ElementName=SV, Path=PickColorBrush}" Background="White"/>
-          <TextBlock Text="見本" Background="{Binding ElementName=SV, Path=PickColorBrush}" Foreground="White"/>
+          <TextBlock x:Name="TextBlockSampleColor" Text="見本" Foreground="{Binding ElementName=MyPicker, Path=PickColorBrush}" Background="White"/>
+          <TextBlock Text="見本" Background="{Binding ElementName=MyPicker, Path=PickColorBrush}" Foreground="White"/>
+          <Button Content="決定" Click="Button_Click"/>
+          <Button Content="中止" Click="Button_Click_1"/>
         </StackPanel>
         
-        <local:Picker x:Name="SV" Grid.Column="0" Margin="20" Width="{Binding RelativeSource={RelativeSource Mode=Self}, Path=ActualHeight}"/>
+        <local:Picker x:Name="MyPicker" Grid.Column="0" Margin="20" Width="{Binding RelativeSource={RelativeSource Mode=Self}, Path=ActualHeight}"/>
       </StackPanel>
     </Grid>
   </Viewbox>
