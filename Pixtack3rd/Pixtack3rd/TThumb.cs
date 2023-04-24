@@ -3092,7 +3092,7 @@ namespace Pixtack3rd
             DataContext = this.Data;
             //SetBinding(StrokeProperty, nameof(Data.Stroke));
             MultiBinding mb = new();
-            mb.Converter = new MyConverterBrushByte();
+            mb.Converter = new MyConverterARGB2SolidBrush();
             Binding b0 = new(nameof(Data.StrokeA));
             Binding b1 = new(nameof(Data.StrokeR));
             Binding b2 = new(nameof(Data.StrokeG));

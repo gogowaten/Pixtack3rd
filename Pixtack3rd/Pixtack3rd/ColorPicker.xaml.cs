@@ -4,25 +4,22 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Controls.Primitives;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using System.Windows;
 
 namespace Pixtack3rd
 {
-    //2023WPF/Picker.xaml.cs at main · gogowaten/2023WPF
-    //https://github.com/gogowaten/2023WPF/blob/main/20230420_ColorPicker/20230420_ColorPicker/Picker.xaml.cs
-    //これを少し改変
-
-    //WPF、カラーピッカーの土台できた - 午後わてんのブログ
-    //https://gogowaten.hatenablog.com/entry/2023/04/20/164232
-    public class Picker : Grid
+    /// <summary>
+    /// ColorColorPicker.xaml の相互作用ロジック
+    /// </summary>
+    public partial class ColorPicker : Window
     {
         #region 依存関係プロパティ
 
@@ -32,12 +29,11 @@ namespace Pixtack3rd
             set { SetValue(PickColorProperty, value); }
         }
         public static readonly DependencyProperty PickColorProperty =
-            DependencyProperty.Register(nameof(PickColor), typeof(Color), typeof(Picker),
+            DependencyProperty.Register(nameof(PickColor), typeof(Color), typeof(ColorPicker),
                 new FrameworkPropertyMetadata(Color.FromArgb(0, 0, 0, 0),
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
 
         public SolidColorBrush PickColorBrush
         {
@@ -45,7 +41,7 @@ namespace Pixtack3rd
             set { SetValue(PickColorBrushProperty, value); }
         }
         public static readonly DependencyProperty PickColorBrushProperty =
-            DependencyProperty.Register(nameof(PickColorBrush), typeof(SolidColorBrush), typeof(Picker),
+            DependencyProperty.Register(nameof(PickColorBrush), typeof(SolidColorBrush), typeof(ColorPicker),
                 new FrameworkPropertyMetadata(Brushes.Red,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
@@ -58,7 +54,7 @@ namespace Pixtack3rd
         /// <param name="e"></param>
         private static void OnRGB(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is Picker mw)
+            if (d is ColorPicker mw)
             {
                 if (mw.IsHSVChangNow) return;
                 mw.IsRGBChangNow = true;
@@ -75,7 +71,7 @@ namespace Pixtack3rd
         /// <param name="e"></param>
         private static void OnHSV(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is Picker mw)
+            if (d is ColorPicker mw)
             {
                 if (mw.IsRGBChangNow) return;
                 mw.IsHSVChangNow = true;
@@ -85,7 +81,7 @@ namespace Pixtack3rd
         }
         private static void OnHue(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is Picker mw)
+            if (d is ColorPicker mw)
             {
                 if (mw.IsRGBChangNow) return;
                 mw.IsHSVChangNow = true;
@@ -101,7 +97,7 @@ namespace Pixtack3rd
             set { SetValue(RProperty, value); }
         }
         public static readonly DependencyProperty RProperty =
-            DependencyProperty.Register(nameof(R), typeof(byte), typeof(Picker),
+            DependencyProperty.Register(nameof(R), typeof(byte), typeof(ColorPicker),
                 new FrameworkPropertyMetadata(byte.MinValue,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
@@ -115,7 +111,7 @@ namespace Pixtack3rd
             set { SetValue(GProperty, value); }
         }
         public static readonly DependencyProperty GProperty =
-            DependencyProperty.Register(nameof(G), typeof(byte), typeof(Picker),
+            DependencyProperty.Register(nameof(G), typeof(byte), typeof(ColorPicker),
                 new FrameworkPropertyMetadata(byte.MinValue,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
@@ -128,7 +124,7 @@ namespace Pixtack3rd
             set { SetValue(BProperty, value); }
         }
         public static readonly DependencyProperty BProperty =
-            DependencyProperty.Register(nameof(B), typeof(byte), typeof(Picker),
+            DependencyProperty.Register(nameof(B), typeof(byte), typeof(ColorPicker),
                 new FrameworkPropertyMetadata(byte.MinValue,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
@@ -141,7 +137,7 @@ namespace Pixtack3rd
             set { SetValue(AProperty, value); }
         }
         public static readonly DependencyProperty AProperty =
-            DependencyProperty.Register(nameof(A), typeof(byte), typeof(Picker),
+            DependencyProperty.Register(nameof(A), typeof(byte), typeof(ColorPicker),
                 new FrameworkPropertyMetadata(byte.MinValue,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
@@ -153,7 +149,7 @@ namespace Pixtack3rd
             set { SetValue(HProperty, value); }
         }
         public static readonly DependencyProperty HProperty =
-            DependencyProperty.Register(nameof(H), typeof(double), typeof(Picker),
+            DependencyProperty.Register(nameof(H), typeof(double), typeof(ColorPicker),
                 new FrameworkPropertyMetadata(0.0,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
@@ -165,7 +161,7 @@ namespace Pixtack3rd
             set { SetValue(SProperty, value); }
         }
         public static readonly DependencyProperty SProperty =
-            DependencyProperty.Register(nameof(S), typeof(double), typeof(Picker),
+            DependencyProperty.Register(nameof(S), typeof(double), typeof(ColorPicker),
                 new FrameworkPropertyMetadata(0.0,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
@@ -178,7 +174,7 @@ namespace Pixtack3rd
             set { SetValue(VProperty, value); }
         }
         public static readonly DependencyProperty VProperty =
-            DependencyProperty.Register(nameof(V), typeof(double), typeof(Picker),
+            DependencyProperty.Register(nameof(V), typeof(double), typeof(ColorPicker),
                 new FrameworkPropertyMetadata(0.0,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
@@ -192,7 +188,7 @@ namespace Pixtack3rd
             set { SetValue(MarkerSizeProperty, value); }
         }
         public static readonly DependencyProperty MarkerSizeProperty =
-            DependencyProperty.Register(nameof(MarkerSize), typeof(double), typeof(Picker),
+            DependencyProperty.Register(nameof(MarkerSize), typeof(double), typeof(ColorPicker),
                 new FrameworkPropertyMetadata(20.0,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
@@ -203,55 +199,47 @@ namespace Pixtack3rd
         ////無限ループ防止用フラグ
         private bool IsRGBChangNow;
         private bool IsHSVChangNow;
-        public Marker Marker { get; private set; }
+        public Marker MyMarker { get; set; }
         //SVimageのBitmapSourceのサイズは16あれば十分？
         private readonly int SVBitmapSize = 16;
         public WriteableBitmap SVWriteableBitmap { get; private set; }
         public byte[] SVPixels { get; private set; }
         private readonly int SVStride;
-        private readonly Image MyImageSV;
+
 
         #region コンストラクタ
-        public Picker()
+
+        public ColorPicker()
         {
-            //InitializeComponent();
-            MyImageSV = new Image();
-            this.Children.Add(MyImageSV);
+            InitializeComponent();
 
             //SV画像のSourceはWriterableBitmap、これのPixelsを書き換えるようにした
             //PixelFormats.Rgb24の1ピクセルあたりのbyte数は24/8=3
             SVStride = SVBitmapSize * 3;
-            Marker = new Marker(MyImageSV);
+            MyMarker = new Marker(MyImageSV);
             SVPixels = new byte[SVBitmapSize * SVStride];
             SVWriteableBitmap = new(SVBitmapSize, SVBitmapSize, 96, 96, PixelFormats.Rgb24, null);
             MyImageSV.Source = SVWriteableBitmap;
 
             DataContext = this;
-
             SetMyBindings();
             SetMarkerBinding();
             MyImageSV.Stretch = Stretch.Fill;
 
+            //初期色は赤
             PickColor = Color.FromArgb(255, 255, 0, 0);
-
-
-            //PickColor = Color.FromArgb(200, 100, 202, 52);
             Loaded += Picker_Loaded;
-            // Closing += Picker_Closing;
-
+            //Closing += Picker_Closing;
         }
 
-
         //色指定あり
-        public Picker(Color color) : this()
+        public ColorPicker(Color color) : this()
         {
-            //Color指定だけだとAとHueしか反映されないので
-            //Markerコンストラクタで彩度と輝度を指定
             PickColor = color;
-            var (h, s, v) = MathHSV.Color2HSV(color);
-            Marker = new Marker(MyImageSV, s, v);
-            //A = color.A; R = color.R; G = color.G; B = color.B;
-            //(H, S, V) = MathHSV.Color2HSV(color);
+        }
+        public ColorPicker(SolidColorBrush brush) : this()
+        {
+            PickColorBrush = brush;
         }
 
         #endregion コンストラクタ
@@ -275,19 +263,58 @@ namespace Pixtack3rd
         {
             if (AdornerLayer.GetAdornerLayer(MyImageSV) is AdornerLayer layer)
             {
-                layer.Add(Marker);
+                layer.Add(MyMarker);
             }
-            //PickColor = Color.FromArgb(255, 255, 255, 255);
-            //
-            //SetMarkerBinding();
+
+            ImageBrush ib = new(GetHueBitmap361(true, 0.5, 0.95)) { Stretch = Stretch.Fill };
+            MySliderHue.Background = ib;
         }
+
+
+        /// <summary>
+        /// Hue画像作成、幅1、高さ361、Hueは0から360まで
+        /// </summary>
+        /// <param name="isReverse">Hueの増え方、falseで0から、trueで360から</param>
+        /// <param name="saturation"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private BitmapSource GetHueBitmap361(bool isReverse = false, double saturation = 1.0, double value = 1.0)
+        {
+            int w = 1; int h = 361;
+            var wb = new WriteableBitmap(w, h, 96, 96, PixelFormats.Rgb24, null);
+            int stride = wb.BackBufferStride;
+            var pixels = new byte[h * stride];
+            wb.CopyPixels(pixels, stride, 0);
+            for (int y = 0; y < h; ++y)
+            {
+                for (int x = 0; x < w; ++x)
+                {
+                    int p = y * stride + (x * 3);
+                    Color hue;
+
+                    if (isReverse) hue = MathHSV.HSV2Color((h - y), saturation, value);
+                    else hue = MathHSV.HSV2Color(y, saturation, value);
+
+                    pixels[p] = hue.R;
+                    pixels[p + 1] = hue.G;
+                    pixels[p + 2] = hue.B;
+                }
+            }
+            wb.WritePixels(new Int32Rect(0, 0, w, h), pixels, stride, 0);
+            return wb;
+        }
+
+
 
         private void SetMarkerBinding()
         {
-            SetBinding(SProperty, new Binding() { Source = Marker, Path = new PropertyPath(Marker.SaturationProperty) });
-            SetBinding(VProperty, new Binding() { Source = Marker, Path = new PropertyPath(Marker.ValueProperty) });
 
-            Marker.SetBinding(Marker.MarkerSizeProperty, new Binding() { Source = this, Path = new PropertyPath(MarkerSizeProperty) });
+
+            MyMarker.SetBinding(Marker.MarkerSizeProperty, new Binding() { Source = this, Path = new PropertyPath(MarkerSizeProperty) });
+            MyMarker.SetBinding(Marker.SaturationProperty, new Binding() { Source = this, Path = new PropertyPath(SProperty) });
+            MyMarker.SetBinding(Marker.ValueProperty, new Binding() { Source = this, Path = new PropertyPath(VProperty) });
+
+
         }
 
         private void UpdateSVWriteableBitmap(double hue)
@@ -299,7 +326,6 @@ namespace Pixtack3rd
             });
             SVWriteableBitmap.WritePixels(new Int32Rect(0, 0, SVBitmapSize, SVBitmapSize), SVPixels, SVStride, 0);
         }
-
 
         private void ParallelImageSV(int p, int y, int stride, byte[] pixels, double hue, int w, int h)
         {
@@ -320,59 +346,37 @@ namespace Pixtack3rd
             mb.Bindings.Add(new Binding() { Source = this, Path = new PropertyPath(RProperty) });
             mb.Bindings.Add(new Binding() { Source = this, Path = new PropertyPath(GProperty) });
             mb.Bindings.Add(new Binding() { Source = this, Path = new PropertyPath(BProperty) });
-            mb.Converter = new ConverterARGB2Color();
+            mb.Converter = new MyConverterARGB2Color();
             SetBinding(PickColorProperty, mb);
 
-            SetBinding(PickColorBrushProperty, new Binding() { Source = this, Path = new PropertyPath(PickColorProperty), Converter = new ConverterColor2Brush() });
+            SetBinding(PickColorBrushProperty, new Binding() { Source = this, Path = new PropertyPath(PickColorProperty), Converter = new MyConverterColorSolidBrush() });
 
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            PickColor = Colors.Blue;
+            var mark = MyMarker.Saturation;
+            var neko = S;
+            var blue = B;
+            var green = G;
+            
+        }
+
+        private void Button_Click_Ok(object sender, RoutedEventArgs e)
+        {
+            DialogResult = true;
+            Close();
+        }
+
+        private void Button_Click_Cancel(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
+            Close();
         }
     }
 
 
-    #region コンバーター
-
-    public class ConverterColor2Brush : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            Color c = (Color)value;
-            return new SolidColorBrush(c);
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class ConverterARGB2Color : IMultiValueConverter
-    {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
-        {
-            byte a = (byte)values[0];
-            byte r = (byte)values[1];
-            byte g = (byte)values[2];
-            byte b = (byte)values[3];
-            return Color.FromArgb(a, r, g, b);
-        }
-
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-        {
-            Color cb = (Color)value;
-            object[] result = new object[4];
-            result[0] = cb.A;
-            result[1] = cb.R;
-            result[2] = cb.G;
-            result[3] = cb.B;
-            return result;
-        }
-    }
-    #endregion コンバーター
-
-
-    /// <summary>
-    /// ピックアップマーカー
-    /// </summary>
     public class Marker : Adorner
     {
         #region 依存関係プロパティ
@@ -444,9 +448,9 @@ namespace Pixtack3rd
         protected override int VisualChildrenCount => MyVisuals.Count;
         protected override Visual GetVisualChild(int index) => MyVisuals[index];
 
-        private readonly Thumb MarkerThumb;
-        private readonly Canvas MyCanvas;
-        private readonly FrameworkElement TargetElement;
+        public Thumb MarkerThumb;
+        public Canvas MyCanvas;
+        public FrameworkElement TargetElement;
 
         private Point DiffPoint;
 
@@ -466,17 +470,17 @@ namespace Pixtack3rd
             SetMarkerTemplate();
             MarkerThumb.DragDelta += Marker_DragDelta;
             MarkerThumb.DragCompleted += (s, e) => { DiffPoint = new(); };
+
         }
 
         //色指定で開くとき、彩度と輝度の指定が必要
-        public Marker(FrameworkElement adornedElement, double saturation, double value) : this(adornedElement)
-        {
-            Saturation = saturation;
-            Value = value;
-        }
+        //public Marker(FrameworkElement adornedElement, double saturation, double value) : this(adornedElement)
+        //{
+        //    Saturation = saturation;
+        //    Value = value;
+        //}
 
         #endregion コンストラクタ
-
 
         //
         private void SetMyCanvas()
@@ -494,7 +498,6 @@ namespace Pixtack3rd
         private void MyCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             Point pp = Mouse.GetPosition(MyCanvas);
-
             double dx = pp.X - Canvas.GetLeft(MarkerThumb) - (MarkerSize / 2.0);
             double dy = pp.Y - Canvas.GetTop(MarkerThumb) - (MarkerSize / 2.0);
             DiffPoint = new Point(dx, dy);
@@ -512,7 +515,7 @@ namespace Pixtack3rd
 
         private void SetMarker()
         {
-            //SV変化でtopleft変化
+            //マーカーThumb座標とSVのBinding
             MultiBinding mb = new();
             mb.Bindings.Add(new Binding() { Source = this, Path = new PropertyPath(MarkerSizeProperty) });
             mb.Bindings.Add(new Binding() { Source = this, Path = new PropertyPath(SaturationProperty) });
@@ -617,4 +620,6 @@ namespace Pixtack3rd
             throw new NotImplementedException();
         }
     }
+
+
 }

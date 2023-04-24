@@ -14,6 +14,7 @@
   <Window.Resources>
     <local:MyConverterArgbNumericToBrush x:Key="color"/>
     <local:MyConverterColorSolidBrush x:Key="Color2Brush"/>
+    <local:MyConverterARGB2SolidBrush x:Key="ConvARGB2SolidBrush"/>
   </Window.Resources>
 
   <Grid Name="MyGrid">
@@ -822,10 +823,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               <tomato:NumericUpDown x:Name="MyNumeWakuB" MyMinValue="0" MyMaxValue="255" MyValue="0" MyStringFormat="B 000" BorderBrush="DodgerBlue" Foreground="Black" MyButtonMarkColor="RoyalBlue"/>
             </UniformGrid>
             <UniformGrid DataContext="{Binding ElementName=Main}" Rows="1">
-              <Border x:Name="MyBorderFontColor"
-                      Background="{Binding MyAppConfig.TextBoxForeColor, Converter={StaticResource Color2Brush}}">
-                <TextBlock Text="222"></TextBlock>
-              </Border>
+              <Border x:Name="MyBorderFontColor" Background="Red"/>
               <Button x:Name="MyButtonFontColor1" Content="文字色" Click="MyButtonFontColor1_Click"/>
             </UniformGrid>
             <!--<ComboBox x:Name="MyComboBoxFontWeight" SelectedValuePath="Key" DisplayMemberPath="Value"/>
