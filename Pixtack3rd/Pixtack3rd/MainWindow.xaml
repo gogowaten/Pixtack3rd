@@ -13,6 +13,8 @@
   <!--フォーカス時の点線を表示しない-->
   <Window.Resources>
     <local:MyConverterArgbNumericToBrush x:Key="color"/>
+    <local:MyConverterColorSolidBrush x:Key="Color2Brush"/>
+    <local:MyConverterARGB2SolidBrush x:Key="ConvARGB2SolidBrush"/>
   </Window.Resources>
 
   <Grid Name="MyGrid">
@@ -820,7 +822,10 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               <tomato:NumericUpDown x:Name="MyNumeWakuG" MyMinValue="0" MyMaxValue="255" MyValue="0" MyStringFormat="G 000" BorderBrush="ForestGreen" Foreground="Black" MyButtonMarkColor="ForestGreen"/>
               <tomato:NumericUpDown x:Name="MyNumeWakuB" MyMinValue="0" MyMaxValue="255" MyValue="0" MyStringFormat="B 000" BorderBrush="DodgerBlue" Foreground="Black" MyButtonMarkColor="RoyalBlue"/>
             </UniformGrid>
-
+            <UniformGrid DataContext="{Binding ElementName=Main}" Rows="1">
+              <Border x:Name="MyBorderFontColor" Background="Red"/>
+              <Button x:Name="MyButtonFontColor1" Content="文字色" Click="MyButtonFontColor1_Click"/>
+            </UniformGrid>
             <!--<ComboBox x:Name="MyComboBoxFontWeight" SelectedValuePath="Key" DisplayMemberPath="Value"/>
             -->
             <!--<ComboBox.ItemTemplate>
@@ -893,7 +898,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               <tomato:NumericUpDown x:Name="MyNumeRangeWidth" MyMinValue="1" MyMaxValue="10000" MyStringFormat="幅 0"
                                   MyValue="{Binding Width, Mode=TwoWay}" Margin="10,2,10,2"/>
               <tomato:NumericUpDown x:Name="MyNumeRangeHeight" MyMinValue="1" MyMaxValue="10000" MyStringFormat="高 0"
-                                  MyValue="{Binding Height, Mode=TwoWay}" Margin="10,2,10,2"/>              
+                                  MyValue="{Binding Height, Mode=TwoWay}" Margin="10,2,10,2"/>
             </UniformGrid>
           </StackPanel>
         </ScrollViewer>
@@ -901,43 +906,43 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
 
 
       <TabItem Header="設定" DataContext="{Binding}">
-                <StackPanel>
-                  <CheckBox Content="起動時に前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>
-                  <CheckBox Content="複数追加時はファイル名昇順ソートで追加する" IsChecked="{Binding IsAscendingSort}"/>
-                  <CheckBox Content="ファイルからのThumb追加は最上層にする" IsChecked="{Binding IsAddUpper}">
-                    <CheckBox.ToolTip>
-                      <TextBlock>
+        <StackPanel>
+          <CheckBox Content="起動時に前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>
+          <CheckBox Content="複数追加時はファイル名昇順ソートで追加する" IsChecked="{Binding IsAscendingSort}"/>
+          <CheckBox Content="ファイルからのThumb追加は最上層にする" IsChecked="{Binding IsAddUpper}">
+            <CheckBox.ToolTip>
+              <TextBlock>
                 初期値On、<LineBreak/>
                 複製や貼付け時は常に上層へ追加になる
-                      </TextBlock>
-                    </CheckBox.ToolTip>
-                  </CheckBox>
+              </TextBlock>
+            </CheckBox.ToolTip>
+          </CheckBox>
 
-                  <GroupBox Header="枠表示設定">
-                    <GroupBox.Resources>
-                      <local:MyConverterEnumToBool x:Key="waku"/>
-                    </GroupBox.Resources>
-                    <WrapPanel Name="MyWrap">
-                      <RadioButton Content="表示しない" IsChecked="{Binding
+          <GroupBox Header="枠表示設定">
+            <GroupBox.Resources>
+              <local:MyConverterEnumToBool x:Key="waku"/>
+            </GroupBox.Resources>
+            <WrapPanel Name="MyWrap">
+              <RadioButton Content="表示しない" IsChecked="{Binding
               ConverterParameter={x:Static local:WakuVisibleType.None},
               Path=WakuVisibleType,
               Converter={StaticResource waku}}"/>
-                      <RadioButton Content="全部表示" IsChecked="{Binding
+              <RadioButton Content="全部表示" IsChecked="{Binding
               ConverterParameter={x:Static local:WakuVisibleType.All},
               Path=WakuVisibleType,
               Converter={StaticResource waku}}"/>
-                      <RadioButton Content="Group以外表示" IsChecked="{Binding
+              <RadioButton Content="Group以外表示" IsChecked="{Binding
               ConverterParameter={x:Static local:WakuVisibleType.NotGroup},
               Path=WakuVisibleType,
               Converter={StaticResource waku}}"/>
-                      <RadioButton Content="ActiveGroupだけ" IsChecked="{Binding
+              <RadioButton Content="ActiveGroupだけ" IsChecked="{Binding
               ConverterParameter={x:Static local:WakuVisibleType.OnlyActiveGroup},
               Path=WakuVisibleType,
               Converter={StaticResource waku}}"/>
 
-                    </WrapPanel>
-                  </GroupBox>
-                </StackPanel>
+            </WrapPanel>
+          </GroupBox>
+        </StackPanel>
       </TabItem>
     </TabControl>
   </Grid>

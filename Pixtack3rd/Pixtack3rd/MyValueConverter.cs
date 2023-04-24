@@ -411,7 +411,7 @@ namespace Pixtack3rd
             return array;
         }
     }
-    public class MyConverterBrushByte : IMultiValueConverter
+    public class MyConverterARGB2SolidBrush : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
@@ -434,69 +434,28 @@ namespace Pixtack3rd
         }
     }
 
-    //public class MyConverterBrushColorA : IValueConverter
-    //{
-    //    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    //    {
-    //        SolidColorBrush brush = (SolidColorBrush)value;
-    //        return brush.Color.A;
-    //    }
+    public class MyConverterARGB2Color : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            byte a = (byte)values[0];
+            byte r = (byte)values[1];
+            byte g = (byte)values[2];
+            byte b = (byte)values[3];
+            return Color.FromArgb(a, r, g, b);
+        }
 
-    //    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    //    {
-    //        SolidColorBrush brush = (SolidColorBrush)parameter;
-    //        Color c = brush.Color;
-    //        byte v = (byte)(decimal)value;
-    //        return new SolidColorBrush(Color.FromArgb(v, c.R, c.G, c.B));
-    //    }
-    //}
-    //public class MyConverterBrushColorR : IValueConverter
-    //{
-    //    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    //    {
-    //        SolidColorBrush brush = (SolidColorBrush)value;
-    //        return brush.Color.R;
-    //    }
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            Color c = (Color)value;
+            object[] array = new object[4];
+            array[0] = c.A;
+            array[1] = c.R;
+            array[2] = c.G;
+            array[3] = c.B;
+            return array;
+        }
+    }
 
-    //    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    //    {
-    //        SolidColorBrush brush = (SolidColorBrush)parameter;
-    //        Color c = brush.Color;
-    //        byte v = (byte)(decimal)value;
-    //        return new SolidColorBrush(Color.FromArgb(c.A, v, c.G, c.B));
-    //    }
-    //}
-    //public class MyConverterBrushColorG : IValueConverter
-    //{
-    //    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    //    {
-    //        SolidColorBrush brush = (SolidColorBrush)value;
-    //        return brush.Color.G;
-    //    }
-
-    //    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    //    {
-    //        SolidColorBrush brush = (SolidColorBrush)parameter;
-    //        Color c = brush.Color;
-    //        byte v = (byte)(decimal)value;
-    //        return new SolidColorBrush(Color.FromArgb(c.A, c.R, v, c.B));
-    //    }
-    //}
-    //public class MyConverterBrushColorB : IValueConverter
-    //{
-    //    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    //    {
-    //        SolidColorBrush brush = (SolidColorBrush)value;
-    //        return brush.Color.B;
-    //    }
-
-    //    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    //    {
-    //        SolidColorBrush brush = (SolidColorBrush)parameter;
-    //        Color c = brush.Color;
-    //        byte v = (byte)(decimal)value;
-    //        return new SolidColorBrush(Color.FromArgb(c.A, c.R, c.G, v));
-    //    }
-    //}
 
 }

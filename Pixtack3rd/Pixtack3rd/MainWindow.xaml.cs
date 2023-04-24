@@ -86,7 +86,7 @@ namespace Pixtack3rd
             Drop += MainWindow_Drop;
             Closed += MainWindow_Closed;
 
-            MyTabControl.SelectedIndex = 4;
+            MyTabControl.SelectedIndex = 2;
 
             //string imagePath = "D:\\ブログ用\\テスト用画像\\collection5.png";
             //string imagePath1 = "D:\\ブログ用\\テスト用画像\\collection4.png";
@@ -193,6 +193,28 @@ namespace Pixtack3rd
                     ContextMenu = null;
                 }
             };
+
+            //Binding
+            SetMyBindings();
+
+        }
+
+        private void SetMyBindings()
+        {
+            //文字色Binding
+            MultiBinding mb = new();
+            mb.Converter = new MyConverterARGB2SolidBrush();
+            mb.Mode = BindingMode.TwoWay;
+            //mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorA)));//Source指定なしだとunsetvalueでConverterエラー
+            mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorA)) { Source = MyAppConfig, Mode = BindingMode.TwoWay });
+            mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorR)) { Source = MyAppConfig, Mode = BindingMode.TwoWay });
+            mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorG)) { Source = MyAppConfig, Mode = BindingMode.TwoWay });
+            mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorB)) { Source = MyAppConfig, Mode = BindingMode.TwoWay });
+            MyBorderFontColor.SetBinding(BackgroundProperty, mb);
+
+            //初期値の指定方法がわからんのでここで透明度0なら255にする
+            if (MyAppConfig.TextColorA == 0) MyAppConfig.TextColorA = 255;
+
 
         }
 
@@ -2248,6 +2270,11 @@ namespace Pixtack3rd
 
         private void ButtonTest_Click(object sender, RoutedEventArgs e)
         {
+            var neko = MyBorderFontColor.Background;
+            var confcolor = MyAppConfig;
+
+            var textcolor = MyBorderFontColor;
+
             var direc = Canvas.GetLeft(MyTTGermtricShape.MyShape);
 
 
@@ -2646,7 +2673,29 @@ namespace Pixtack3rd
         {
 
         }
+
+        private void MyButtonFontColor1_Click(object sender, RoutedEventArgs e)
+        {
+            Brush brush = MyBorderFontColor.Background;
+
+            ColorPicker picker = new((SolidColorBrush)MyBorderFontColor.Background);
+
+
+            if (picker.ShowDialog() == true)
+            {
+                MyBorderFontColor.Background = new SolidColorBrush(picker.PickColor);
+            }
+            else
+            {
+                MyBorderFontColor.Background = brush;
+            }
+
+        }
     }
+
+
+
+
 
 
     #region アプリの設定保存用Dataクラス
@@ -2655,7 +2704,7 @@ namespace Pixtack3rd
     /// アプリの設定値用クラス
     /// </summary>
     [DataContract]
-    public class AppConfig : INotifyPropertyChanged
+    public class AppConfig : INotifyPropertyChanged, IExtensibleDataObject
     {
         //public event PropertyChangedEventHandler? PropertyChanged;
         //private void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
@@ -2686,6 +2735,16 @@ namespace Pixtack3rd
         private bool _isAddUpper = true;
         [DataMember] public bool IsAddUpper { get => _isAddUpper; set => SetProperty(ref _isAddUpper, value); }
 
+
+        //[DataMember] public Color TextBoxForeColor { get; set; }
+        [DataMember] public Color TextBoxBackColor { get; set; } = Colors.White;
+        [DataMember] public Color TextBoxBorderColor { get; set; } = Colors.Gray;
+
+
+        [DataMember] private byte _textColorA = 255; public byte TextColorA { get => _textColorA; set => SetProperty(ref _textColorA, value); }
+        [DataMember] private byte _textColorR = 255; public byte TextColorR { get => _textColorR; set => SetProperty(ref _textColorR, value); }
+        [DataMember] private byte _textColorG = 255; public byte TextColorG { get => _textColorG; set => SetProperty(ref _textColorG, value); }
+        [DataMember] private byte _textColorB = 255; public byte TextColorB { get => _textColorB; set => SetProperty(ref _textColorB, value); }
 
 
 
@@ -2796,7 +2855,7 @@ namespace Pixtack3rd
         }
 
 
-
+        public ExtensionDataObject? ExtensionData { get; set; }//Dataの互換性維持
 
         public AppConfig()
         {
@@ -2807,6 +2866,7 @@ namespace Pixtack3rd
             HotKey = Key.PrintScreen;
             IsDrawCursor = false;
             IsFileNameDate = true;
+
         }
 
 
@@ -2824,6 +2884,11 @@ namespace Pixtack3rd
             FileNameText3List ??= new();
             FileNameText4List ??= new();
             SoundFilePathList ??= new();
+
+            //TextBoxForeColor = Colors.Black;
+            //TextBoxBackColor = Colors.White;
+            //TextBoxBorderColor = Colors.Gray;
+
         }
     }
 
