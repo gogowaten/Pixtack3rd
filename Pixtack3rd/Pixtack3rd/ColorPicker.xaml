@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:Pixtack3rd"
         xmlns:nume="clr-namespace:ControlLibraryCore20200620;assembly=ControlLibraryCore20200620"
         mc:Ignorable="d"
-        Title="Picker" Height="400" Width="400"
+        d:DataContext="{d:DesignInstance Type=local:ColorPicker}"
+        Title="Picker" Height="400" Width="500"
         ResizeMode="CanResizeWithGrip"
         WindowStyle="ToolWindow">
   <Window.Resources>
@@ -45,9 +46,10 @@
                               MyValue="{Binding Path=V}" MyStringFormat="V 0.00"/>
         </StackPanel>
         
-        <Slider x:Name="MySliderHue" Minimum="0" Maximum="360" SmallChange="1" LargeChange="30"
-                Orientation="Vertical" RenderTransformOrigin="0.5,0.5" Value="{Binding Path=H}"/>
-
+        <Slider x:Name="MySliderHue" Minimum="0" Maximum="360" SmallChange="1" LargeChange="10"
+                Orientation="Vertical" RenderTransformOrigin="0.5,0.5" Value="{Binding Path=H}"
+                IsMoveToPointEnabled="True" MouseWheel="MySliderHue_MouseWheel"/>
+        
         <StackPanel>
           <Grid>
             <Rectangle Height="{Binding ElementName=TextBlockSampleColor, Path=ActualWidth}"

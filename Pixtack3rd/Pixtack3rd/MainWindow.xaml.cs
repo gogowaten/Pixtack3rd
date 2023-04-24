@@ -204,7 +204,7 @@ namespace Pixtack3rd
             //文字色Binding
             MultiBinding mb = new();
             mb.Converter = new MyConverterARGB2SolidBrush();
-            //MyAppConfig.TextColorA = 255;
+            mb.Mode = BindingMode.TwoWay;
             //mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorA)));//Source指定なしだとunsetvalueでConverterエラー
             mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorA)) { Source = MyAppConfig, Mode = BindingMode.TwoWay });
             mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorR)) { Source = MyAppConfig, Mode = BindingMode.TwoWay });
@@ -212,8 +212,13 @@ namespace Pixtack3rd
             mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorB)) { Source = MyAppConfig, Mode = BindingMode.TwoWay });
             MyBorderFontColor.SetBinding(BackgroundProperty, mb);
 
+            //初期値の指定方法がわからんのでここで透明度0なら255にする
+            if (MyAppConfig.TextColorA == 0) MyAppConfig.TextColorA = 255;
+
 
         }
+
+
         //ショートカットキー
         private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
         {

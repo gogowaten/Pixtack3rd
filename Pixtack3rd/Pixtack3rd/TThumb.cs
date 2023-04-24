@@ -761,7 +761,7 @@ namespace Pixtack3rd
             {
                 TTGroupUpdateLayout();
                 FixDataDatas();
-                //MyMainWindow = GetMainWindow(this);
+                MyMainWindow = GetMainWindow(this);
                 //SetMyContextMenu();
                 //this.ContextMenuOpening += ContextMenu_ContextMenuOpening;
                 if (SetMyTTRange() is TTRange range) { MyTTRange = range; }
@@ -789,17 +789,17 @@ namespace Pixtack3rd
             return null;
         }
 
-        ///// <summary>
-        ///// MainWindowの取得、Loadedに実行
-        ///// </summary>
-        ///// <param name="element"></param>
-        ///// <returns></returns>
-        //private MainWindow? GetMainWindow(FrameworkElement? element)
-        //{
-        //    if (element == null) return null;
-        //    if (element.Parent is MainWindow main) return main;
-        //    else return GetMainWindow(element.Parent as FrameworkElement);
-        //}
+        /// <summary>
+        /// MainWindowの取得、Loadedに実行
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        private MainWindow? GetMainWindow(FrameworkElement? element)
+        {
+            if (element == null) return null;
+            if (element.Parent is MainWindow main) return main;
+            else return GetMainWindow(element.Parent as FrameworkElement);
+        }
 
 
         /// <summary>
@@ -3260,7 +3260,7 @@ namespace Pixtack3rd
         public TTRoot? MyRoot { get; private set; }
         public RangeAdorner MyRangeAdorner { get; private set; }
 
-        #region コンストラクタ        
+        #region コンストラクタ
         public TTRange() : this(new Data(TType.Range)) { }
         public TTRange(Data data) : base(data)
         {
@@ -3312,7 +3312,7 @@ namespace Pixtack3rd
         {
             if (MyRoot != null && GetRangesBitmap() is BitmapSource bmp)
             {
-                MyRoot?.MyMainWindow?.SaveBitmap2(bmp);
+                MyRoot?.MyMainWindow?.SaveBitmap2(bmp);                
             }
         }
 

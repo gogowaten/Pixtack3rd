@@ -266,7 +266,7 @@ namespace Pixtack3rd
                 layer.Add(MyMarker);
             }
 
-            ImageBrush ib = new(GetHueBitmap361(true, 0.5, 0.95)) { Stretch = Stretch.Fill };
+            ImageBrush ib = new(GetHueBitmap361(true, 0.8, 0.95)) { Stretch = Stretch.Fill };
             MySliderHue.Background = ib;
         }
 
@@ -360,7 +360,7 @@ namespace Pixtack3rd
             var neko = S;
             var blue = B;
             var green = G;
-            
+
         }
 
         private void Button_Click_Ok(object sender, RoutedEventArgs e)
@@ -373,6 +373,12 @@ namespace Pixtack3rd
         {
             DialogResult = false;
             Close();
+        }
+
+        private void MySliderHue_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (e.Delta > 0) { MySliderHue.Value += MySliderHue.SmallChange; }
+            else MySliderHue.Value -= MySliderHue.SmallChange;
         }
     }
 
