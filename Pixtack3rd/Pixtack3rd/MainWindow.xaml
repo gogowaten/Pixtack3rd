@@ -825,7 +825,47 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <UniformGrid DataContext="{Binding ElementName=Main}" Rows="1">
               <Border x:Name="MyBorderFontColor" Background="Red"/>
               <Button x:Name="MyButtonFontColor1" Content="文字色" Click="MyButtonFontColor1_Click"/>
+              <tomato:NumericUpDown/>
             </UniformGrid>
+            <UniformGrid Rows="1">
+              <Border/>
+              <Button Content="背景色"/>
+              <tomato:NumericUpDown/>
+            </UniformGrid>
+            <UniformGrid Rows="1">
+              <Border/>
+              <Button Content="枠色"/>
+              <tomato:NumericUpDown/>
+            </UniformGrid>
+            <StackPanel DataContext="{Binding ElementName=Main}">
+              <TextBlock Text="{Binding MyAppConfig.TextColorA}"/>
+              <TextBox>
+                <TextBox.Background>
+                  <MultiBinding Converter="{StaticResource ConvARGB2SolidBrush}" Mode="TwoWay">
+                    <MultiBinding.Bindings>
+                      <Binding Path="MyAppConfig.TextColorA"/>
+                      <Binding Path="MyAppConfig.TextColorR" Mode="TwoWay"/>
+                      <Binding Path="MyAppConfig.TextColorG"/>
+                      <Binding Path="MyAppConfig.TextColorB"/>
+                    </MultiBinding.Bindings>
+                  </MultiBinding>
+                </TextBox.Background>
+              </TextBox>
+            </StackPanel>
+            <!--<TextBox Text="sample" DataContext="{Binding ElementName=Main, Path=MyAppConfig}">
+              <TextBox.Foreground>
+                <MultiBinding Converter="{StaticResource ConvARGB2SolidBrush}">
+                  <MultiBinding.Bindings>
+                    --><!--<Binding Source="{Binding MyAppConfig}" Path="TextColorA"/>--><!--
+                    <Binding Path="AppConfig.TextColorA"/>
+                    <Binding Path="AppConfig.TextColorA"/>
+                    <Binding Path="AppConfig.TextColorA"/>
+                    <Binding Path="AppConfig.TextColorA"/>
+                  </MultiBinding.Bindings>
+                </MultiBinding>
+              </TextBox.Foreground>
+            </TextBox>-->
+            
             <!--<ComboBox x:Name="MyComboBoxFontWeight" SelectedValuePath="Key" DisplayMemberPath="Value"/>
             -->
             <!--<ComboBox.ItemTemplate>

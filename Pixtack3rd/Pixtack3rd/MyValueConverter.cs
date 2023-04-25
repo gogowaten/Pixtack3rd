@@ -415,6 +415,11 @@ namespace Pixtack3rd
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
+            
+            if (values[0] == DependencyProperty.UnsetValue)
+            {
+                return new SolidColorBrush(Colors.Black);    
+            }
             byte a = (byte)values[0];
             byte r = (byte)values[1];
             byte g = (byte)values[2];

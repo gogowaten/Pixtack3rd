@@ -2272,6 +2272,7 @@ namespace Pixtack3rd
         {
             var neko = MyBorderFontColor.Background;
             var confcolor = MyAppConfig;
+            var aaa = new AppConfig();
 
             var textcolor = MyBorderFontColor;
 
@@ -2736,16 +2737,25 @@ namespace Pixtack3rd
         [DataMember] public bool IsAddUpper { get => _isAddUpper; set => SetProperty(ref _isAddUpper, value); }
 
 
-        //[DataMember] public Color TextBoxForeColor { get; set; }
-        [DataMember] public Color TextBoxBackColor { get; set; } = Colors.White;
-        [DataMember] public Color TextBoxBorderColor { get; set; } = Colors.Gray;
 
 
+        #region TextBox
         [DataMember] private byte _textColorA = 255; public byte TextColorA { get => _textColorA; set => SetProperty(ref _textColorA, value); }
-        [DataMember] private byte _textColorR = 255; public byte TextColorR { get => _textColorR; set => SetProperty(ref _textColorR, value); }
-        [DataMember] private byte _textColorG = 255; public byte TextColorG { get => _textColorG; set => SetProperty(ref _textColorG, value); }
+        [DataMember] private byte _textColorR = 0; public byte TextColorR { get => _textColorR; set => SetProperty(ref _textColorR, value); }
+        [DataMember] private byte _textColorG = 0; public byte TextColorG { get => _textColorG; set => SetProperty(ref _textColorG, value); }
         [DataMember] private byte _textColorB = 255; public byte TextColorB { get => _textColorB; set => SetProperty(ref _textColorB, value); }
 
+        [DataMember] private byte _textBackColorA; public byte TextBackColorA { get => _textBackColorA; set => SetProperty(ref _textBackColorA, value); }
+        [DataMember] private byte _textBackColorR; public byte TextBackColorR { get => _textBackColorR; set => SetProperty(ref _textBackColorR, value); }
+        [DataMember] private byte _textBackColorG; public byte TextBackColorG { get => _textBackColorG; set => SetProperty(ref _textBackColorG, value); }
+        [DataMember] private byte _textBackColorB; public byte TextBackColorB { get => _textBackColorB; set => SetProperty(ref _textBackColorB, value); }
+        [DataMember] private byte _textBorderColorA = 255; public byte TextBorderColorA { get => _textBorderColorA; set => SetProperty(ref _textBorderColorA, value); }
+        [DataMember] private byte _textBorderColorR = 200; public byte TextBorderColorR { get => _textBorderColorR; set => SetProperty(ref _textBorderColorR, value); }
+        [DataMember] private byte _textBorderColorG = 200; public byte TextBorderColorG { get => _textBorderColorG; set => SetProperty(ref _textBorderColorG, value); }
+        [DataMember] private byte _textBorderColorB = 200; public byte TextBorderColorB { get => _textBorderColorB; set => SetProperty(ref _textBorderColorB, value); }
+        [DataMember] private byte _textBorderWidth; public byte TextBorderWidth { get => _textBorderWidth; set => SetProperty(ref _textBorderWidth, value); }
+
+        #endregion TextBox
 
 
 
@@ -2867,6 +2877,10 @@ namespace Pixtack3rd
             IsDrawCursor = false;
             IsFileNameDate = true;
 
+            //TextColorA = 255;
+            //TextColorR = 255;
+            //TextColorG = 255;
+            //TextColorB = 255;
         }
 
 
@@ -2884,10 +2898,6 @@ namespace Pixtack3rd
             FileNameText3List ??= new();
             FileNameText4List ??= new();
             SoundFilePathList ??= new();
-
-            //TextBoxForeColor = Colors.Black;
-            //TextBoxBackColor = Colors.White;
-            //TextBoxBorderColor = Colors.Gray;
 
         }
     }
