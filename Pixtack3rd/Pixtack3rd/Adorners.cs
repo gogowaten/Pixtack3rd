@@ -43,7 +43,7 @@ namespace Pixtack3rd
     /// </summary>
     public class RangeAdorner : Adorner
     {
-        VisualCollection MyVisuals;
+        readonly VisualCollection MyVisuals;
         protected override int VisualChildrenCount => MyVisuals.Count;
         protected override Visual GetVisualChild(int index) => MyVisuals[index];
 

@@ -277,12 +277,15 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
         <!--</Grid>-->
       </ScrollViewer>
 
+      <!--図形をマウスで描画するときに使うCanvas-->
       <Canvas Grid.Row="1" Grid.Column="1"
               x:Name="MyDrawCanvas" Visibility="Collapsed"
               Cursor="Cross" Background="Transparent">
-
       </Canvas>
 
+      <Canvas>
+        <local:TTRange x:Name="MyRangeTT" Canvas.Left="170" Canvas.Top="50" Background="Magenta"/>
+      </Canvas>
 
 
       <!--テスト用Canvas-->

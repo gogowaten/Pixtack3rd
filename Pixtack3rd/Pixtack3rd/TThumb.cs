@@ -3288,7 +3288,7 @@ namespace Pixtack3rd
             MyRangeAdorner.ContextMenu = MyContextMenu;
             AdornerLayer.GetAdornerLayer(this).Add(MyRangeAdorner);
             //TTRoot取得
-            MyRoot = GetRoot(this);
+            //MyRoot = GetRoot(this);
         }
         #region 右クリックメニュー関連
 

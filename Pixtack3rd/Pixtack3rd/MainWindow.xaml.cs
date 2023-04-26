@@ -65,10 +65,12 @@ namespace Pixtack3rd
         private ContextMenu MyContextMenuForSelected = new();
         private ContextTabMenu MyContextTabMenuForSingle = new();
 
+        //範囲選択
+        //private TTRange MyTTRange = new();
+
         public MainWindow()
         {
             InitializeComponent();
-
 
 
             MyAppConfig = GetAppConfig(APP_CONFIG_FILE_NAME);
@@ -171,7 +173,7 @@ namespace Pixtack3rd
             MyContextMenuForSelected = MakeContextMenuForSelected();
             MyContextTabMenuForSingle.AddMenuTab(MakeTabItemForActiveThumbMenu());
             MyContextTabMenuForSingle.AddMenuTab(MakeTabItemForClickedThumbMenu());
-            //メニュー展開時、複数選択用と単数用の切り替え
+            //右クリックメニュー展開時、複数Thumb選択用と単数Thumb用の切り替え
             this.ContextMenuOpening += (s, e) =>
             {
                 if (e.Source == MyRoot)
@@ -193,6 +195,15 @@ namespace Pixtack3rd
                     ContextMenu = null;
                 }
             };
+
+            //MyTTRange
+            MyRangeTT.DataContext = MyAppConfig;
+            MyRangeTT.SetBinding(WidthProperty, new Binding(nameof(MyAppConfig.RangeWidth)) { Mode = BindingMode.TwoWay });
+            MyRangeTT.SetBinding(HeightProperty, new Binding(nameof(MyAppConfig.RangeHeight)) { Mode = BindingMode.TwoWay });
+            MyRangeTT.SetBinding(BackgroundProperty, new Binding(nameof(MyAppConfig.RangeBackColor)) { Mode = BindingMode.TwoWay, Converter = new MyConverterColorSolidBrush() });
+            MyRangeTT.SetBinding(Canvas.LeftProperty, new Binding(nameof(MyAppConfig.RangeLeft)) { Mode = BindingMode.TwoWay });
+            MyRangeTT.SetBinding(Canvas.TopProperty, new Binding(nameof(MyAppConfig.RangeTop)) { Mode = BindingMode.TwoWay });
+
 
             //Binding
             SetMyBindings();
@@ -2756,6 +2767,27 @@ namespace Pixtack3rd
         [DataMember] private byte _textBorderWidth; public byte TextBorderWidth { get => _textBorderWidth; set => SetProperty(ref _textBorderWidth, value); }
 
         #endregion TextBox
+
+
+        //[DataMember] private Data _rangeData;
+        //public Data RangeData { get => _rangeData; set => SetProperty(ref _rangeData, value); }
+
+
+        [DataMember] private double _rangeWidth = 100.0;
+        public double RangeWidth { get => _rangeWidth; set => SetProperty(ref _rangeWidth, value); }
+
+        [DataMember] private double _rangeHeight = 100.0;
+        public double RangeHeight { get => _rangeHeight; set => SetProperty(ref _rangeHeight, value); }
+
+        [DataMember] private Color _rangeBackColor = Colors.Red;
+        public Color RangeBackColor { get => _rangeBackColor; set => SetProperty(ref _rangeBackColor, value); }
+
+        [DataMember] private double _rangeLeft;
+        public double RangeLeft { get => _rangeLeft; set => SetProperty(ref _rangeLeft, value); }
+
+        [DataMember] private double _rangeTop;
+        public double RangeTop { get => _rangeTop; set => SetProperty(ref _rangeTop, value); }
+
 
 
 
