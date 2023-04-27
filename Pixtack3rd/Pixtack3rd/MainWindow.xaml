@@ -283,8 +283,9 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               Cursor="Cross" Background="Transparent">
       </Canvas>
 
-      <Canvas>
-        <local:TTRange x:Name="MyRangeTT" Canvas.Left="170" Canvas.Top="50" Background="Magenta"/>
+      <Canvas x:Name="MyAreaCanvas">
+        <local:AreaThumb x:Name="MyAreaThumb" Width="100" Height="70" Canvas.Left="180" Canvas.Top="30" Background="Blue" AreaOpacity="0.2"/>
+        <TextBlock Text="{Binding ElementName=MyAreaThumb, Path=X}"/>
       </Canvas>
 
 

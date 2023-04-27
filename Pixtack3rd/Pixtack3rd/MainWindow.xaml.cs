@@ -61,8 +61,9 @@ namespace Pixtack3rd
         private GeometricShape? MyTempShape;
 
 
-        //右クリックメニュー        
+        //右クリックメニュー、複数選択Thumb用
         private ContextMenu MyContextMenuForSelected = new();
+        //右クリックメニュー、単体Thumb用
         private ContextTabMenu MyContextTabMenuForSingle = new();
 
         //範囲選択
@@ -196,13 +197,15 @@ namespace Pixtack3rd
                 }
             };
 
-            //MyTTRange
-            MyRangeTT.DataContext = MyAppConfig;
-            MyRangeTT.SetBinding(WidthProperty, new Binding(nameof(MyAppConfig.RangeWidth)) { Mode = BindingMode.TwoWay });
-            MyRangeTT.SetBinding(HeightProperty, new Binding(nameof(MyAppConfig.RangeHeight)) { Mode = BindingMode.TwoWay });
-            MyRangeTT.SetBinding(BackgroundProperty, new Binding(nameof(MyAppConfig.RangeBackColor)) { Mode = BindingMode.TwoWay, Converter = new MyConverterColorSolidBrush() });
-            MyRangeTT.SetBinding(Canvas.LeftProperty, new Binding(nameof(MyAppConfig.RangeLeft)) { Mode = BindingMode.TwoWay });
-            MyRangeTT.SetBinding(Canvas.TopProperty, new Binding(nameof(MyAppConfig.RangeTop)) { Mode = BindingMode.TwoWay });
+            MyAreaCanvas.ContextMenu = MakeContextMenuForAreaThumb();
+
+            ////MyTTRange
+            //MyRangeTT.DataContext = MyAppConfig;
+            //MyRangeTT.SetBinding(WidthProperty, new Binding(nameof(MyAppConfig.RangeWidth)) { Mode = BindingMode.TwoWay });
+            //MyRangeTT.SetBinding(HeightProperty, new Binding(nameof(MyAppConfig.RangeHeight)) { Mode = BindingMode.TwoWay });
+            //MyRangeTT.SetBinding(BackgroundProperty, new Binding(nameof(MyAppConfig.RangeBackColor)) { Mode = BindingMode.TwoWay, Converter = new MyConverterColorSolidBrush() });
+            //MyRangeTT.SetBinding(Canvas.LeftProperty, new Binding(nameof(MyAppConfig.RangeLeft)) { Mode = BindingMode.TwoWay });
+            //MyRangeTT.SetBinding(Canvas.TopProperty, new Binding(nameof(MyAppConfig.RangeTop)) { Mode = BindingMode.TwoWay });
 
 
             //Binding
@@ -335,6 +338,47 @@ namespace Pixtack3rd
         #endregion 初期設定
 
         #region 右クリックメニュー
+
+        //AreaThumb(範囲選択)用右クリックメニュー
+        private ContextMenu MakeContextMenuForAreaThumb()
+        {
+            ContextMenu menu = new();
+            MenuItem item;
+            item = new() { Header = "コピー" }; menu.Items.Add(item);
+            item.Click += (s, e) =>
+            {
+                if (GetAreaBitmap() is BitmapSource bmp) MyRoot.ClipboardSetBitmapWithPng(bmp);
+            };
+            item = new() { Header = "コピペ" }; menu.Items.Add(item);
+            item.Click += (s, e) =>
+            {
+                if (GetAreaBitmap() is BitmapSource bmp) MyRoot.AddThumbDataToActiveGroup(
+                    new Data(TType.Image) { BitmapSource = bmp }, true, true);
+            };
+            item = new() { Header = "名前を付けて保存" };menu.Items.Add(item);
+            item.Click += (s, e) => { if (GetAreaBitmap() is BitmapSource bmp) SaveBitmap2(bmp); };
+            
+            return menu;
+        }
+
+        //AreaThumb用、選択範囲の画像作成
+        private BitmapSource GetAreaBitmap()
+        {
+            //描画のRect取得
+            var bounds = MyAreaThumb.TransformToVisual(MyRoot)
+                .TransformBounds(VisualTreeHelper.GetDescendantBounds(MyAreaThumb));
+            DrawingVisual dv = new() { Offset = new Vector(-bounds.X, -bounds.Y) };
+            using (var context = dv.RenderOpen())
+            {
+                VisualBrush vb = new(MyRoot) { Stretch = Stretch.None };
+                context.DrawRectangle(vb, null, VisualTreeHelper.GetDescendantBounds(MyRoot));
+            }
+            RenderTargetBitmap bitmap = new(
+                (int)Math.Ceiling(bounds.Width), (int)Math.Ceiling(bounds.Height)
+                , 96, 96, PixelFormats.Pbgra32);
+            bitmap.Render(dv);
+            return bitmap;
+        }
 
         //複数選択時用
         private ContextMenu MakeContextMenuForSelected()
