@@ -135,16 +135,17 @@ namespace Pixtack3rd
             string configFile = System.IO.Path.Combine(
                 Environment.CurrentDirectory, fileName);
 
-            if (File.Exists(configFile)
-                && LoadConfig(configFile) is AppConfig config)
+            if (File.Exists(configFile))
             {
-                return config;
+                //return config;
+                return LoadConfig(configFile);
             }
             else
             {
                 return new AppConfig();
             }
         }
+
         private void MyInitialize()
         {
             //タイトルをアプリの名前 + バージョン
@@ -229,6 +230,10 @@ namespace Pixtack3rd
             //初期値の指定方法がわからんのでここで透明度0なら255にする
             if (MyAppConfig.TextColorA == 0) MyAppConfig.TextColorA = 255;
 
+            //AreaThumb範囲選択用
+            MyAreaThumb.DataContext = MyAppConfig;
+            MyAreaThumb.SetBinding(WidthProperty, new Binding(nameof(AppConfig.AreaWidth)) { Mode = BindingMode.TwoWay });
+            MyAreaThumb.SetBinding(HeightProperty, new Binding(nameof(AppConfig.AreaHeight)) { Mode = BindingMode.TwoWay });
 
         }
 
@@ -355,9 +360,9 @@ namespace Pixtack3rd
                 if (GetAreaBitmap() is BitmapSource bmp) MyRoot.AddThumbDataToActiveGroup(
                     new Data(TType.Image) { BitmapSource = bmp }, true, true);
             };
-            item = new() { Header = "名前を付けて保存" };menu.Items.Add(item);
+            item = new() { Header = "名前を付けて保存" }; menu.Items.Add(item);
             item.Click += (s, e) => { if (GetAreaBitmap() is BitmapSource bmp) SaveBitmap2(bmp); };
-            
+
             return menu;
         }
 
@@ -712,20 +717,19 @@ namespace Pixtack3rd
         /// <param name="filePath">設定ファイルのフルパス</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        private static AppConfig? LoadConfig(string filePath)
+        private static AppConfig LoadConfig(string filePath)
         {
             try
             {
-                using (XmlReader reader = XmlReader.Create(filePath))
+                using XmlReader reader = XmlReader.Create(filePath);
+                DataContractSerializer serializer = new(typeof(AppConfig));
+                if (serializer.ReadObject(reader) is AppConfig config)
                 {
-                    DataContractSerializer serializer = new(typeof(AppConfig));
-                    AppConfig? result = (AppConfig?)serializer.ReadObject(reader);
-                    if (result == null)
-                    {
-                        MessageBox.Show("読込できんかった");
-                        return null;
-                    }
-                    else { return result; }
+                    return config;
+                }
+                else
+                {
+                    throw new NullReferenceException();
                 }
             }
             catch (Exception ex)
@@ -2762,18 +2766,49 @@ namespace Pixtack3rd
     [DataContract]
     public class AppConfig : INotifyPropertyChanged, IExtensibleDataObject
     {
-        //public event PropertyChangedEventHandler? PropertyChanged;
-        //private void RaisePropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
-        //{
-        //    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        //}
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        //private int _xShift;
-        //[DataMember] public int XShift { get => _xShift; set => SetProperty(ref _xShift, value); }
-        //private int _yShift;
-        //[DataMember] public int YShift { get => _yShift; set => SetProperty(ref _yShift, value); }
-        //private int _grid;
-        //[DataMember] public int Grid { get => _grid; set => SetProperty(ref _grid, value); }
+        protected void SetProperty<T>(ref T field, T value, [System.Runtime.CompilerServices.CallerMemberName] string? name = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value)) return;
+            field = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+
+        public ExtensionDataObject? ExtensionData { get; set; }//Dataの互換性維持
+
+        public AppConfig()
+        {
+            DirList = new ObservableCollection<string>();
+            JpegQuality = 94;
+            FileNameSerialIncreace = 1m;
+            FileNameSerialDigit = 4m;
+            HotKey = Key.PrintScreen;
+            IsDrawCursor = false;
+            IsFileNameDate = true;
+
+            //TextColorA = 255;
+            //TextColorR = 255;
+            //TextColorG = 255;
+            //TextColorB = 255;
+        }
+
+
+
+        //初期値の設定
+        [OnDeserialized]
+        void OnDeserialized(System.Runtime.Serialization.StreamingContext c)
+        {
+            DirList ??= new();
+            FileNameDateFormatList ??= new();
+            FileNameText1List ??= new();
+            FileNameText2List ??= new();
+            FileNameText3List ??= new();
+            FileNameText4List ??= new();
+            SoundFilePathList ??= new();
+
+        }
 
         //枠表示設定
         private WakuVisibleType _wakuVisibleType = WakuVisibleType.All;
@@ -2816,22 +2851,23 @@ namespace Pixtack3rd
         //[DataMember] private Data _rangeData;
         //public Data RangeData { get => _rangeData; set => SetProperty(ref _rangeData, value); }
 
+        #region Area範囲選択
 
-        [DataMember] private double _rangeWidth = 100.0;
-        public double RangeWidth { get => _rangeWidth; set => SetProperty(ref _rangeWidth, value); }
+        [DataMember] private double _areaWidth = 100.0;
+        public double AreaWidth { get => _areaWidth; set => SetProperty(ref _areaWidth, value); }
 
-        [DataMember] private double _rangeHeight = 100.0;
-        public double RangeHeight { get => _rangeHeight; set => SetProperty(ref _rangeHeight, value); }
+        [DataMember] private double _areaHeight = 100.0;
+        public double AreaHeight { get => _areaHeight; set => SetProperty(ref _areaHeight, value); }
 
-        [DataMember] private Color _rangeBackColor = Colors.Red;
-        public Color RangeBackColor { get => _rangeBackColor; set => SetProperty(ref _rangeBackColor, value); }
+        [DataMember] private Color _areaBackColor = Colors.Red;
+        public Color AreaBackColor { get => _areaBackColor; set => SetProperty(ref _areaBackColor, value); }
 
-        [DataMember] private double _rangeLeft;
-        public double RangeLeft { get => _rangeLeft; set => SetProperty(ref _rangeLeft, value); }
+        [DataMember] private double _areaLeft;
+        public double AreaLeft { get => _areaLeft; set => SetProperty(ref _areaLeft, value); }
 
-        [DataMember] private double _rangeTop;
-        public double RangeTop { get => _rangeTop; set => SetProperty(ref _rangeTop, value); }
-
+        [DataMember] private double _areaTop;
+        public double AreaTop { get => _areaTop; set => SetProperty(ref _areaTop, value); }
+        #endregion Area範囲選択
 
 
 
@@ -2917,14 +2953,6 @@ namespace Pixtack3rd
 
         private CaptureRectType _RectType;//切り出し範囲
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected void SetProperty<T>(ref T field, T value, [System.Runtime.CompilerServices.CallerMemberName] string? name = null)
-        {
-            if (EqualityComparer<T>.Default.Equals(field, value)) return;
-            field = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
 
 
         [DataMember]
@@ -2941,41 +2969,6 @@ namespace Pixtack3rd
         }
 
 
-        public ExtensionDataObject? ExtensionData { get; set; }//Dataの互換性維持
-
-        public AppConfig()
-        {
-            DirList = new ObservableCollection<string>();
-            JpegQuality = 94;
-            FileNameSerialIncreace = 1m;
-            FileNameSerialDigit = 4m;
-            HotKey = Key.PrintScreen;
-            IsDrawCursor = false;
-            IsFileNameDate = true;
-
-            //TextColorA = 255;
-            //TextColorR = 255;
-            //TextColorG = 255;
-            //TextColorB = 255;
-        }
-
-
-        //        c# - DataContract、デフォルトのDataMember値
-        //https://stackoverrun.com/ja/q/2220925
-
-        //初期値の設定
-        [OnDeserialized]
-        void OnDeserialized(System.Runtime.Serialization.StreamingContext c)
-        {
-            DirList ??= new();
-            FileNameDateFormatList ??= new();
-            FileNameText1List ??= new();
-            FileNameText2List ??= new();
-            FileNameText3List ??= new();
-            FileNameText4List ??= new();
-            SoundFilePathList ??= new();
-
-        }
     }
 
     #endregion アプリの設定保存用Dataクラス
