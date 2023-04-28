@@ -138,7 +138,8 @@ namespace Pixtack3rd
             if (File.Exists(configFile))
             {
                 //return config;
-                return LoadConfig(configFile);
+                //return LoadConfig(configFile);
+                return DataLoad<AppConfig>(configFile);
             }
             else
             {
@@ -717,27 +718,47 @@ namespace Pixtack3rd
         /// <param name="filePath">設定ファイルのフルパス</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        private static AppConfig LoadConfig(string filePath)
+        //private static AppConfig LoadConfig(string filePath)
+        //{
+        //    try
+        //    {
+        //        using XmlReader reader = XmlReader.Create(filePath);
+        //        DataContractSerializer serializer = new(typeof(AppConfig));
+        //        if (serializer.ReadObject(reader) is AppConfig config)
+        //        {
+        //            return config;
+        //        }
+        //        else
+        //        {
+        //            throw new NullReferenceException();
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show(ex.Message, "読込できんかった");
+        //        return null;
+        //    }
+        //}
+
+        private static T DataLoad<T>(string fileName)
         {
+            DataContractSerializer serializer = new(typeof(T));
             try
             {
-                using XmlReader reader = XmlReader.Create(filePath);
-                DataContractSerializer serializer = new(typeof(AppConfig));
-                if (serializer.ReadObject(reader) is AppConfig config)
+                using XmlReader reader = XmlReader.Create(fileName);
+                if (serializer.ReadObject(reader) is T t)
                 {
-                    return config;
+                    return t;
                 }
-                else
-                {
-                    throw new NullReferenceException();
-                }
+                else throw new NullReferenceException();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "読込できんかった");
-                return null;
+                throw new ArgumentException(ex.Message);
             }
+            
         }
+
 
         /// <summary>
         /// ファイル名に使える文字列ならtrueを返す
