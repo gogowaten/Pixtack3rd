@@ -5,10 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Pixtack3rd"
         xmlns:tomato="clr-namespace:ControlLibraryCore20200620;assembly=ControlLibraryCore20200620"
-        d:DataContext="{d:DesignInstance Type=local:AppConfig}"
+        d:DataContext="{d:DesignInstance Type=local:AppData}"
         mc:Ignorable="d"
         Title="MainWindow" Height="950" Width="800" ResizeMode="CanResizeWithGrip"
-        Top="{Binding Path=Top, Mode=TwoWay}" Left="{Binding Left, Mode=TwoWay}"
+        Top="{Binding Path=AppTop, Mode=TwoWay}" Left="{Binding AppLeft, Mode=TwoWay}"
         AllowDrop="True" Name="Main">
   <!--フォーカス時の点線を表示しない-->
   <Window.Resources>
@@ -951,9 +951,9 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
 
       <TabItem Header="設定" DataContext="{Binding}">
         <StackPanel>
-          <CheckBox Content="起動時に前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>
-          <CheckBox Content="複数追加時はファイル名昇順ソートで追加する" IsChecked="{Binding IsAscendingSort}"/>
-          <CheckBox Content="ファイルからのThumb追加は最上層にする" IsChecked="{Binding IsAddUpper}">
+          <!--<CheckBox Content="起動時に前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>-->
+          <CheckBox Content="複数追加時はファイル名降順で追加する" IsChecked="{Binding IsDecendingSort}"/>
+          <CheckBox Content="ファイルからのThumb追加は最下層にする" IsChecked="{Binding IsThumbAddUnder}">
             <CheckBox.ToolTip>
               <TextBlock>
                 初期値On、<LineBreak/>

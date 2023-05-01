@@ -58,6 +58,10 @@ namespace Pixtack3rd
         private bool _isVisibleThumb = false;
         [DataMember] public bool IsNotVisiblle { get => _isVisibleThumb; set => SetProperty(ref _isVisibleThumb, value); }
 
+        ////新規Thumb追加場所
+        //private bool _isAddUnder = false;
+        //[DataMember] public bool IsAddUnder { get => _isAddUnder = false; set => SetProperty(ref _isAddUnder = false, value); }
+
         #endregion Group専用
 
         #region 共通

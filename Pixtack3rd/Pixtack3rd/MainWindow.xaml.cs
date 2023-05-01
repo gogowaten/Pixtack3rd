@@ -22,6 +22,7 @@ using System.Xml;
 using System.Windows.Controls.Primitives;
 using System.Reflection;
 using ControlLibraryCore20200620;
+using System.Security.Policy;
 
 namespace Pixtack3rd
 {
@@ -30,12 +31,16 @@ namespace Pixtack3rd
     /// </summary>
     public partial class MainWindow : Window
     {
-
+        //アプリの設定Data、DataContextにする
         public AppConfig MyAppConfig { get; set; }
+        public AppData MyAppData { get; set; }
+
         //アプリ情報
         private const string APP_NAME = "Pixtack3rd";
         //アプリの設定ファイル名
         private const string APP_CONFIG_FILE_NAME = "config.xml";
+        private const string APPDATA_FILE_NAME = "appdata.xml";
+
         //データのファイル名
         private readonly string XML_FILE_NAME = "Data.xml";
         private const string APP_LAST_END_TIME_FILE_NAME = "LastEndTimeData" + EXTENSION_NAME_APP;
@@ -51,7 +56,11 @@ namespace Pixtack3rd
         private const string EXTENSION_FILTER_P3 = "Data + 設定|*" + EXTENSION_NAME_APP;
         private const string EXTENSION_FILTER_P3D = "Data|*" + EXTENSION_NAME_DATA;
 
-        private string AppVersion;
+        //アプリのバージョン
+        private readonly string AppVersion;
+        //アプリのフォルダパス
+        private string AppDirectory;
+
         //datetime.tostringの書式、これを既定値にする
         private const string DATE_TIME_STRING_FORMAT = "yyyyMMdd'_'HHmmss'_'fff";
         private const string APP_ROOT_DATA_FILENAME = "TTRoot" + EXTENSION_NAME_DATA;
@@ -73,15 +82,18 @@ namespace Pixtack3rd
         {
             InitializeComponent();
 
+            AppVersion = GetAppVersion();
+            AppDirectory = Environment.CurrentDirectory;
 
             MyAppConfig = GetAppConfig(APP_CONFIG_FILE_NAME);
+            MyAppData = GetAppData();
 
             //前回終了時に保存したファイルのフルパスをセット
             AppLastEndTimeDataFilePath = System.IO.Path.Combine(
-                Environment.CurrentDirectory, APP_LAST_END_TIME_FILE_NAME);
+                AppDirectory, APP_LAST_END_TIME_FILE_NAME);
 
 
-            AppVersion = GetAppVersion();
+            
             MyInitialize();
 
             MyInitializeComboBox();
@@ -90,16 +102,6 @@ namespace Pixtack3rd
             Closed += MainWindow_Closed;
 
             MyTabControl.SelectedIndex = 2;
-
-            //string imagePath = "D:\\ブログ用\\テスト用画像\\collection5.png";
-            //string imagePath1 = "D:\\ブログ用\\テスト用画像\\collection4.png";
-
-            //Data dataImg1 = new(TType.Image) { BitmapSource = TTRoot.GetBitmap(imagePath) };
-            //Data dataImg2 = new(TType.Image) { BitmapSource = TTRoot.GetBitmap(imagePath1), X = 100, Y = 100 };
-            //MyTextBox1.KeyDown += (a, b) =>
-            //{
-            //    var maiX = b.Source;
-            //};
 
             // マウスクリックでShape描画
             MyDrawCanvas.MouseLeftButtonDown += MyDrawCanvas_MouseLeftButtonDown;
@@ -130,10 +132,10 @@ namespace Pixtack3rd
         /// </summary>
         /// <fileName>拡張子を含めたファイル名</fileName>
         /// <returns></returns>
-        private static AppConfig GetAppConfig(string fileName)
+        private AppConfig GetAppConfig(string fileName)
         {
             string configFile = System.IO.Path.Combine(
-                Environment.CurrentDirectory, fileName);
+                AppDirectory, fileName);
 
             if (File.Exists(configFile))
             {
@@ -145,6 +147,18 @@ namespace Pixtack3rd
             {
                 return new AppConfig();
             }
+        }
+        private AppData GetAppData()
+        {
+            string filePath = System.IO.Path.Combine(
+                AppDirectory,
+                APPDATA_FILE_NAME);
+
+            if (File.Exists(filePath))
+            {
+                return DataLoad<AppData>(filePath);
+            }
+            else { return new AppData(); }
         }
 
         private void MyInitialize()
@@ -164,10 +178,14 @@ namespace Pixtack3rd
             }
 
             //枠表示の設定Binding、これはいまいちな処理
-            MyRoot.SetBinding(TTRoot.TTWakuVisibleTypeProperty, new Binding(nameof(MyAppConfig.WakuVisibleType)) { Source = this.MyAppConfig });
+            MyRoot.SetBinding(TTRoot.TTWakuVisibleTypeProperty, new Binding(nameof(MyAppData.WakuVisibleType)) { Source = this.MyAppConfig });
+            //MyRoot.SetBinding(TTRoot.TTWakuVisibleTypeProperty, new Binding(nameof(MyAppConfig.WakuVisibleType)) { Source = this.MyAppConfig });
+
 
             //データコンテキストの設定、Bindingをした後じゃないと反映されない
-            DataContext = MyAppConfig;
+            //DataContext = MyAppConfig;
+            DataContext = MyAppData;
+
 
             //ショートカットキー
             this.PreviewKeyDown += MainWindow_PreviewKeyDown;
@@ -358,8 +376,10 @@ namespace Pixtack3rd
             item = new() { Header = "コピペ" }; menu.Items.Add(item);
             item.Click += (s, e) =>
             {
-                if (GetAreaBitmap() is BitmapSource bmp) MyRoot.AddThumbDataToActiveGroup(
-                    new Data(TType.Image) { BitmapSource = bmp }, true, true);
+                if (GetAreaBitmap() is BitmapSource bmp) MyRoot.AddThumbDataToActiveGroup2(
+                    new Data(TType.Image) { BitmapSource = bmp }, false, true);
+                //if (GetAreaBitmap() is BitmapSource bmp) MyRoot.AddThumbDataToActiveGroup(
+                //    new Data(TType.Image) { BitmapSource = bmp }, true, true);
             };
             item = new() { Header = "名前を付けて保存" }; menu.Items.Add(item);
             item.Click += (s, e) => { if (GetAreaBitmap() is BitmapSource bmp) SaveBitmap2(bmp); };
@@ -1453,13 +1473,15 @@ namespace Pixtack3rd
                         data = ConvertDataRootToGroup(data);
                         if (data != null && MyAppConfig != null)
                         {
-                            MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
+                            MyRoot.AddThumbDataToActiveGroup2(data, MyAppData.IsThumbAddUnder);
+                            //MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
                         }
                         else { errorFiles.Add(item); continue; }
                     }
                     else if (MyAppConfig is not null)
                     {
-                        MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
+                        MyRoot.AddThumbDataToActiveGroup2(data, MyAppData.IsThumbAddUnder);
+                        //MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
                     }
 
 
@@ -1498,7 +1520,8 @@ namespace Pixtack3rd
 
                         if (MyAppConfig is not null)
                         {
-                            MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
+                            MyRoot.AddThumbDataToActiveGroup2(data, MyAppData.IsThumbAddUnder);
+                            //MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
                         }
                     }
                     catch (Exception)
@@ -1704,6 +1727,75 @@ namespace Pixtack3rd
                 }
             }
         }
+        private (Data? data, AppData? config) LoadDataFromFile2(string filePath)
+        {
+            try
+            {
+                using FileStream zipStream = File.OpenRead(filePath);
+                using ZipArchive archive = new(zipStream, ZipArchiveMode.Read);
+                ZipArchiveEntry? entry = archive.GetEntry(XML_FILE_NAME);
+                if (entry != null)
+                {
+                    //Dataをデシリアライズ
+                    using Stream entryStream = entry.Open();
+                    DataContractSerializer serializer = new(typeof(Data));
+                    using var reader = XmlReader.Create(entryStream);
+                    Data? data = (Data?)serializer.ReadObject(reader);
+                    if (data is null) return (null, null);
+
+                    SubSetImageSource(data, archive);
+
+                    //画像をデコードしてDataに設定する
+                    SubLoop(data, archive);
+
+
+                    //アプリの設定をデシリアライズ
+                    entry = archive.GetEntry(APP_CONFIG_FILE_NAME);
+                    if (entry != null)
+                    {
+                        using Stream entryAppConfig = entry.Open();
+                        serializer = new(typeof(AppData));
+                        using (var appConfigReader = XmlReader.Create(entryAppConfig))
+                        {
+                            AppData? config = (AppData?)serializer.ReadObject(appConfigReader);
+                            return (data, config);
+                        }
+                    }
+                    else
+                    {
+                        return (data, null);
+                    }
+                }
+            }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
+            return (null, null);
+
+            void SubLoop(Data data, ZipArchive archive)
+            {
+                foreach (var item in data.Datas)
+                {
+                    //DataのTypeがImage型ならzipから画像を取り出して設定
+                    if (item.Type == TType.Image) { SubSetImageSource(item, archive); }
+                    //DataのTypeがGroupなら子要素も取り出す
+                    else if (item.Type == TType.Group) { SubLoop(item, archive); }
+                }
+            }
+            void SubSetImageSource(Data data, ZipArchive archive)
+            {
+                //Guidに一致する画像ファイルをデコードしてプロパティに設定
+                ZipArchiveEntry? imageEntry = archive.GetEntry(data.Guid + ".png");
+                if (imageEntry != null)
+                {
+                    using Stream imageStream = imageEntry.Open();
+                    PngBitmapDecoder decoder =
+                        new(imageStream,
+                        BitmapCreateOptions.None,
+                        BitmapCacheOption.Default);
+                    data.BitmapSource = decoder.Frames[0];//設定
+                }
+            }
+        }
+
         ////前回終了時のデータ読み込み
         //private void ButtonLoadDataPrevious_Click(object sender, RoutedEventArgs e)
         //{
@@ -1772,7 +1864,8 @@ namespace Pixtack3rd
                     }
                     else if (ConvertDataRootToGroup(data) is Data groupData)
                     {
-                        MyRoot.AddThumbDataToActiveGroup(groupData, MyAppConfig.IsAddUpper);
+                        MyRoot.AddThumbDataToActiveGroup2(groupData, MyAppData.IsThumbAddUnder);
+                        //MyRoot.AddThumbDataToActiveGroup(groupData, MyAppConfig.IsAddUpper);
                         return true;
                     }
                 }
@@ -1811,15 +1904,26 @@ namespace Pixtack3rd
         {
             if (GetLoadFilePathFromFileDialog(EXTENSION_FILTER_P3D) is string filePath)
             {
-                (Data? data, AppConfig? config) = LoadDataFromFile(filePath);
+                (Data? data, AppData? config) = LoadDataFromFile2(filePath);
                 if (data is not null && config is not null)
                 {
-                    MyRoot.AddThumbDataToActiveGroup(data, config.IsAddUpper);
+                    MyRoot.AddThumbDataToActiveGroup2(data, config.IsThumbAddUnder);
                     return true;
                 }
                 return false;
             }
             return false;
+            //if (GetLoadFilePathFromFileDialog(EXTENSION_FILTER_P3D) is string filePath)
+            //{
+            //    (Data? data, AppConfig? config) = LoadDataFromFile(filePath);
+            //    if (data is not null && config is not null)
+            //    {
+            //        MyRoot.AddThumbDataToActiveGroup(data, config.IsAddUpper);
+            //        return true;
+            //    }
+            //    return false;
+            //}
+            //return false;
         }
 
         //複数ファイル
@@ -2021,10 +2125,8 @@ namespace Pixtack3rd
         {
             //設定保存
             SaveConfig(System.IO.Path.Combine(
-                Environment.CurrentDirectory, APP_CONFIG_FILE_NAME), MyAppConfig);
+                AppDirectory, APP_CONFIG_FILE_NAME), MyAppConfig);
             //RootData保存
-            //SaveRootDataWithConfig(System.IO.Path.Combine(
-            //    Environment.CurrentDirectory, APP_ROOT_DATA_FILENAME), MyRoot.Data, true);
             SaveRootDataWithConfig(AppLastEndTimeDataFilePath, MyRoot.Data, true);
         }
 
@@ -2202,7 +2304,8 @@ namespace Pixtack3rd
             //画像として複製、全体
             if (MyRoot.GetBitmapRoot() is BitmapSource bmp)
             {
-                MyRoot.AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp }, true);
+                MyRoot.AddThumbDataToActiveGroup2(new Data(TType.Image) { BitmapSource = bmp }, false);
+                //MyRoot.AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp }, true);
             }
         }
 
@@ -2234,7 +2337,8 @@ namespace Pixtack3rd
             //Dataとして複製、全体Root
             if (ConvertDataRootToGroup(MyRoot.Data) is Data data && MyRoot.Thumbs.Count > 0)
             {
-                MyRoot.AddThumbDataToActiveGroup(data, true);
+                MyRoot.AddThumbDataToActiveGroup2(data, false);
+                //MyRoot.AddThumbDataToActiveGroup(data, true);
                 return true;
             }
             return false;
@@ -2598,7 +2702,8 @@ namespace Pixtack3rd
 
 
             FixTopLeftPointCollectionData(data);
-            MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper, locateFix);
+            MyRoot.AddThumbDataToActiveGroup2(data, MyAppData.IsThumbAddUnder, locateFix);
+            //MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper, locateFix);
         }
 
 
@@ -2681,7 +2786,8 @@ namespace Pixtack3rd
             if (MyCheckIsBold.IsChecked == true) { data.IsBold = true; }
             if (MyCheckIsItalic.IsChecked == true) { data.IsItalic = true; }
 
-            MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
+            MyRoot.AddThumbDataToActiveGroup2(data, MyAppData.IsThumbAddUnder);
+            //MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
         }
 
         //TestDrawPolyline
@@ -2831,21 +2937,22 @@ namespace Pixtack3rd
 
         }
 
-        //枠表示設定
-        private WakuVisibleType _wakuVisibleType = WakuVisibleType.All;
-        [DataMember]
-        public WakuVisibleType WakuVisibleType
-        {
-            get => _wakuVisibleType;
-            set => SetProperty(ref _wakuVisibleType, value);
-        }
+        ////枠表示設定
+        //private WakuVisibleType _wakuVisibleType = WakuVisibleType.All;
+        //[DataMember]
+        //public WakuVisibleType WakuVisibleType
+        //{
+        //    get => _wakuVisibleType;
+        //    set => SetProperty(ref _wakuVisibleType, value);
+        //}
+
         //複数ファイル追加時の順番、昇順ソート、falseなら降順ソートになる
         private bool _isAscendingSort = true;
         [DataMember] public bool IsAscendingSort { get => _isAscendingSort; set => SetProperty(ref _isAscendingSort, value); }
         //Thumbは上側に追加する、falseなら下側に追加
 
-        private bool _isAddUpper = true;
-        [DataMember] public bool IsAddUpper { get => _isAddUpper; set => SetProperty(ref _isAddUpper, value); }
+        //private bool _isAddUpper = true;
+        //[DataMember] public bool IsAddUpper { get => _isAddUpper; set => SetProperty(ref _isAddUpper, value); }
 
 
 
