@@ -76,7 +76,14 @@ namespace Pixtack3rd
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            SolidColorBrush solid=(SolidColorBrush)value;
+
+            object[] obj = new object[4];
+            obj[0] = solid.Color.A;
+            obj[1] = solid.Color.R;
+            obj[2] = solid.Color.G;
+            obj[3] = solid.Color.B;
+            return obj;
         }
     }
 

@@ -26,7 +26,7 @@ namespace Pixtack3rd
     {
         public AppData()
         {
-            
+
         }
 
         #region 必要
@@ -104,45 +104,125 @@ namespace Pixtack3rd
 
         #region 文字列色
 
-        [DataMember]
-        public Color TextForeColor
+        //[DataMember]
+        //public Color TextForeColor
+        //{
+        //    get { return (Color)GetValue(TextForeColorProperty); }
+        //    set { SetValue(TextForeColorProperty, value); }
+        //}
+        //public static readonly DependencyProperty TextForeColorProperty =
+        //    DependencyProperty.Register(nameof(TextForeColor), typeof(Color), typeof(AppData),
+        //        new FrameworkPropertyMetadata(Colors.Black,
+        //            FrameworkPropertyMetadataOptions.AffectsRender |
+        //            FrameworkPropertyMetadataOptions.AffectsMeasure |
+        //            FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        //[DataMember]
+        //public Color TextBackColor
+        //{
+        //    get { return (Color)GetValue(TextBackColorProperty); }
+        //    set { SetValue(TextBackColorProperty, value); }
+        //}
+        //public static readonly DependencyProperty TextBackColorProperty =
+        //    DependencyProperty.Register(nameof(TextBackColor), typeof(Color), typeof(AppData),
+        //        new FrameworkPropertyMetadata(Colors.Lavender,
+        //            FrameworkPropertyMetadataOptions.AffectsRender |
+        //            FrameworkPropertyMetadataOptions.AffectsMeasure |
+        //            FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        //[DataMember]
+
+        //public Color TextBorderColor
+        //{
+        //    get { return (Color)GetValue(TextBorderColorProperty); }
+        //    set { SetValue(TextBorderColorProperty, value); }
+        //}
+        //public static readonly DependencyProperty TextBorderColorProperty =
+        //    DependencyProperty.Register(nameof(TextBorderColor), typeof(Color), typeof(AppData),
+        //        new FrameworkPropertyMetadata(Colors.Gray,
+        //            FrameworkPropertyMetadataOptions.AffectsRender |
+        //            FrameworkPropertyMetadataOptions.AffectsMeasure |
+        //            FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+
+        //private byte _textForeColorA = 255;
+        //[DataMember] public byte TextForeColorA { get => _textForeColorA; set => SetProperty(ref _textForeColorA, value); }
+        //private byte _textForeColorR = 0;
+        //[DataMember] public byte TextForeColorR { get => _textForeColorR; set => SetProperty(ref _textForeColorR, value); }
+        //private byte _textForeColorG = 0;
+        //[DataMember] public byte TextForeColorG { get => _textForeColorG; set => SetProperty(ref _textForeColorG, value); }
+        //private byte _textForeColorB = 0;
+        //[DataMember] public byte TextForeColorB { get => _textForeColorB; set => SetProperty(ref _textForeColorB, value); }
+
+
+        public byte TextForeColorA
         {
-            get { return (Color)GetValue(TextForeColorProperty); }
-            set { SetValue(TextForeColorProperty, value); }
+            get { return (byte)GetValue(TextForeColorAProperty); }
+            set { SetValue(TextForeColorAProperty, value); }
         }
-        public static readonly DependencyProperty TextForeColorProperty =
-            DependencyProperty.Register(nameof(TextForeColor), typeof(Color), typeof(AppData),
-                new FrameworkPropertyMetadata(Colors.Black,
+        public static readonly DependencyProperty TextForeColorAProperty =
+            DependencyProperty.Register(nameof(TextForeColorA), typeof(byte), typeof(AppData),
+                new FrameworkPropertyMetadata((byte)250,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        [DataMember]
-        public Color TextBackColor
+        public byte TextForeColorR
         {
-            get { return (Color)GetValue(TextBackColorProperty); }
-            set { SetValue(TextBackColorProperty, value); }
+            get { return (byte)GetValue(TextForeColorRProperty); }
+            set { SetValue(TextForeColorRProperty, value); }
         }
-        public static readonly DependencyProperty TextBackColorProperty =
-            DependencyProperty.Register(nameof(TextBackColor), typeof(Color), typeof(AppData),
-                new FrameworkPropertyMetadata(Colors.Lavender,
+        public static readonly DependencyProperty TextForeColorRProperty =
+            DependencyProperty.Register(nameof(TextForeColorR), typeof(byte), typeof(AppData),
+                new FrameworkPropertyMetadata((byte)210,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        [DataMember]
-
-        public Color TextBorderColor
+        public byte TextForeColorG
         {
-            get { return (Color)GetValue(TextBorderColorProperty); }
-            set { SetValue(TextBorderColorProperty, value); }
+            get { return (byte)GetValue(TextForeColorGProperty); }
+            set { SetValue(TextForeColorGProperty, value); }
         }
-        public static readonly DependencyProperty TextBorderColorProperty =
-            DependencyProperty.Register(nameof(TextBorderColor), typeof(Color), typeof(AppData),
-                new FrameworkPropertyMetadata(Colors.Gray,
+        public static readonly DependencyProperty TextForeColorGProperty =
+            DependencyProperty.Register(nameof(TextForeColorG), typeof(byte), typeof(AppData),
+                new FrameworkPropertyMetadata((byte)0,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public byte TextForeColorB
+        {
+            get { return (byte)GetValue(TextForeColorBProperty); }
+            set { SetValue(TextForeColorBProperty, value); }
+        }
+        public static readonly DependencyProperty TextForeColorBProperty =
+            DependencyProperty.Register(nameof(TextForeColorB), typeof(byte), typeof(AppData),
+                new FrameworkPropertyMetadata((byte)0,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+
+        private byte _textBackColorA = 255;
+        [DataMember] public byte TextBackColorA { get => _textBackColorA; set => SetProperty(ref _textBackColorA, value); }
+        private byte _textBackColorR = 200;
+        [DataMember] public byte TextBackColorR { get => _textBackColorR; set => SetProperty(ref _textBackColorR, value); }
+        private byte _textBackColorG = 200;
+        [DataMember] public byte TextBackColorG { get => _textBackColorG; set => SetProperty(ref _textBackColorG, value); }
+        private byte _textBackColorB = 200;
+        [DataMember] public byte TextBackColorB { get => _textBackColorB; set => SetProperty(ref _textBackColorB, value); }
+
+        
+        private byte _textBorderColorA = 255;
+        [DataMember] public byte TextBorderColorA { get => _textBorderColorA; set => SetProperty(ref _textBorderColorA, value); }
+        private byte _textBorderColorR = 128;
+        [DataMember] public byte TextBorderColorR { get => _textBorderColorR; set => SetProperty(ref _textBorderColorR, value); }
+        private byte _textBorderColorG = 128;
+        [DataMember] public byte TextBorderColorG { get => _textBorderColorG; set => SetProperty(ref _textBorderColorG, value); }
+        private byte _textBorderColorB = 128;
+        [DataMember] public byte TextBorderColorB { get => _textBorderColorB; set => SetProperty(ref _textBorderColorB, value); }
+
 
         #endregion 色
 
@@ -239,7 +319,8 @@ namespace Pixtack3rd
         #endregion 範囲選択Thumb
 
 
-       [DataMember] public bool IsThumbAddUnder
+        [DataMember]
+        public bool IsThumbAddUnder
         {
             get { return (bool)GetValue(IsThumbAddUnderProperty); }
             set { SetValue(IsThumbAddUnderProperty, value); }
@@ -253,7 +334,7 @@ namespace Pixtack3rd
 
 
         private bool _isDecendingSort;
-       [DataMember] public bool IsDecendingSort { get => _isDecendingSort; set => SetProperty(ref _isDecendingSort, value); }
+        [DataMember] public bool IsDecendingSort { get => _isDecendingSort; set => SetProperty(ref _isDecendingSort, value); }
 
         //枠表示設定
         private WakuVisibleType _wakuVisibleType = WakuVisibleType.All;

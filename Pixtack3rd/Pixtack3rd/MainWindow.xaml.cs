@@ -93,7 +93,7 @@ namespace Pixtack3rd
                 AppDirectory, APP_LAST_END_TIME_FILE_NAME);
 
 
-            
+
             MyInitialize();
 
             MyInitializeComboBox();
@@ -178,7 +178,7 @@ namespace Pixtack3rd
             }
 
             //枠表示の設定Binding、これはいまいちな処理
-            MyRoot.SetBinding(TTRoot.TTWakuVisibleTypeProperty, new Binding(nameof(MyAppData.WakuVisibleType)) { Source = this.MyAppConfig });
+            MyRoot.SetBinding(TTRoot.TTWakuVisibleTypeProperty, new Binding(nameof(MyAppData.WakuVisibleType)) { Source = this.MyAppData });
             //MyRoot.SetBinding(TTRoot.TTWakuVisibleTypeProperty, new Binding(nameof(MyAppConfig.WakuVisibleType)) { Source = this.MyAppConfig });
 
 
@@ -237,14 +237,14 @@ namespace Pixtack3rd
         {
             //文字色Binding
             MultiBinding mb = new();
-            mb.Converter = new MyConverterARGB2SolidBrush();
-            mb.Mode = BindingMode.TwoWay;
-            //mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorA)));//Source指定なしだとunsetvalueでConverterエラー
-            mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorA)) { Source = MyAppConfig, Mode = BindingMode.TwoWay });
-            mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorR)) { Source = MyAppConfig, Mode = BindingMode.TwoWay });
-            mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorG)) { Source = MyAppConfig, Mode = BindingMode.TwoWay });
-            mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorB)) { Source = MyAppConfig, Mode = BindingMode.TwoWay });
-            MyBorderFontColor.SetBinding(BackgroundProperty, mb);
+            //mb.Converter = new MyConverterARGB2SolidBrush();
+            //mb.Mode = BindingMode.TwoWay;
+            ////mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorA)));//Source指定なしだとunsetvalueでConverterエラー
+            //mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorA)) { Source = MyAppConfig, Mode = BindingMode.TwoWay });
+            //mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorR)) { Source = MyAppConfig, Mode = BindingMode.TwoWay });
+            //mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorG)) { Source = MyAppConfig, Mode = BindingMode.TwoWay });
+            //mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorB)) { Source = MyAppConfig, Mode = BindingMode.TwoWay });
+            //MyBorderFontColor.SetBinding(BackgroundProperty, mb);
 
             //初期値の指定方法がわからんのでここで透明度0なら255にする
             if (MyAppConfig.TextColorA == 0) MyAppConfig.TextColorA = 255;
@@ -254,6 +254,15 @@ namespace Pixtack3rd
             MyAreaThumb.SetBinding(WidthProperty, new Binding(nameof(AppConfig.AreaWidth)) { Mode = BindingMode.TwoWay });
             MyAreaThumb.SetBinding(HeightProperty, new Binding(nameof(AppConfig.AreaHeight)) { Mode = BindingMode.TwoWay });
 
+
+            mb = new();
+            mb.Converter = new MyConverterARGB2SolidBrush();
+            mb.Mode = BindingMode.TwoWay;
+            mb.Bindings.Add(new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.TextForeColorAProperty),Mode=BindingMode.TwoWay });
+            mb.Bindings.Add(new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.TextForeColorRProperty), Mode = BindingMode.TwoWay });
+            mb.Bindings.Add(new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.TextForeColorGProperty), Mode = BindingMode.TwoWay });
+            mb.Bindings.Add(new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.TextForeColorBProperty), Mode = BindingMode.TwoWay });
+            MyBorderFontColor.SetBinding(BackgroundProperty, mb);
         }
 
 
@@ -776,7 +785,7 @@ namespace Pixtack3rd
             {
                 throw new ArgumentException(ex.Message);
             }
-            
+
         }
 
 
@@ -2457,7 +2466,7 @@ namespace Pixtack3rd
             var neko = MyBorderFontColor.Background;
             var confcolor = MyAppConfig;
             var aaa = new AppConfig();
-
+            var appdata = MyAppData;
             var textcolor = MyBorderFontColor;
 
             var direc = Canvas.GetLeft(MyTTGermtricShape.MyShape);
@@ -2871,6 +2880,8 @@ namespace Pixtack3rd
             if (picker.ShowDialog() == true)
             {
                 MyBorderFontColor.Background = new SolidColorBrush(picker.PickColor);
+                //var c = picker.PickColor;
+
             }
             else
             {
