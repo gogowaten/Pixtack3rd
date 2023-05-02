@@ -39,7 +39,7 @@ namespace Pixtack3rd
         private const string APP_NAME = "Pixtack3rd";
         //アプリの設定ファイル名
         private const string APP_CONFIG_FILE_NAME = "config.xml";
-        private const string APPDATA_FILE_NAME = "appdata.xml";
+        private const string APPDATA_FILE_NAME = "ps3appdata.xml";
 
         //データのファイル名
         private readonly string XML_FILE_NAME = "Data.xml";
@@ -247,22 +247,68 @@ namespace Pixtack3rd
             //MyBorderFontColor.SetBinding(BackgroundProperty, mb);
 
             //初期値の指定方法がわからんのでここで透明度0なら255にする
-            if (MyAppConfig.TextColorA == 0) MyAppConfig.TextColorA = 255;
+            //if (MyAppConfig.TextColorA == 0) MyAppConfig.TextColorA = 255;
 
             //AreaThumb範囲選択用
-            MyAreaThumb.DataContext = MyAppConfig;
-            MyAreaThumb.SetBinding(WidthProperty, new Binding(nameof(AppConfig.AreaWidth)) { Mode = BindingMode.TwoWay });
-            MyAreaThumb.SetBinding(HeightProperty, new Binding(nameof(AppConfig.AreaHeight)) { Mode = BindingMode.TwoWay });
+            //MyAreaThumb.DataContext = MyAppConfig;
+            //MyAreaThumb.SetBinding(WidthProperty, new Binding(nameof(AppConfig.AreaWidth)) { Mode = BindingMode.TwoWay });
+            //MyAreaThumb.SetBinding(HeightProperty, new Binding(nameof(AppConfig.AreaHeight)) { Mode = BindingMode.TwoWay });
+
+            MyAreaThumb.DataContext = MyAppData;
+            MyAreaThumb.SetBinding(WidthProperty, new Binding(nameof(AppData.AreaWidth)) { Mode = BindingMode.TwoWay });
+            MyAreaThumb.SetBinding(HeightProperty, new Binding(nameof(AppData.AreaHeight)) { Mode = BindingMode.TwoWay });
+            MyAreaThumb.SetBinding(Canvas.LeftProperty, new Binding(nameof(AppData.AreaLeft)) { Mode = BindingMode.TwoWay });
+            MyAreaThumb.SetBinding(Canvas.TopProperty, new Binding(nameof(AppData.AreaTop)) { Mode = BindingMode.TwoWay });
+
+            //mb = new()
+            //{
+            //    Converter = new MyConverterARGB2SolidBrush(),
+            //    Mode = BindingMode.TwoWay
+            //};
+            //mb.Bindings.Add(new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.TextForeColorAProperty), Mode = BindingMode.TwoWay });
+            //mb.Bindings.Add(new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.TextForeColorRProperty), Mode = BindingMode.TwoWay });
+            //mb.Bindings.Add(new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.TextForeColorGProperty), Mode = BindingMode.TwoWay });
+            //mb.Bindings.Add(new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.TextForeColorBProperty), Mode = BindingMode.TwoWay });
+            //MyBorderFontColor.SetBinding(BackgroundProperty, mb);
+
+            MyBorderTextForeColor.DataContext = MyAppData;
+            mb = new()
+            {
+                Converter = new MyConverterARGB2SolidBrush(),
+                Mode = BindingMode.TwoWay
+            };
+            mb.Bindings.Add(new Binding(nameof(AppData.TextForeColorA)) { Mode = BindingMode.TwoWay });
+            mb.Bindings.Add(new Binding(nameof(AppData.TextForeColorR)) { Mode = BindingMode.TwoWay });
+            mb.Bindings.Add(new Binding(nameof(AppData.TextForeColorG)) { Mode = BindingMode.TwoWay });
+            mb.Bindings.Add(new Binding(nameof(AppData.TextForeColorB)) { Mode = BindingMode.TwoWay });
+            MyBorderTextForeColor.SetBinding(BackgroundProperty, mb);
+
+            MyBorderTextBackColor.DataContext = MyAppData;
+            mb = new()
+            {
+                Converter = new MyConverterARGB2SolidBrush(),
+                Mode = BindingMode.TwoWay
+            };
+            mb.Bindings.Add(new Binding(nameof(AppData.TextBackColorA)) { Mode = BindingMode.TwoWay });
+            mb.Bindings.Add(new Binding(nameof(AppData.TextBackColorR)) { Mode = BindingMode.TwoWay });
+            mb.Bindings.Add(new Binding(nameof(AppData.TextBackColorG)) { Mode = BindingMode.TwoWay });
+            mb.Bindings.Add(new Binding(nameof(AppData.TextBackColorB)) { Mode = BindingMode.TwoWay });
+            MyBorderTextBackColor.SetBinding(BackgroundProperty, mb);
+
+            MyBorderTextBorderColor.DataContext = MyAppData;
+            mb = new()
+            {
+                Converter = new MyConverterARGB2SolidBrush(),
+                Mode = BindingMode.TwoWay
+            };
+            mb.Bindings.Add(new Binding(nameof(AppData.TextBorderColorA)) { Mode = BindingMode.TwoWay });
+            mb.Bindings.Add(new Binding(nameof(AppData.TextBorderColorR)) { Mode = BindingMode.TwoWay });
+            mb.Bindings.Add(new Binding(nameof(AppData.TextBorderColorG)) { Mode = BindingMode.TwoWay });
+            mb.Bindings.Add(new Binding(nameof(AppData.TextBorderColorB)) { Mode = BindingMode.TwoWay });
+            MyBorderTextBorderColor.SetBinding(BackgroundProperty, mb);
 
 
-            mb = new();
-            mb.Converter = new MyConverterARGB2SolidBrush();
-            mb.Mode = BindingMode.TwoWay;
-            mb.Bindings.Add(new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.TextForeColorAProperty),Mode=BindingMode.TwoWay });
-            mb.Bindings.Add(new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.TextForeColorRProperty), Mode = BindingMode.TwoWay });
-            mb.Bindings.Add(new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.TextForeColorGProperty), Mode = BindingMode.TwoWay });
-            mb.Bindings.Add(new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.TextForeColorBProperty), Mode = BindingMode.TwoWay });
-            MyBorderFontColor.SetBinding(BackgroundProperty, mb);
+
         }
 
 
@@ -601,6 +647,43 @@ namespace Pixtack3rd
                 //throw new ArgumentException("保存できなかった", ex.Message);                
             }
         }
+        private void SaveAppData<T>(string path, T data)
+        {
+            XmlWriterSettings settings = new()
+            {
+                Encoding = new UTF8Encoding(false),
+                Indent = true,
+                NewLineOnAttributes = false,
+                ConformanceLevel = ConformanceLevel.Fragment
+            };
+            XmlWriter writer;
+            DataContractSerializer serializer = new(typeof(T));
+            using (writer = XmlWriter.Create(path, settings))
+            {
+                try { serializer.WriteObject(writer, data); }
+                catch (Exception ex) { throw new ArgumentException(ex.Message); }
+            }
+        }
+
+        private T LoadAppData<T>(string path)
+        {
+            DataContractSerializer serializer = new(typeof(T));
+            try
+            {
+                using XmlReader reader = XmlReader.Create(path);
+                if (serializer.ReadObject(reader) is T t)
+                {
+                    return t;
+                }
+                else throw new NullReferenceException();
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+
+        }
+
         #endregion 設定保存と読み込み
 
         #region その他関数
@@ -2463,11 +2546,11 @@ namespace Pixtack3rd
 
         private void ButtonTest_Click(object sender, RoutedEventArgs e)
         {
-            var neko = MyBorderFontColor.Background;
+            var neko = MyBorderTextForeColor.Background;
             var confcolor = MyAppConfig;
             var aaa = new AppConfig();
             var appdata = MyAppData;
-            var textcolor = MyBorderFontColor;
+            var textcolor = MyBorderTextForeColor;
 
             var direc = Canvas.GetLeft(MyTTGermtricShape.MyShape);
 
@@ -2479,6 +2562,13 @@ namespace Pixtack3rd
 
         }
 
+        private void ButtonTest2_Click(object sender, RoutedEventArgs e)
+        {
+            string path = System.IO.Path.Combine(AppDirectory, APPDATA_FILE_NAME);            
+            SaveAppData<AppData>(path, MyAppData);
+        }
+
+        
 
         #region 図形関連
 
@@ -2720,10 +2810,6 @@ namespace Pixtack3rd
         #endregion 図形関連
 
 
-        private void ButtonTest2_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
         private void GroupBox_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             if (e.Delta > 0)
@@ -2742,34 +2828,12 @@ namespace Pixtack3rd
             else { MyRoot.ChangeActiveThumbToBackThumb(); }
         }
 
-        private void Grid_KeyDown(object sender, KeyEventArgs e)
-        {
-            //if (MyRoot.ActiveThumb is TTTextBox textb)
-            //{
-            //    if (textb.IsFocused)
-            //    {
 
-            //        e.Handled = true;
-            //    }
-            //}
-            //var isf = MytextBox.IsFocused;
-            //var iskef = MytextBox.IsKeyboardFocused;
-            //var iskfw = MytextBox.IsKeyboardFocusWithin;
-            //if (!MytextBox.IsFocused) { e.Handled = true; }
-            //e.Handled = true;
-        }
 
-        private void Grid_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            //e.Handled = true;
-        }
 
-        private void NumericUpDown_MouseWheel(object sender, MouseWheelEventArgs e)
-        {
 
-        }
-
-        private void ButtonRenderText_Click(object sender, RoutedEventArgs e)
+        //文字列描画
+        private void ButtonRenderText_Click2(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(MyTextBox.Text)) { return; }
 
@@ -2784,19 +2848,14 @@ namespace Pixtack3rd
                 data.FontName = kvp.Key;
             }
 
-
-            data.ForeColor = Color.FromArgb((byte)MyNumeFontA.MyValue,
-                (byte)MyNumeFontR.MyValue, (byte)MyNumeFontG.MyValue, (byte)MyNumeFontB.MyValue);
-            data.BackColor = Color.FromArgb((byte)MyNumeBackA.MyValue,
-                (byte)MyNumeBackR.MyValue, (byte)MyNumeBackG.MyValue, (byte)MyNumeBackB.MyValue);
-            data.BorderColor = Color.FromArgb((byte)MyNumeWakuA.MyValue,
-                (byte)MyNumeWakuR.MyValue, (byte)MyNumeWakuG.MyValue, (byte)MyNumeWakuB.MyValue);
+            data.ForeColor = ((SolidColorBrush)(MyBorderTextForeColor.Background)).Color;
+            data.BackColor = ((SolidColorBrush)(MyBorderTextBackColor.Background)).Color;
+            data.BorderColor = ((SolidColorBrush)(MyBorderTextBorderColor.Background)).Color;
             data.BorderThickness = new Thickness((double)NumeWakuThickness.MyValue);
             if (MyCheckIsBold.IsChecked == true) { data.IsBold = true; }
             if (MyCheckIsItalic.IsChecked == true) { data.IsItalic = true; }
 
             MyRoot.AddThumbDataToActiveGroup2(data, MyAppData.IsThumbAddUnder);
-            //MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
         }
 
         //TestDrawPolyline
@@ -2870,25 +2929,35 @@ namespace Pixtack3rd
 
         }
 
-        private void MyButtonFontColor1_Click(object sender, RoutedEventArgs e)
+        #region 文字列色
+
+        private void MyButtonTextForeColor_Click(object sender, RoutedEventArgs e)
         {
-            Brush brush = MyBorderFontColor.Background;
+            TextColorPicker(MyBorderTextForeColor);
+        }
 
-            ColorPicker picker = new((SolidColorBrush)MyBorderFontColor.Background);
+        private void ButtonTextBackColor_Click(object sender, RoutedEventArgs e)
+        {
+            TextColorPicker(MyBorderTextBackColor);
+        }
+        private void ButtonTextBorderColor_Click(object sender, RoutedEventArgs e)
+        {
+            TextColorPicker(MyBorderTextBorderColor);
+        }
 
-
+        private void TextColorPicker(Border border)
+        {
+            Brush b = border.Background;
+            ColorPicker picker = new((SolidColorBrush)b);
             if (picker.ShowDialog() == true)
             {
-                MyBorderFontColor.Background = new SolidColorBrush(picker.PickColor);
-                //var c = picker.PickColor;
-
+                border.Background = new SolidColorBrush(picker.PickColor);
             }
-            else
-            {
-                MyBorderFontColor.Background = brush;
-            }
-
+            else border.Background = b;
         }
+        #endregion 文字列色
+
+
     }
 
 

@@ -21,7 +21,7 @@ namespace Pixtack3rd
     //}
 
 
-    [DataContract]
+    //[DataContract]
     public class AppData : DependencyObject, IExtensibleDataObject, INotifyPropertyChanged
     {
         public AppData()
@@ -154,7 +154,7 @@ namespace Pixtack3rd
         //private byte _textForeColorB = 0;
         //[DataMember] public byte TextForeColorB { get => _textForeColorB; set => SetProperty(ref _textForeColorB, value); }
 
-
+        [DataMember]
         public byte TextForeColorA
         {
             get { return (byte)GetValue(TextForeColorAProperty); }
@@ -166,7 +166,7 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
+        [DataMember]
         public byte TextForeColorR
         {
             get { return (byte)GetValue(TextForeColorRProperty); }
@@ -178,7 +178,7 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
+        [DataMember]
         public byte TextForeColorG
         {
             get { return (byte)GetValue(TextForeColorGProperty); }
@@ -191,6 +191,7 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
+        [DataMember]
         public byte TextForeColorB
         {
             get { return (byte)GetValue(TextForeColorBProperty); }
@@ -213,7 +214,7 @@ namespace Pixtack3rd
         private byte _textBackColorB = 200;
         [DataMember] public byte TextBackColorB { get => _textBackColorB; set => SetProperty(ref _textBackColorB, value); }
 
-        
+
         private byte _textBorderColorA = 255;
         [DataMember] public byte TextBorderColorA { get => _textBorderColorA; set => SetProperty(ref _textBorderColorA, value); }
         private byte _textBorderColorR = 128;
@@ -224,7 +225,7 @@ namespace Pixtack3rd
         [DataMember] public byte TextBorderColorB { get => _textBorderColorB; set => SetProperty(ref _textBorderColorB, value); }
 
 
-        #endregion 色
+        #endregion 文字列色
 
         #region 文字列描画
         [DataMember]
@@ -240,6 +241,10 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+
+        private double _textBoxBorderWidth;
+        [DataMember] public double TextBoxBorderWidth { get => _textBoxBorderWidth; set => SetProperty(ref _textBoxBorderWidth, value); }
 
         #endregion 文字列描画
 
@@ -270,7 +275,7 @@ namespace Pixtack3rd
         }
         public static readonly DependencyProperty AreaLeftProperty =
             DependencyProperty.Register(nameof(AreaLeft), typeof(double), typeof(AppData),
-                new FrameworkPropertyMetadata(0.0,
+                new FrameworkPropertyMetadata(10.0,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
@@ -283,7 +288,7 @@ namespace Pixtack3rd
         }
         public static readonly DependencyProperty AreaTopProperty =
             DependencyProperty.Register(nameof(AreaTop), typeof(double), typeof(AppData),
-                new FrameworkPropertyMetadata(0.0,
+                new FrameworkPropertyMetadata(10.0,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));

@@ -48,7 +48,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
           <MenuItem Header="画像として名前をつけて保存">
             <MenuItem Header="Root" Click="ButtonSaveToImage_Click"/>
             <MenuItem Header="ActiveThumb" Click="ButtonSaveToImageActive_Click"/>
-            <MenuItem Header="ClickedThumb" Click="ButtonSaveToImageClicked_Click"/>            
+            <MenuItem Header="ClickedThumb" Click="ButtonSaveToImageClicked_Click"/>
           </MenuItem>
           <MenuItem Header="ファイルを開く">
             <!--<MenuItem Header="Root＆アプリ設定" Click="ButtonLoadDataPrevious_Click"/>-->
@@ -414,7 +414,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
       <!--テスト用Canvasここまで-->
 
     </Grid>
-    
+
     <TabControl Grid.Row="1" Grid.Column="0" x:Name="MyTabControl" TabStripPlacement="Top">
 
       <TabItem x:Name="MyTab1App" Header="test1">
@@ -729,9 +729,9 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
 
         </StackPanel>
       </TabItem>
-      
+
       <TabItem Header="文字列">
-      <!--<TabItem Header="文字列" DataContext="{Binding ElementName=MyRoot}">-->
+        <!--<TabItem Header="文字列" DataContext="{Binding ElementName=MyRoot}">-->
         <!--ScrollViewerの中ならマウスホイールで選択タブが変化しなくなる-->
         <ScrollViewer VerticalScrollBarVisibility="Auto">
           <StackPanel>
@@ -753,8 +753,11 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                        FontFamily="{Binding ElementName=MyCombBoxFontFmilyNames, Path=SelectedValue}"
                        FontWeight="{Binding ElementName=MyCheckIsBold, Converter={StaticResource isBold}, Path=IsChecked}"
                        FontStyle="{Binding ElementName=MyCheckIsItalic, Converter={StaticResource isItalic}, Path=IsChecked}"
-                       BorderThickness="{Binding ElementName=NumeWakuThickness, Converter={StaticResource thickness}, Path=MyValue}">
-                <TextBox.Foreground>
+                       BorderThickness="{Binding ElementName=NumeWakuThickness, Converter={StaticResource thickness}, Path=MyValue}"
+                       Foreground="{Binding ElementName=MyBorderTextForeColor, Path=Background}"
+                       Background="{Binding ElementName=MyBorderTextBackColor, Path=Background}"
+                       BorderBrush="{Binding ElementName=MyBorderTextBorderColor, Path=Background}">
+                <!--<TextBox.Foreground>
                   <MultiBinding Converter="{StaticResource color}">
                     <MultiBinding.Bindings>
                       <Binding ElementName="MyNumeFontA" Path="MyValue"/>
@@ -763,8 +766,8 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                       <Binding ElementName="MyNumeFontB" Path="MyValue"/>
                     </MultiBinding.Bindings>
                   </MultiBinding>
-                </TextBox.Foreground>
-                <TextBox.Background>
+                </TextBox.Foreground>-->
+                <!--<TextBox.Background>
                   <MultiBinding Converter="{StaticResource color}">
                     <MultiBinding.Bindings>
                       <Binding ElementName="MyNumeBackA" Path="MyValue"/>
@@ -783,19 +786,18 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                       <Binding ElementName="MyNumeWakuB" Path="MyValue"/>
                     </MultiBinding.Bindings>
                   </MultiBinding>
-                </TextBox.BorderBrush>
+                </TextBox.BorderBrush>-->
 
 
               </TextBox>
             </Grid>
-            <Button x:Name="MyButtonRenderText" Content="描画！" Click="ButtonRenderText_Click"/>
+            <Button x:Name="MyButtonRenderText" Content="描画！" Click="ButtonRenderText_Click2"/>
             <TextBox x:Name="MyTextBox" Text="test"
                      TextWrapping="Wrap" AcceptsTab="True" AcceptsReturn="True"/>
             <DockPanel>
               <tomato:NumericUpDown x:Name="NumeFontSize" MyValue="30"
                                 MyStringFormat="Size 000"
-                                MyMinValue="1" MyMaxValue="1000" MySmallChange="1" MyLargeChange="10"
-                                MouseWheel="NumericUpDown_MouseWheel"/>
+                                MyMinValue="1" MyMaxValue="1000" MySmallChange="1" MyLargeChange="10"/>
               <ComboBox x:Name="MyCombBoxFontFmilyNames" SelectedValuePath="Key" DisplayMemberPath="Value"/>
             </DockPanel>
             <UniformGrid Rows="1">
@@ -821,8 +823,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               <!--<TextBlock Text="枠色" VerticalAlignment="Center"/>-->
               <tomato:NumericUpDown x:Name="NumeWakuThickness" MyValue="0"
                                 MyStringFormat="枠 000"
-                                MyMinValue="0" MyMaxValue="1000" MySmallChange="1" MyLargeChange="10"
-                                MouseWheel="NumericUpDown_MouseWheel"/>
+                                MyMinValue="0" MyMaxValue="1000" MySmallChange="1" MyLargeChange="10"/>
 
               <tomato:NumericUpDown x:Name="MyNumeWakuA" MyMinValue="0" MyMaxValue="255" MyValue="255" MyStringFormat="A 000"/>
               <tomato:NumericUpDown x:Name="MyNumeWakuR" MyMinValue="0" MyMaxValue="255" MyValue="255" MyStringFormat="R 000" BorderBrush="Crimson" Foreground="Black" MyButtonMarkColor="Crimson"/>
@@ -830,61 +831,22 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               <tomato:NumericUpDown x:Name="MyNumeWakuB" MyMinValue="0" MyMaxValue="255" MyValue="0" MyStringFormat="B 000" BorderBrush="DodgerBlue" Foreground="Black" MyButtonMarkColor="RoyalBlue"/>
             </UniformGrid>
             <UniformGrid Rows="1">
-              <TextBlock Text="{Binding TextForeColorR}"/>
-              <Border x:Name="MyBorderFontColor">
-                <!--<Border.Background>
-                  <MultiBinding Converter="{StaticResource ConvARGB2SolidBrush}" Mode="TwoWay">
-                    <MultiBinding.Bindings>
-                      <Binding Path="TextForeColorA"/>
-                      <Binding Path="TextForeColorR"/>
-                      <Binding Path="TextForeColorG"/>
-                      <Binding Path="TextForeColorB"/>
-                    </MultiBinding.Bindings>
-                  </MultiBinding>
-                </Border.Background>-->
-              </Border>
-              <Button x:Name="MyButtonFontColor1" Content="文字色" Click="MyButtonFontColor1_Click"/>
-              <tomato:NumericUpDown MyValue="{Binding TextForeColorA}" MyMinValue="0" MyMaxValue="255"/>
+              <Border x:Name="MyBorderTextForeColor" d:Background="Blue"/>
+              <Button Content="文字色" Click="MyButtonTextForeColor_Click"/>
+              <tomato:NumericUpDown MyValue="{Binding TextForeColorA}" MyMinValue="0" MyMaxValue="255" MyStringFormat="透 000"/>
             </UniformGrid>
             <UniformGrid Rows="1">
-              <Border Background="{Binding TextBackColor, Converter={StaticResource Color2Brush}}"/>
-              <Button Content="背景色"/>
-              <tomato:NumericUpDown/>
+              <Border x:Name="MyBorderTextBackColor" d:Background="Gold"/>
+              <Button Content="背景色" Click="ButtonTextBackColor_Click"/>
+              <tomato:NumericUpDown MyValue="{Binding TextBackColorA}" MyMinValue="0" MyMaxValue="255" MyStringFormat="透 000"/>
             </UniformGrid>
             <UniformGrid Rows="1">
-              <Border Background="{Binding TextBorderColor, Converter={StaticResource Color2Brush}}"/>
-              <Button Content="枠色"/>
-              <tomato:NumericUpDown/>
+              <Border x:Name="MyBorderTextBorderColor" d:Background="Gray"/>
+              <Button Content="枠色" Click="ButtonTextBorderColor_Click"/>
+              <tomato:NumericUpDown MyValue="{Binding TextBorderColorA}" MyMinValue="0" MyMaxValue="255" MyStringFormat="透 000"/>
             </UniformGrid>
-            <StackPanel DataContext="{Binding ElementName=Main}">
-              <TextBlock Text="{Binding MyAppConfig.TextColorA}"/>
-              <TextBox>
-                <TextBox.Background>
-                  <MultiBinding Converter="{StaticResource ConvARGB2SolidBrush}" Mode="TwoWay">
-                    <MultiBinding.Bindings>
-                      <Binding Path="MyAppConfig.TextColorA"/>
-                      <Binding Path="MyAppConfig.TextColorR" Mode="TwoWay"/>
-                      <Binding Path="MyAppConfig.TextColorG"/>
-                      <Binding Path="MyAppConfig.TextColorB"/>
-                    </MultiBinding.Bindings>
-                  </MultiBinding>
-                </TextBox.Background>
-              </TextBox>
-            </StackPanel>
-            <!--<TextBox Text="sample" DataContext="{Binding ElementName=Main, Path=MyAppConfig}">
-              <TextBox.Foreground>
-                <MultiBinding Converter="{StaticResource ConvARGB2SolidBrush}">
-                  <MultiBinding.Bindings>
-                    --><!--<Binding Source="{Binding MyAppConfig}" Path="TextColorA"/>--><!--
-                    <Binding Path="AppConfig.TextColorA"/>
-                    <Binding Path="AppConfig.TextColorA"/>
-                    <Binding Path="AppConfig.TextColorA"/>
-                    <Binding Path="AppConfig.TextColorA"/>
-                  </MultiBinding.Bindings>
-                </MultiBinding>
-              </TextBox.Foreground>
-            </TextBox>-->
-            
+
+
             <!--<ComboBox x:Name="MyComboBoxFontWeight" SelectedValuePath="Key" DisplayMemberPath="Value"/>
             -->
             <!--<ComboBox.ItemTemplate>
@@ -948,16 +910,17 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
 
       <TabItem Header="その他">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-          <StackPanel DataContext="{Binding ElementName=MyRoot, Path=MyTTRange.Data}">
+          <StackPanel>
+            <!--<StackPanel DataContext="{Binding ElementName=MyRoot, Path=MyTTRange.Data}">-->
             <Button Content="範囲選択用Thumb表示" Click="ButtonAddTTRange_Click"/>
             <Button Content="ClicedThumbからサイズ取得" Click="ButtonSetNumeSizeClickedThumb_Click"/>
             <Button Content="ActiveThumbからサイズ取得" Click="ButtonSetNumeSizeActiveThumb_Click"/>
             <Button Content="ActiveGroupからサイズ取得" Click="ButtonSetNumeSizeActiveGroup_Click"/>
             <UniformGrid Rows="1">
               <tomato:NumericUpDown x:Name="MyNumeRangeWidth" MyMinValue="1" MyMaxValue="10000" MyStringFormat="幅 0"
-                                  MyValue="{Binding Width, Mode=TwoWay}" Margin="10,2,10,2"/>
+                                  MyValue="{Binding AreaWidth, Mode=TwoWay}" Margin="10,2,10,2"/>
               <tomato:NumericUpDown x:Name="MyNumeRangeHeight" MyMinValue="1" MyMaxValue="10000" MyStringFormat="高 0"
-                                  MyValue="{Binding Height, Mode=TwoWay}" Margin="10,2,10,2"/>
+                                  MyValue="{Binding AreaHeight, Mode=TwoWay}" Margin="10,2,10,2"/>
             </UniformGrid>
           </StackPanel>
         </ScrollViewer>
