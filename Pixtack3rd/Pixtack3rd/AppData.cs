@@ -337,6 +337,10 @@ namespace Pixtack3rd
         private ImageType _imageType;
         [DataMember] public ImageType ImageType { get => _imageType; set => SetProperty(ref _imageType, value); }
 
+        //Jepg形式で保存時の品質
+        private int _jpegQuality;
+        public int JpegQuality { get => _jpegQuality; set => SetProperty(ref _jpegQuality, value); }
+
 
         private bool _isDecendingSort;
         [DataMember] public bool IsDecendingSort { get => _isDecendingSort; set => SetProperty(ref _isDecendingSort, value); }

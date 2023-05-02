@@ -35,13 +35,15 @@ namespace Pixtack3rd
         public AppConfig MyAppConfig { get; set; }
         public AppData MyAppData { get; set; }
 
-        //アプリ情報
+        //アプリ名
         private const string APP_NAME = "Pixtack3rd";
+        //保存データの拡張子
+        private const string EXT_DATA = ".ps3";
         //アプリの設定ファイル名
         private const string APP_CONFIG_FILE_NAME = "config.xml";
         private const string APPDATA_FILE_NAME = "ps3appdata.xml";
 
-        //データのファイル名
+        //zipデータ内のDataファイル名
         private readonly string XML_FILE_NAME = "Data.xml";
         private const string APP_LAST_END_TIME_FILE_NAME = "LastEndTimeData" + EXTENSION_NAME_APP;
         //読み込んでいるデータファイルのフルパス、上書き保存対象、起動時は前回終了時を読み込み
@@ -53,6 +55,8 @@ namespace Pixtack3rd
         //拡張子名、Thumbデータだけ用の拡張子
         private const string EXTENSION_NAME_DATA = ".p3d";
 
+        private const string EXT_FILTER_DATA = "Data|*" + EXT_DATA;
+        private const string EXT_FILTER_APP = "アプリ設定|*" + ".xml";
         private const string EXTENSION_FILTER_P3 = "Data + 設定|*" + EXTENSION_NAME_APP;
         private const string EXTENSION_FILTER_P3D = "Data|*" + EXTENSION_NAME_DATA;
 
@@ -1316,7 +1320,8 @@ namespace Pixtack3rd
                 case 2:
                     var jpeg = new JpegBitmapEncoder
                     {
-                        QualityLevel = MyAppConfig.JpegQuality
+                        //QualityLevel = MyAppConfig.JpegQuality
+                        QualityLevel = MyAppData.JpegQuality,
                     };
                     return jpeg;
                 case 3:
@@ -1346,7 +1351,8 @@ namespace Pixtack3rd
                     meta.SetQuery("/app1/ifd/{ushort=305}", software);
                     var jpeg = new JpegBitmapEncoder
                     {
-                        QualityLevel = MyAppConfig.JpegQuality
+                        QualityLevel = MyAppData.JpegQuality,
+                        //QualityLevel = MyAppConfig.JpegQuality
                     };
                     return (jpeg, meta);
                 case 3:
@@ -1634,6 +1640,16 @@ namespace Pixtack3rd
                                 MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
+
+        private void OpenFile(string path)
+        {
+            string ext = System.IO.Path.GetExtension(path);
+            if (ext == EXT_DATA)
+            {
+
+            }
+
+        }
         private void MainWindow_Drop(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -1656,6 +1672,29 @@ namespace Pixtack3rd
 
 
         #region データ保存、アプリの設定保存
+
+
+        /// <summary>
+        /// アプリの設定を上書き保存
+        /// </summary>
+        private void SaveAppDataOverride()
+        {
+            string path = System.IO.Path.Combine(AppDirectory, APPDATA_FILE_NAME);
+            SaveAppData<AppData>(path, MyAppData);
+        }
+
+        /// <summary>
+        /// アプリの設定を読み込み＋設定を反映(Binding)
+        /// </summary>
+        private void LoadAppDataAndSetting()
+        {
+            string path = System.IO.Path.Combine(AppDirectory, APPDATA_FILE_NAME);
+            AppData data = LoadAppData<AppData>(path);
+            MyAppData = data;
+            DataContext = MyAppData;
+            SetMyBindings();
+        }
+
 
         /// <summary>
         /// Rootデータをアプリの設定とともにファイルに保存
@@ -1737,6 +1776,80 @@ namespace Pixtack3rd
         }
 
 
+        /// <summary>
+        /// ThumbのDataを名前を付けて保存
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        private bool SaveThumbData(TThumb? thumb)
+        {
+            if (thumb == null) return false;
+            Data data = thumb.Data;
+            
+            if (GetSaveDataFilePath(EXT_FILTER_DATA) is string path)
+            {
+                using FileStream zipStream = File.Create(path);
+                using ZipArchive archive = new(zipStream, ZipArchiveMode.Create);
+                XmlWriterSettings settings = new()
+                {
+                    Indent = true,
+                    Encoding = Encoding.UTF8,
+                    NewLineOnAttributes = true,
+                    ConformanceLevel = ConformanceLevel.Fragment,
+                };
+
+                //シリアライズする型は基底クラス型のDataで大丈夫
+                DataContractSerializer serializer = new(typeof(Data));
+                ZipArchiveEntry entry = archive.CreateEntry(XML_FILE_NAME);
+                using (Stream entryStream = entry.Open())
+                {
+                    using XmlWriter writer = XmlWriter.Create(entryStream, settings);
+                    try
+                    {
+                        serializer.WriteObject(writer, data);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new ArgumentException(ex.Message);
+                    }
+                }
+
+                //BitmapSourceの保存
+                SubLoop(archive, data);
+                return true;
+            }
+            return false;
+
+            void SubLoop(ZipArchive archive, Data subData)
+            {
+                if (data.BitmapSource != null)
+                {
+                    Sub(data, archive);
+                }
+                //子要素のBitmapSource保存
+                foreach (Data item in subData.Datas)
+                {
+                    Sub(item, archive);
+                    if (item.Type == TType.Group) { SubLoop(archive, item); }
+                }
+            }
+            void Sub(Data itemData, ZipArchive archive)
+            {
+                //画像があった場合はpng形式にしてzipに詰め込む
+                if (itemData.BitmapSource is BitmapSource bmp)
+                {
+                    ZipArchiveEntry entry = archive.CreateEntry(itemData.Guid + ".png");
+                    using Stream entryStream = entry.Open();
+                    PngBitmapEncoder encoder = new();
+                    encoder.Frames.Add(BitmapFrame.Create(bmp));
+                    using MemoryStream memStream = new();
+                    encoder.Save(memStream);
+                    memStream.Position = 0;
+                    memStream.CopyTo(entryStream);
+                }
+            }
+        }
 
 
 
@@ -2254,6 +2367,7 @@ namespace Pixtack3rd
                 return null;
             }
         }
+
         private void ButtonSaveAllData_Click(object sender, RoutedEventArgs e)
         {
             SaveAll();
@@ -2304,6 +2418,14 @@ namespace Pixtack3rd
         {
             if (MyRoot.ActiveThumb?.Data == null) { return; }
             if (GetSaveDataFilePath(EXTENSION_FILTER_P3D) is string path)
+            {
+                SaveRootDataWithConfig(path, MyRoot.ActiveThumb.Data, false);
+            }
+        }
+        private void SaveDataForActiveThumb2()
+        {
+            if (MyRoot.ActiveThumb?.Data == null) { return; }
+            if (GetSaveDataFilePath(EXT_FILTER_DATA) is string path)
             {
                 SaveRootDataWithConfig(path, MyRoot.ActiveThumb.Data, false);
             }
@@ -2559,16 +2681,15 @@ namespace Pixtack3rd
 
             var neko2 = MyRoot.ClickedThumb.Data.StrokeA;
             //MyRoot.ClickedThumb.Data.PointCollection[0] = new Point(200,200);
-
+            var save = SaveThumbData(MyRoot.ActiveThumb);
         }
 
         private void ButtonTest2_Click(object sender, RoutedEventArgs e)
         {
-            string path = System.IO.Path.Combine(AppDirectory, APPDATA_FILE_NAME);            
-            SaveAppData<AppData>(path, MyAppData);
+
         }
 
-        
+
 
         #region 図形関連
 
@@ -2955,9 +3076,21 @@ namespace Pixtack3rd
             }
             else border.Background = b;
         }
+
         #endregion 文字列色
 
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            // アプリの設定を上書き保存
+            SaveAppDataOverride();
+        }
 
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            // アプリの設定を読み込み＋設定を反映(Binding)
+            LoadAppDataAndSetting();
+        }
     }
 
 
