@@ -1595,18 +1595,93 @@ namespace Pixtack3rd
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
+                ////ファイル名一覧取得してソート
+                //var fileList2 = ((string[])e.Data.GetData(DataFormats.FileDrop)).ToArray();
+                //if (MyAppConfig.IsAscendingSort)
+                //{
+                //    Array.Sort(fileList2);//昇順ソート
+                //}
+                //else
+                //{
+                //    Array.Sort(fileList2);
+                //    Array.Reverse(fileList2);
+                //}
+                //AddThumbFromFiles(fileList2);
+
+
                 //ファイル名一覧取得
-                var fileList2 = ((string[])e.Data.GetData(DataFormats.FileDrop)).ToArray();
-                if (MyAppConfig.IsAscendingSort)
+                string[] paths = ((string[])e.Data.GetData(DataFormats.FileDrop)).ToArray();
+                OpenFiles(paths);
+            }
+
+        }
+
+        /// <summary>
+        /// ファイルパスリストからThumbを追加、対応外ファイルはエラーリストで返す
+        /// </summary>
+        /// <param name="paths">フルパスの配列</param>
+        /// <returns>エラーリスト</returns>
+        private List<string> OpenFiles(string[] paths)
+        {
+            List<string> errorList = new();
+            Array.Sort(paths);
+            if (MyAppData.IsDecendingSortFileName) { Array.Reverse(paths); }
+            foreach (var path in paths)
+            {
+                //拡張子で判定、関連ファイルならDataで追加
+                var ext = System.IO.Path.GetExtension(path);
+                if (ext == EXT_DATA && LoadData3(path) is Data data)
                 {
-                    Array.Sort(fileList2);//昇順ソート
+                    //DataファイルならデシリアライズしてThumb追加
+                    MyRoot.AddThumbDataToActiveGroup2(data, MyAppData.IsThumbAddUnder);
                 }
                 else
                 {
-                    Array.Sort(fileList2);
-                    Array.Reverse(fileList2);
+                    //Dataファイル以外は画像ファイルとして開いてエラーにならなかったら追加
+                    if (GetBitmapFromFilePath(path) is BitmapSource bmp)
+                    {
+                        data = new(TType.Image) { BitmapSource = bmp };
+                        MyRoot.AddThumbDataToActiveGroup2(data, MyAppData.IsThumbAddUnder);
+                    }
+                    else
+                    {
+                        errorList.Add(path);
+                    }
                 }
-                AddThumbFromFiles(fileList2);
+            }
+            
+            return errorList;
+        }
+
+        /// <summary>
+        /// 画像ファイルとして開いて返す、エラーの場合はnullを返す
+        /// dpiは96に変換する、このときのピクセルフォーマットはbgra32
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        private BitmapSource? GetBitmapFromFilePath(string path)
+        {
+            try
+            {
+                using var stream = System.IO.File.OpenRead(path);
+                BitmapSource bmp =
+                    BitmapFrame.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+                if (bmp.DpiX != 96.0)
+                {
+                    FormatConvertedBitmap fc = new(bmp, PixelFormats.Bgra32, null, 0.0);
+                    int w = fc.PixelWidth;
+                    int h = fc.PixelHeight;
+                    int stride = w * 4;
+                    byte[] pixels = new byte[stride * h];
+                    bmp = BitmapSource.Create(w, h, 96.0, 96.0, fc.Format, null, pixels, stride);
+                }
+                return bmp;
+
+            }
+            catch (Exception)
+            {
+                return null;
+                throw;
             }
         }
         #endregion ファイルドロップで開く
