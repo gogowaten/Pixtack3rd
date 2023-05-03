@@ -966,6 +966,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
           </GroupBox>
           <Button Content="アプリの設定を保存" Click="Button_Click"/>
           <Button Content="アプリの設定を読み込む" Click="Button_Click_1"/>
+          <Button Content="OpenFile" Click="Button_Click_2"/>
         </StackPanel>
       </TabItem>
     </TabControl>

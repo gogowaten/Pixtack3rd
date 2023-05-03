@@ -333,6 +333,9 @@ namespace Pixtack3rd
         public static readonly DependencyProperty IsThumbAddUnderProperty =
             DependencyProperty.Register(nameof(IsThumbAddUnder), typeof(bool), typeof(AppData), new PropertyMetadata(false));
 
+
+        #region ファイル保存、読み込み
+        
         //保存画像形式
         private ImageType _imageType;
         [DataMember] public ImageType ImageType { get => _imageType; set => SetProperty(ref _imageType, value); }
@@ -341,9 +344,12 @@ namespace Pixtack3rd
         private int _jpegQuality;
         public int JpegQuality { get => _jpegQuality; set => SetProperty(ref _jpegQuality, value); }
 
+        //複数ファイルを開いたとき、ファイル名で降順ソート
+        private bool _isDecendingSortFileName;
+        [DataMember] public bool IsDecendingSortFileName { get => _isDecendingSortFileName; set => SetProperty(ref _isDecendingSortFileName, value); }
 
-        private bool _isDecendingSort;
-        [DataMember] public bool IsDecendingSort { get => _isDecendingSort; set => SetProperty(ref _isDecendingSort, value); }
+        
+        #endregion ファイル保存、読み込み
 
         //枠表示設定
         private WakuVisibleType _wakuVisibleType = WakuVisibleType.All;
