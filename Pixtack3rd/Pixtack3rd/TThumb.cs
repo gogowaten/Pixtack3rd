@@ -1366,7 +1366,7 @@ namespace Pixtack3rd
         //ファイルパスから追加
         public void AddThumbFromFilePath(string path)
         {
-            
+
 
         }
 
@@ -2126,6 +2126,7 @@ namespace Pixtack3rd
         private BitmapSource? MakeBitmapFromThumb2(TThumb? el)
         {
             if (el == null) { return null; }
+            if (el.Type == TType.Image) { return el.Data.BitmapSource; };
             if (el.ActualHeight == 0 || el.ActualWidth == 0) { return null; }
 
             //枠を一時的に非表示にする
@@ -2137,10 +2138,9 @@ namespace Pixtack3rd
             Rect bounds = VisualTreeHelper.GetDescendantBounds(el);
             bounds = el.RenderTransform.TransformBounds(bounds);
             DrawingVisual dVisual = new();
-            //サイズを切り上げ、UselayoutRoundingをtrueにしていたら必要なさそう
-            bounds.Width = (int)(bounds.Width + 1.0);
-            bounds.Height = (int)(bounds.Height + 1.0);
-
+            //サイズを四捨五入
+            bounds.Width = Math.Round(bounds.Width, MidpointRounding.AwayFromZero);
+            bounds.Height = Math.Round(bounds.Height, MidpointRounding.AwayFromZero);
             using (DrawingContext context = dVisual.RenderOpen())
             {
                 VisualBrush vBrush = new(el) { Stretch = Stretch.None };

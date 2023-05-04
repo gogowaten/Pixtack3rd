@@ -40,7 +40,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             KeyboardNavigation.DirectionalNavigation="None">
         <MenuItem Header="ファイル(_F)">
           <MenuItem Header="名前をつけて保存(_S)">
-            <MenuItem Header="編集状態保存(Root＆アプリ設定)" Click="ButtonSaveAllData_Click"/>
+            <!--<MenuItem Header="編集状態保存(Root＆アプリ設定)" Click="ButtonSaveAllData_Click"/>-->
             <!--<MenuItem Header="編集状態保存(Root)" Click="ButtonSaveRootThumb_Click"/>-->
             <MenuItem Header="ActiveThumb" Click="ButtonSaveActiveThumb_Click"/>
             <MenuItem Header="ClickedThumb" Click="ButtonSaveCickedThumb_Click"/>
@@ -50,11 +50,11 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <MenuItem Header="ActiveThumb" Click="ButtonSaveToImageActive_Click"/>
             <MenuItem Header="ClickedThumb" Click="ButtonSaveToImageClicked_Click"/>
           </MenuItem>
-          <MenuItem Header="ファイルを開く">
+          <MenuItem Header="画像やDataを追加(複数可能)" Click="ButtonLoadFiles_Click">
             <!--<MenuItem Header="Root＆アプリ設定" Click="ButtonLoadDataPrevious_Click"/>-->
-            <MenuItem Header="ファイルを開く" Click="ButtonLoadData_Click"/>
-            <MenuItem Header="ファイルを開く(アプリ設定はそのまま)" Click="ButtonLoadDataP3WithoutConfig_Click"/>
-            <MenuItem Header="対応ファイルを追加(複数可能)" Click="ButtonLoadFiles_Click"/>
+            <!--<MenuItem Header="ファイルを開く" Click="ButtonLoadData_Click"/>-->
+            <!--<MenuItem Header="ファイルを開く(アプリ設定はそのまま)" Click="ButtonLoadDataP3WithoutConfig_Click"/>-->
+            <!--<MenuItem Header="対応ファイルを追加(複数可能)" Click="ButtonLoadFiles_Click"/>-->
             <!--<MenuItem Header="p3ファイルをGroupとして追加" Click="ButtonLoadDataRootToGroup_Click"/>-->
             <!--<MenuItem Header="ThumbData" Click="ButtonLoadDataThumb_Click"/>-->
           </MenuItem>
@@ -235,7 +235,8 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection3.png"/>
         <local:TTImage x:Name="MyImage2" TTLeft="120" TTTop="120"
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection4.png"/>-->
-          <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
+          
+          <!--<local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect000.png"/>
           <local:TTImage x:Name="MyImage1" TTLeft="24" TTTop="24"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect030.png"/>
@@ -248,13 +249,14 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <local:TTImage.RenderTransform>
               <RotateTransform Angle="0"/>
             </local:TTImage.RenderTransform>
-          </local:TTImage>
+          </local:TTImage>-->
+          
           <!--<local:TTTextBox x:Name="MyTextBox1" FontFamily="Bahnschrift SemiBold Condensed"
             TTText="TextBox" TTLeft="152" TTTop="152" FontSize="30" FontStretch="Medium"/>-->
           <!--<local:TTTextBox x:Name="MyTextBox1" FontFamily="ＭＳ 明朝" FontStyle="Italic"
             TTText="TextBox" TTLeft="152" TTTop="152" FontSize="30"/>-->
-          <local:TTTextBox x:Name="MyTextBox1" BorderBrush="Red" BorderThickness="2"
-            TTText="TextBox" TTLeft="152" TTTop="160" FontSize="30"/>
+          <!--<local:TTTextBox x:Name="MyTextBox1" BorderBrush="Red" BorderThickness="2"
+            TTText="TextBox" TTLeft="152" TTTop="160" FontSize="30"/>-->
           <!--<local:TTPolylineZ x:Name="MyPolylineZ" TTLeft="200" TTTop="0"
                            MyPoints="0,0 0,100" StrokeThickness="30" HeadAngle="30"
                            HeadBeginType="None" HeadEndType="None"
@@ -269,9 +271,9 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
           <!--<local:TTPolyline x:Name="MyPolyline3" MyPoints="50,0 200,50 0,100 200,100" TTLeft="100" TTTop="130"
                              HeadBeginType="Arrow" HeadEndType="Arrow" Angle="30" Stroke="SeaGreen" 
                             StrokeThickness="20" IsBezier="True"/>-->
-          <local:TTGeometricShape x:Name="MyTTGermtricShape" MyPoints="50,0 0,100 150,0 120,100" StrokeThickness="20" Stroke="Gold"
+          <!--<local:TTGeometricShape x:Name="MyTTGermtricShape" MyPoints="50,0 0,100 150,0 120,100" StrokeThickness="20" Stroke="Gold"
                                   MyShapeType="Line" HeadBeginType="None" MyLineClose="False" TTFill="Blue"
-                                  TTLeft="100" TTTop="100"/>
+                                  TTLeft="100" TTTop="100"/>-->
 
         </local:TTRoot>
         <!--</Grid>-->
@@ -284,8 +286,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
       </Canvas>
 
       <Canvas x:Name="MyAreaCanvas">
-        <local:AreaThumb x:Name="MyAreaThumb" Width="100" Height="70" Canvas.Left="180" Canvas.Top="30" Background="Blue" AreaOpacity="0.2"/>
-        <TextBlock Text="{Binding ElementName=MyAreaThumb, Path=X}"/>
+        <local:AreaThumb x:Name="MyAreaThumb" Width="100" Height="70" Canvas.Left="180" Canvas.Top="30" Background="Blue" AreaOpacity="0.2"/>        
       </Canvas>
 
 
@@ -440,28 +441,28 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <GroupBox Header="上書き保存と読み込み">
               <UniformGrid Rows="2">
                 <Button x:Name="ButtonSaveDefault" Content="上書き保存" Click="ButtonSaveDefault_Click"/>
-                <Button x:Name="ButtonLoadDefault" Content="上書き保存を読み込み" Click="ButtonLoadDefault_Click"/>
+                <!--<Button x:Name="ButtonLoadDefault" Content="上書き保存を読み込み" Click="ButtonLoadDefault_Click"/>-->
                 <TextBox Text="test" BorderThickness="10,3"/>
                 <!--<Button x:Name="ButtonLoadLastEndTime" Content="前回終了時を読み込み" Click="ButtonLoadLastEndTime_Click"/>-->
               </UniformGrid>
             </GroupBox>
             <GroupBox Header="ファイル保存">
               <WrapPanel>
-                <Button x:Name="ButtonSaveAllData" Content="保存(p3,p3d)" Click="ButtonSaveAllData_Click"/>
+                <!--<Button x:Name="ButtonSaveAllData" Content="保存(p3,p3d)" Click="ButtonSaveAllData_Click"/>-->
                 <!--<Button x:Name="ButtonSaveRootThumb" Content="Root" Click="ButtonSaveRootThumb_Click"/>-->
                 <Button x:Name="ButtonSaveActiveThumb" Content="Active(p3d)" Click="ButtonSaveActiveThumb_Click"/>
                 <Button x:Name="ButtonSaveCickedThumb" Content="Clicked(p3d)" Click="ButtonSaveCickedThumb_Click"/>
               </WrapPanel>
             </GroupBox>
             <GroupBox Header="ファイルを開く">
-              <WrapPanel>
-                <!--<Button x:Name="ButtonLoadDataPrevious" Content="前回" Click="ButtonLoadDataPrevious_Click"/>-->
-                <Button x:Name="ButtonLoadData" Content="p3を開く" Click="ButtonLoadData_Click"/>
+              <!--<WrapPanel>
+                --><!--<Button x:Name="ButtonLoadDataPrevious" Content="前回" Click="ButtonLoadDataPrevious_Click"/>-->
+                <!--<Button x:Name="ButtonLoadData" Content="p3を開く" Click="ButtonLoadData_Click"/>-->
                 <!--<Button x:Name="ButtonLoadDataThumb" Content="個別" Click="ButtonLoadDataThumb_Click"/>-->
                 <!--<Button x:Name="ButtonLoadDataRootToGroup" Content="p3をグループとして追加" Click="ButtonLoadDataRootToGroup_Click"/>-->
-                <Button x:Name="ButtonLoadDataP3WithoutConfig" Content="アプリ設定はそのままでp3を開く" Click="ButtonLoadDataP3WithoutConfig_Click"/>
+                <!--<Button x:Name="ButtonLoadDataP3WithoutConfig" Content="アプリ設定はそのままでp3を開く" Click="ButtonLoadDataP3WithoutConfig_Click"/>--><!--
+              </WrapPanel>-->
                 <Button x:Name="ButtonLoadFiles" Content="対応ファイル(複数)" Click="ButtonLoadFiles_Click"/>
-              </WrapPanel>
             </GroupBox>
             <GroupBox Header="クリップボードから画像貼り付け">
               <UniformGrid Rows="1">
@@ -930,7 +931,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
       <TabItem Header="設定" DataContext="{Binding}">
         <StackPanel>
           <!--<CheckBox Content="起動時に前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>-->
-          <CheckBox Content="複数追加時はファイル名降順で追加する" IsChecked="{Binding IsDecendingSort}"/>
+          <CheckBox Content="複数追加時はファイル名降順で追加する" IsChecked="{Binding IsDecendingSortFileName}"/>
           <CheckBox Content="ファイルからのThumb追加は最下層にする" IsChecked="{Binding IsThumbAddUnder}">
             <CheckBox.ToolTip>
               <TextBlock>
