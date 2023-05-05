@@ -95,7 +95,8 @@ namespace Pixtack3rd
             SetBinding(XProperty, new Binding() { Source = this, Path = new PropertyPath(Canvas.LeftProperty), Mode = BindingMode.TwoWay });
             SetBinding(YProperty, new Binding() { Source = this, Path = new PropertyPath(Canvas.TopProperty), Mode = BindingMode.TwoWay });
 
-            
+            //表示の有無をマーカーと連動
+            MyAdorner.SetBinding(VisibilityProperty,new Binding() { Source = this,Path=new PropertyPath(VisibilityProperty) });
         }
 
         private Canvas SetTemplate()

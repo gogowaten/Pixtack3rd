@@ -913,7 +913,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
         <ScrollViewer VerticalScrollBarVisibility="Auto">
           <StackPanel>
             <!--<StackPanel DataContext="{Binding ElementName=MyRoot, Path=MyTTRange.Data}">-->
-            <Button Content="範囲選択用Thumb表示" Click="ButtonAddTTRange_Click"/>
+            <Button Content="範囲選択用Thumb表示切り替え" Click="ButtonAddTTRange_Click"/>
             <Button Content="ClicedThumbからサイズ取得" Click="ButtonSetNumeSizeClickedThumb_Click"/>
             <Button Content="ActiveThumbからサイズ取得" Click="ButtonSetNumeSizeActiveThumb_Click"/>
             <Button Content="ActiveGroupからサイズ取得" Click="ButtonSetNumeSizeActiveGroup_Click"/>
@@ -968,6 +968,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
           <Button Content="アプリの設定を保存" Click="Button_Click"/>
           <Button Content="アプリの設定を読み込む" Click="Button_Click_1"/>
           <Button Content="OpenFile" Click="Button_Click_2"/>
+          <Button Content="アプリの設定をリセット" Click="ButtonAppDataReset_Click"/>
         </StackPanel>
       </TabItem>
     </TabControl>
