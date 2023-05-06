@@ -228,6 +228,7 @@ namespace Pixtack3rd
         #endregion 文字列色
 
         #region 文字列描画
+        //依存関係プロパティがあるけど、通知プロパティでも問題なさそう
         [DataMember]
 
         public string FontName
@@ -285,6 +286,10 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+
+        private byte _strokeColorA;
+        public byte StrokeColorA { get => _strokeColorA; set => SetProperty(ref _strokeColorA, value); }
 
         #endregion 図形描画
 
