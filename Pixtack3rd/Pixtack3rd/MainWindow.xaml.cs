@@ -39,9 +39,11 @@ namespace Pixtack3rd
         private const string APP_NAME = "Pixtack3rd";
         //保存データの拡張子
         private const string EXT_DATA = ".ps3";
+        //アプリの設定ファイルの拡張子
+        private const string EXT_APPDATA = ".ps3config";
+
         //アプリの設定ファイル名
-        private const string APP_CONFIG_FILE_NAME = "config.xml";
-        private const string APPDATA_FILE_NAME = "ps3appdata.xml";
+        private const string APPDATA_FILE_NAME = "default" + EXT_APPDATA;
 
         //zipデータ内のDataファイル名
         private const string XML_FILE_NAME = "Data.xml";
@@ -56,7 +58,7 @@ namespace Pixtack3rd
         //private const string EXTENSION_NAME_DATA = ".p3d";
 
         private const string EXT_FILTER_DATA = "Data|*" + EXT_DATA;
-        private const string EXT_FILTER_APP = "アプリ設定|*" + ".xml";
+        private const string EXT_FILTER_APP = "アプリ設定|*" + EXT_APPDATA;
         //private const string EXTENSION_FILTER_P3 = "Data + 設定|*" + EXTENSION_NAME_APP;
         //private const string EXTENSION_FILTER_P3D = "Data|*" + EXTENSION_NAME_DATA;
 
@@ -96,15 +98,16 @@ namespace Pixtack3rd
             AppLastEndTimeDataFilePath = System.IO.Path.Combine(
                 AppDirectory, APP_LAST_END_TIME_FILE_NAME);
 
-
-
-            MyInitialize();
-
             MyInitializeComboBox();
 
             Drop += MainWindow_Drop;
             Closed += MainWindow_Closed;
             DataContextChanged += MainWindow_DataContextChanged;
+
+
+            MyInitialize();
+
+
 
             MyTabControl.SelectedIndex = 2;
 
@@ -122,7 +125,7 @@ namespace Pixtack3rd
         {
             SetMyBindings();
         }
-        
+
 
         #region 初期設定
 
@@ -147,9 +150,10 @@ namespace Pixtack3rd
                 AppDirectory,
                 APPDATA_FILE_NAME);
 
-            if (File.Exists(filePath))
+            if (File.Exists(filePath) && LoadAppData<AppData>(filePath) is AppData data)
             {
-                return LoadAppData<AppData>(filePath);
+                return data;
+                //return LoadAppData<AppData>(filePath);
             }
             else { return new AppData(); }
         }
@@ -231,10 +235,6 @@ namespace Pixtack3rd
             //if (MyAppConfig.TextColorA == 0) MyAppConfig.TextColorA = 255;
 
             //AreaThumb範囲選択用
-            //MyAreaThumb.DataContext = MyAppConfig;
-            //MyAreaThumb.SetBinding(WidthProperty, new Binding(nameof(AppConfig.AreaWidth)) { Mode = BindingMode.TwoWay });
-            //MyAreaThumb.SetBinding(HeightProperty, new Binding(nameof(AppConfig.AreaHeight)) { Mode = BindingMode.TwoWay });
-
             MyAreaThumb.DataContext = MyAppData;
             MyAreaThumb.SetBinding(WidthProperty, new Binding(nameof(AppData.AreaWidth)) { Mode = BindingMode.TwoWay });
             MyAreaThumb.SetBinding(HeightProperty, new Binding(nameof(AppData.AreaHeight)) { Mode = BindingMode.TwoWay });
@@ -252,6 +252,7 @@ namespace Pixtack3rd
             //mb.Bindings.Add(new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.TextForeColorBProperty), Mode = BindingMode.TwoWay });
             //MyBorderFontColor.SetBinding(BackgroundProperty, mb);
 
+            //文字列描画
             MyBorderTextForeColor.DataContext = MyAppData;
             mb = new()
             {
@@ -288,8 +289,18 @@ namespace Pixtack3rd
             mb.Bindings.Add(new Binding(nameof(AppData.TextBorderColorB)) { Mode = BindingMode.TwoWay });
             MyBorderTextBorderColor.SetBinding(BackgroundProperty, mb);
 
+            //フォント、設定が空白か存在しないフォント名なら、今のフォントを指定してからBinding
+            if (MyAppData.FontName == "" || !GetFontFamilies().ContainsKey(MyAppData.FontName))
+            {
+                MyAppData.FontName = this.FontFamily.Source;
+            }
+            MyComboBoxFontFmilyNames.SetBinding(ComboBox.SelectedValueProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.FontNameProperty), Mode = BindingMode.TwoWay });
 
-
+            MyNumeFontSize.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(AppData.FontSize)) { Source = MyAppData, Mode = BindingMode.TwoWay });
+            MyNumeTextBoxWakuWidth.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(AppData.TextBoxBorderWidth)) { Source = MyAppData, Mode = BindingMode.TwoWay });
+            MyCheckIsBold.SetBinding(CheckBox.IsCheckedProperty, new Binding(nameof(AppData.IsTextBold)) { Source = MyAppData, Mode = BindingMode.TwoWay });
+            MyCheckIsItalic.SetBinding(CheckBox.IsCheckedProperty, new Binding(nameof(AppData.IsTextItalic)) { Source = MyAppData, Mode = BindingMode.TwoWay });
+            
         }
 
 
@@ -324,8 +335,8 @@ namespace Pixtack3rd
         private void MyInitializeComboBox()
         {
             ComboBoxSaveFileType.ItemsSource = Enum.GetValues(typeof(ImageType));
-            MyCombBoxFontFmilyNames.ItemsSource = GetFontFamilies();
-            MyCombBoxFontFmilyNames.SelectedValue = this.FontFamily;
+            MyComboBoxFontFmilyNames.ItemsSource = GetFontFamilies();
+            MyComboBoxFontFmilyNames.SelectedValue = this.FontFamily;
             MyComboBoxLineHeadBeginType.ItemsSource = Enum.GetValues(typeof(HeadType));
             MyComboBoxLineHeadBeginType.SelectedValue = HeadType.None;
             MyComboBoxLineHeadEndType.ItemsSource = Enum.GetValues(typeof(HeadType));
@@ -353,17 +364,6 @@ namespace Pixtack3rd
             {
                 MyAppData.AppTop = 0;
             }
-            //if (Left < -10 ||
-            //    Left > SystemParameters.VirtualScreenHeight - 100)
-            //{
-            //    Left = 0;
-            //}
-
-            //if (Top < -10 ||
-            //    Top > SystemParameters.VirtualScreenHeight - 100)
-            //{
-            //    Top = 0;
-            //}
         }
 
         #endregion 初期設定
@@ -687,9 +687,9 @@ namespace Pixtack3rd
 
             List<string> uName = new();//フォント名の重複判定に使う
             Dictionary<string, FontFamily> tempDictionary = new();
-            foreach (var item in Fonts.SystemFontFamilies)
+            foreach (var family in Fonts.SystemFontFamilies)
             {
-                var typefaces = item.GetTypefaces();
+                var typefaces = family.GetTypefaces();
                 foreach (var typeface in typefaces)
                 {
                     _ = typeface.TryGetGlyphTypeface(out GlyphTypeface gType);
@@ -791,8 +791,9 @@ namespace Pixtack3rd
         /// <param name="path">設定ファイルのフルパス</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        private T LoadAppData<T>(string path)
+        private T? LoadAppData<T>(string path)
         {
+            if (path == "") return default;
             DataContractSerializer serializer = new(typeof(T));
             try
             {
@@ -801,7 +802,7 @@ namespace Pixtack3rd
                 {
                     return t;
                 }
-                else throw new NullReferenceException();
+                else return default;
             }
             catch (Exception ex)
             {
@@ -1728,17 +1729,17 @@ namespace Pixtack3rd
             SaveAppData<AppData>(path, MyAppData);
         }
 
-        /// <summary>
-        /// アプリの設定を読み込み＋設定を反映(Binding)
-        /// </summary>
-        private void LoadAppDataAndSetting()
-        {
-            string path = System.IO.Path.Combine(AppDirectory, APPDATA_FILE_NAME);
-            AppData data = LoadAppData<AppData>(path);
-            MyAppData = data;
-            DataContext = MyAppData;
-            //SetMyBindings();
-        }
+        ///// <summary>
+        ///// アプリの設定を読み込み＋設定を反映(Binding)
+        ///// </summary>
+        //private void LoadAppDataAndSetting()
+        //{
+        //    string path = System.IO.Path.Combine(AppDirectory, APPDATA_FILE_NAME);
+        //    AppData data = LoadAppData<AppData>(path);
+        //    MyAppData = data;
+        //    DataContext = MyAppData;
+        //    //SetMyBindings();
+        //}
 
 
         ///// <summary>
@@ -2495,18 +2496,17 @@ namespace Pixtack3rd
 
         private void ButtonTest_Click(object sender, RoutedEventArgs e)
         {
-            var neko = MyBorderTextForeColor.Background;
+
             var appdata = MyAppData;
             var textcolor = MyBorderTextForeColor;
-
-            //var direc = Canvas.GetLeft(MyTTGermtricShape.MyShape);
-
-
+            var fontnama = MyAppData.FontName;
+            object value = MyComboBoxFontFmilyNames.SelectedValue;// fontfamily
+            object item = MyComboBoxFontFmilyNames.SelectedItem;//key(string) value(fontfamily)
+            //MyComboBoxFontFmilyNames.SelectedValue = "Meiryo UI";
+            var fname = (KeyValuePair<string, FontFamily>)(MyComboBoxFontFmilyNames.SelectedItem);
+            var key = fname.Key;
             if (MyRoot.ClickedThumb == null) return;
 
-            var neko2 = MyRoot.ClickedThumb.Data.StrokeA;
-            //MyRoot.ClickedThumb.Data.PointCollection[0] = new Point(200,200);
-            var save = SaveThumbData(MyRoot.ActiveThumb);
         }
 
         private void ButtonTest2_Click(object sender, RoutedEventArgs e)
@@ -2812,9 +2812,9 @@ namespace Pixtack3rd
             Data data = new(TType.TextBox)
             {
                 Text = MyTextBox.Text,
-                FontSize = (double)NumeFontSize.MyValue,
+                FontSize = (double)MyNumeFontSize.MyValue,
             };
-            if (MyCombBoxFontFmilyNames.SelectedItem is KeyValuePair<string, FontFamily> kvp)
+            if (MyComboBoxFontFmilyNames.SelectedItem is KeyValuePair<string, FontFamily> kvp)
             {
                 data.FontName = kvp.Key;
             }
@@ -2822,7 +2822,7 @@ namespace Pixtack3rd
             data.ForeColor = ((SolidColorBrush)(MyBorderTextForeColor.Background)).Color;
             data.BackColor = ((SolidColorBrush)(MyBorderTextBackColor.Background)).Color;
             data.BorderColor = ((SolidColorBrush)(MyBorderTextBorderColor.Background)).Color;
-            data.BorderThickness = new Thickness((double)NumeWakuThickness.MyValue);
+            data.BorderThickness = new Thickness((double)MyNumeTextBoxWakuWidth.MyValue);
             if (MyCheckIsBold.IsChecked == true) { data.IsBold = true; }
             if (MyCheckIsItalic.IsChecked == true) { data.IsItalic = true; }
 
@@ -2876,7 +2876,14 @@ namespace Pixtack3rd
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
             // アプリの設定を読み込み＋設定を反映(Binding)
-            LoadAppDataAndSetting();
+            //LoadAppDataAndSetting();
+            string path = GetLoadFilePathFromFileDialog(EXT_FILTER_APP);
+            if (string.IsNullOrEmpty(path)) return;
+            if (LoadAppData<AppData>(path) is AppData data)
+            {
+                MyAppData = data;
+                DataContext = MyAppData;
+            }
         }
 
         private void Button_Click_2(object sender, RoutedEventArgs e)
@@ -2888,6 +2895,16 @@ namespace Pixtack3rd
         {
             MyAppData = new AppData();
             DataContext = MyAppData;
+        }
+
+        //アプリの設定を名前を付けて保存
+        private void ButtonSaveAppData_Click(object sender, RoutedEventArgs e)
+        {
+            if (GetSaveDataFilePath(EXT_FILTER_APP) is string path)
+            {
+                SaveAppData(path, MyAppData);
+            }
+
         }
     }
 

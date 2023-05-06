@@ -750,11 +750,11 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <Grid Height="100">
               <TextBox Text="見本"  HorizontalAlignment="Center" VerticalAlignment="Center"
                        IsReadOnly="True"
-                       FontSize="{Binding ElementName=NumeFontSize, Path=MyValue}"
-                       FontFamily="{Binding ElementName=MyCombBoxFontFmilyNames, Path=SelectedValue}"
+                       FontSize="{Binding ElementName=MyNumeFontSize, Path=MyValue}"
+                       FontFamily="{Binding ElementName=MyComboBoxFontFmilyNames, Path=SelectedValue}"
                        FontWeight="{Binding ElementName=MyCheckIsBold, Converter={StaticResource isBold}, Path=IsChecked}"
                        FontStyle="{Binding ElementName=MyCheckIsItalic, Converter={StaticResource isItalic}, Path=IsChecked}"
-                       BorderThickness="{Binding ElementName=NumeWakuThickness, Converter={StaticResource thickness}, Path=MyValue}"
+                       BorderThickness="{Binding ElementName=MyNumeTextBoxWakuWidth, Converter={StaticResource thickness}, Path=MyValue}"
                        Foreground="{Binding ElementName=MyBorderTextForeColor, Path=Background}"
                        Background="{Binding ElementName=MyBorderTextBackColor, Path=Background}"
                        BorderBrush="{Binding ElementName=MyBorderTextBorderColor, Path=Background}">
@@ -796,10 +796,10 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <TextBox x:Name="MyTextBox" Text="test"
                      TextWrapping="Wrap" AcceptsTab="True" AcceptsReturn="True"/>
             <DockPanel>
-              <tomato:NumericUpDown x:Name="NumeFontSize" MyValue="30"
+              <tomato:NumericUpDown x:Name="MyNumeFontSize" MyValue="30"
                                 MyStringFormat="Size 000"
                                 MyMinValue="1" MyMaxValue="1000" MySmallChange="1" MyLargeChange="10"/>
-              <ComboBox x:Name="MyCombBoxFontFmilyNames" SelectedValuePath="Key" DisplayMemberPath="Value"/>
+              <ComboBox x:Name="MyComboBoxFontFmilyNames" SelectedValuePath="Key" DisplayMemberPath="Value"/>
             </DockPanel>
             <UniformGrid Rows="1">
               <CheckBox x:Name="MyCheckIsBold" Content="太字" VerticalAlignment="Center"/>
@@ -822,7 +822,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             </UniformGrid>
             <UniformGrid Rows="1">
               <!--<TextBlock Text="枠色" VerticalAlignment="Center"/>-->
-              <tomato:NumericUpDown x:Name="NumeWakuThickness" MyValue="0"
+              <tomato:NumericUpDown x:Name="MyNumeTextBoxWakuWidth" MyValue="0"
                                 MyStringFormat="枠 000"
                                 MyMinValue="0" MyMaxValue="1000" MySmallChange="1" MyLargeChange="10"/>
 
@@ -965,8 +965,9 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
 
             </WrapPanel>
           </GroupBox>
-          <Button Content="アプリの設定を保存" Click="Button_Click"/>
-          <Button Content="アプリの設定を読み込む" Click="Button_Click_1"/>
+          <Button Content="アプリの設定を既定ファイルに保存" Click="Button_Click"/>
+          <Button Content="アプリの設定を名前を付けて保存" Click="ButtonSaveAppData_Click"/>
+          <Button Content="アプリの設定ファイルを開く" Click="Button_Click_1"/>
           <Button Content="OpenFile" Click="Button_Click_2"/>
           <Button Content="アプリの設定をリセット" Click="ButtonAppDataReset_Click"/>
         </StackPanel>

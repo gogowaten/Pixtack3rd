@@ -237,14 +237,37 @@ namespace Pixtack3rd
         }
         public static readonly DependencyProperty FontNameProperty =
             DependencyProperty.Register(nameof(FontName), typeof(string), typeof(AppData),
-                new FrameworkPropertyMetadata(string.Empty,
+                new FrameworkPropertyMetadata("",
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
 
-        private double _textBoxBorderWidth;
+        //private double _fontSize = 50.0;
+        //[DataMember] public double FontSize { get => _fontSize; set => SetProperty(ref _fontSize, value); }
+
+        public double FontSize
+        {
+            get { return (double)GetValue(FontSizeProperty); }
+            set { SetValue(FontSizeProperty, value); }
+        }
+        public static readonly DependencyProperty FontSizeProperty =
+            DependencyProperty.Register(nameof(FontSize), typeof(double), typeof(AppData),
+                new FrameworkPropertyMetadata(50.0,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+
+
+        private double _textBoxBorderWidth = 1.0;
         [DataMember] public double TextBoxBorderWidth { get => _textBoxBorderWidth; set => SetProperty(ref _textBoxBorderWidth, value); }
+
+
+        private bool _isTextBold = false;
+        [DataMember] public bool IsTextBold { get => _isTextBold; set => SetProperty(ref _isTextBold, value); }
+        private bool _isTextItalic = false;
+        [DataMember] public bool IsTextItalic { get => _isTextItalic; set => SetProperty(ref _isTextItalic, value); }
 
         #endregion 文字列描画
 
@@ -335,7 +358,7 @@ namespace Pixtack3rd
 
 
         #region ファイル保存、読み込み
-        
+
         //保存画像形式
         private ImageType _imageType;
         [DataMember] public ImageType ImageType { get => _imageType; set => SetProperty(ref _imageType, value); }
@@ -348,7 +371,7 @@ namespace Pixtack3rd
         private bool _isDecendingSortFileName;
         [DataMember] public bool IsDecendingSortFileName { get => _isDecendingSortFileName; set => SetProperty(ref _isDecendingSortFileName, value); }
 
-        
+
         #endregion ファイル保存、読み込み
 
         //枠表示設定
