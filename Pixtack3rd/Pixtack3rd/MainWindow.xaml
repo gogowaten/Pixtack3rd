@@ -5,10 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Pixtack3rd"
         xmlns:tomato="clr-namespace:ControlLibraryCore20200620;assembly=ControlLibraryCore20200620"
-        d:DataContext="{d:DesignInstance Type=local:AppConfig}"
+        d:DataContext="{d:DesignInstance Type=local:AppData}"
         mc:Ignorable="d"
         Title="MainWindow" Height="950" Width="800" ResizeMode="CanResizeWithGrip"
-        Top="{Binding Path=Top, Mode=TwoWay}" Left="{Binding Left, Mode=TwoWay}"
+        Top="{Binding Path=AppTop, Mode=TwoWay}" Left="{Binding AppLeft, Mode=TwoWay}"
         AllowDrop="True" Name="Main">
   <!--フォーカス時の点線を表示しない-->
   <Window.Resources>
@@ -40,7 +40,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             KeyboardNavigation.DirectionalNavigation="None">
         <MenuItem Header="ファイル(_F)">
           <MenuItem Header="名前をつけて保存(_S)">
-            <MenuItem Header="編集状態保存(Root＆アプリ設定)" Click="ButtonSaveAllData_Click"/>
+            <!--<MenuItem Header="編集状態保存(Root＆アプリ設定)" Click="ButtonSaveAllData_Click"/>-->
             <!--<MenuItem Header="編集状態保存(Root)" Click="ButtonSaveRootThumb_Click"/>-->
             <MenuItem Header="ActiveThumb" Click="ButtonSaveActiveThumb_Click"/>
             <MenuItem Header="ClickedThumb" Click="ButtonSaveCickedThumb_Click"/>
@@ -50,11 +50,11 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <MenuItem Header="ActiveThumb" Click="ButtonSaveToImageActive_Click"/>
             <MenuItem Header="ClickedThumb" Click="ButtonSaveToImageClicked_Click"/>
           </MenuItem>
-          <MenuItem Header="ファイルを開く">
+          <MenuItem Header="画像やDataを追加(複数可能)" Click="ButtonLoadFiles_Click">
             <!--<MenuItem Header="Root＆アプリ設定" Click="ButtonLoadDataPrevious_Click"/>-->
-            <MenuItem Header="ファイルを開く" Click="ButtonLoadData_Click"/>
-            <MenuItem Header="ファイルを開く(アプリ設定はそのまま)" Click="ButtonLoadDataP3WithoutConfig_Click"/>
-            <MenuItem Header="対応ファイルを追加(複数可能)" Click="ButtonLoadFiles_Click"/>
+            <!--<MenuItem Header="ファイルを開く" Click="ButtonLoadData_Click"/>-->
+            <!--<MenuItem Header="ファイルを開く(アプリ設定はそのまま)" Click="ButtonLoadDataP3WithoutConfig_Click"/>-->
+            <!--<MenuItem Header="対応ファイルを追加(複数可能)" Click="ButtonLoadFiles_Click"/>-->
             <!--<MenuItem Header="p3ファイルをGroupとして追加" Click="ButtonLoadDataRootToGroup_Click"/>-->
             <!--<MenuItem Header="ThumbData" Click="ButtonLoadDataThumb_Click"/>-->
           </MenuItem>
@@ -235,7 +235,8 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection3.png"/>
         <local:TTImage x:Name="MyImage2" TTLeft="120" TTTop="120"
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection4.png"/>-->
-          <local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
+
+          <!--<local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect000.png"/>
           <local:TTImage x:Name="MyImage1" TTLeft="24" TTTop="24"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect030.png"/>
@@ -248,13 +249,14 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <local:TTImage.RenderTransform>
               <RotateTransform Angle="0"/>
             </local:TTImage.RenderTransform>
-          </local:TTImage>
+          </local:TTImage>-->
+
           <!--<local:TTTextBox x:Name="MyTextBox1" FontFamily="Bahnschrift SemiBold Condensed"
             TTText="TextBox" TTLeft="152" TTTop="152" FontSize="30" FontStretch="Medium"/>-->
           <!--<local:TTTextBox x:Name="MyTextBox1" FontFamily="ＭＳ 明朝" FontStyle="Italic"
             TTText="TextBox" TTLeft="152" TTTop="152" FontSize="30"/>-->
-          <local:TTTextBox x:Name="MyTextBox1" BorderBrush="Red" BorderThickness="2"
-            TTText="TextBox" TTLeft="152" TTTop="160" FontSize="30"/>
+          <!--<local:TTTextBox x:Name="MyTextBox1" BorderBrush="Red" BorderThickness="2"
+            TTText="TextBox" TTLeft="152" TTTop="160" FontSize="30"/>-->
           <!--<local:TTPolylineZ x:Name="MyPolylineZ" TTLeft="200" TTTop="0"
                            MyPoints="0,0 0,100" StrokeThickness="30" HeadAngle="30"
                            HeadBeginType="None" HeadEndType="None"
@@ -269,20 +271,23 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
           <!--<local:TTPolyline x:Name="MyPolyline3" MyPoints="50,0 200,50 0,100 200,100" TTLeft="100" TTTop="130"
                              HeadBeginType="Arrow" HeadEndType="Arrow" Angle="30" Stroke="SeaGreen" 
                             StrokeThickness="20" IsBezier="True"/>-->
-          <local:TTGeometricShape x:Name="MyTTGermtricShape" MyPoints="50,0 0,100 150,0 120,100" StrokeThickness="20" Stroke="Gold"
+          <!--<local:TTGeometricShape x:Name="MyTTGermtricShape" MyPoints="50,0 0,100 150,0 120,100" StrokeThickness="20" Stroke="Gold"
                                   MyShapeType="Line" HeadBeginType="None" MyLineClose="False" TTFill="Blue"
-                                  TTLeft="100" TTTop="100"/>
+                                  TTLeft="100" TTTop="100"/>-->
 
         </local:TTRoot>
         <!--</Grid>-->
       </ScrollViewer>
 
+      <!--図形をマウスで描画するときに使うCanvas-->
       <Canvas Grid.Row="1" Grid.Column="1"
               x:Name="MyDrawCanvas" Visibility="Collapsed"
               Cursor="Cross" Background="Transparent">
-
       </Canvas>
 
+      <Canvas x:Name="MyAreaCanvas">
+        <local:AreaThumb x:Name="MyAreaThumb" Width="100" Height="70" Canvas.Left="180" Canvas.Top="30" Background="Blue" AreaOpacity="0.2"/>
+      </Canvas>
 
 
       <!--テスト用Canvas-->
@@ -410,6 +415,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
       <!--テスト用Canvasここまで-->
 
     </Grid>
+
     <TabControl Grid.Row="1" Grid.Column="0" x:Name="MyTabControl" TabStripPlacement="Top">
 
       <TabItem x:Name="MyTab1App" Header="test1">
@@ -435,28 +441,30 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <GroupBox Header="上書き保存と読み込み">
               <UniformGrid Rows="2">
                 <Button x:Name="ButtonSaveDefault" Content="上書き保存" Click="ButtonSaveDefault_Click"/>
-                <Button x:Name="ButtonLoadDefault" Content="上書き保存を読み込み" Click="ButtonLoadDefault_Click"/>
+                <!--<Button x:Name="ButtonLoadDefault" Content="上書き保存を読み込み" Click="ButtonLoadDefault_Click"/>-->
                 <TextBox Text="test" BorderThickness="10,3"/>
                 <!--<Button x:Name="ButtonLoadLastEndTime" Content="前回終了時を読み込み" Click="ButtonLoadLastEndTime_Click"/>-->
               </UniformGrid>
             </GroupBox>
             <GroupBox Header="ファイル保存">
               <WrapPanel>
-                <Button x:Name="ButtonSaveAllData" Content="保存(p3,p3d)" Click="ButtonSaveAllData_Click"/>
+                <!--<Button x:Name="ButtonSaveAllData" Content="保存(p3,p3d)" Click="ButtonSaveAllData_Click"/>-->
                 <!--<Button x:Name="ButtonSaveRootThumb" Content="Root" Click="ButtonSaveRootThumb_Click"/>-->
                 <Button x:Name="ButtonSaveActiveThumb" Content="Active(p3d)" Click="ButtonSaveActiveThumb_Click"/>
                 <Button x:Name="ButtonSaveCickedThumb" Content="Clicked(p3d)" Click="ButtonSaveCickedThumb_Click"/>
               </WrapPanel>
             </GroupBox>
             <GroupBox Header="ファイルを開く">
-              <WrapPanel>
-                <!--<Button x:Name="ButtonLoadDataPrevious" Content="前回" Click="ButtonLoadDataPrevious_Click"/>-->
-                <Button x:Name="ButtonLoadData" Content="p3を開く" Click="ButtonLoadData_Click"/>
-                <!--<Button x:Name="ButtonLoadDataThumb" Content="個別" Click="ButtonLoadDataThumb_Click"/>-->
-                <!--<Button x:Name="ButtonLoadDataRootToGroup" Content="p3をグループとして追加" Click="ButtonLoadDataRootToGroup_Click"/>-->
-                <Button x:Name="ButtonLoadDataP3WithoutConfig" Content="アプリ設定はそのままでp3を開く" Click="ButtonLoadDataP3WithoutConfig_Click"/>
-                <Button x:Name="ButtonLoadFiles" Content="対応ファイル(複数)" Click="ButtonLoadFiles_Click"/>
-              </WrapPanel>
+              <!--<WrapPanel>
+                -->
+              <!--<Button x:Name="ButtonLoadDataPrevious" Content="前回" Click="ButtonLoadDataPrevious_Click"/>-->
+              <!--<Button x:Name="ButtonLoadData" Content="p3を開く" Click="ButtonLoadData_Click"/>-->
+              <!--<Button x:Name="ButtonLoadDataThumb" Content="個別" Click="ButtonLoadDataThumb_Click"/>-->
+              <!--<Button x:Name="ButtonLoadDataRootToGroup" Content="p3をグループとして追加" Click="ButtonLoadDataRootToGroup_Click"/>-->
+              <!--<Button x:Name="ButtonLoadDataP3WithoutConfig" Content="アプリ設定はそのままでp3を開く" Click="ButtonLoadDataP3WithoutConfig_Click"/>-->
+              <!--
+              </WrapPanel>-->
+              <Button x:Name="ButtonLoadFiles" Content="対応ファイル(複数)" Click="ButtonLoadFiles_Click"/>
             </GroupBox>
             <GroupBox Header="クリップボードから画像貼り付け">
               <UniformGrid Rows="1">
@@ -724,7 +732,9 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
 
         </StackPanel>
       </TabItem>
-      <TabItem Header="文字列" DataContext="{Binding ElementName=MyRoot}">
+
+      <TabItem Header="文字列">
+        <!--<TabItem Header="文字列" DataContext="{Binding ElementName=MyRoot}">-->
         <!--ScrollViewerの中ならマウスホイールで選択タブが変化しなくなる-->
         <ScrollViewer VerticalScrollBarVisibility="Auto">
           <StackPanel>
@@ -742,12 +752,15 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <Grid Height="100">
               <TextBox Text="見本"  HorizontalAlignment="Center" VerticalAlignment="Center"
                        IsReadOnly="True"
-                       FontSize="{Binding ElementName=NumeFontSize, Path=MyValue}"
-                       FontFamily="{Binding ElementName=MyCombBoxFontFmilyNames, Path=SelectedValue}"
+                       FontSize="{Binding ElementName=MyNumeFontSize, Path=MyValue}"
+                       FontFamily="{Binding ElementName=MyComboBoxFontFmilyNames, Path=SelectedValue}"
                        FontWeight="{Binding ElementName=MyCheckIsBold, Converter={StaticResource isBold}, Path=IsChecked}"
                        FontStyle="{Binding ElementName=MyCheckIsItalic, Converter={StaticResource isItalic}, Path=IsChecked}"
-                       BorderThickness="{Binding ElementName=NumeWakuThickness, Converter={StaticResource thickness}, Path=MyValue}">
-                <TextBox.Foreground>
+                       BorderThickness="{Binding ElementName=MyNumeTextBoxWakuWidth, Converter={StaticResource thickness}, Path=MyValue}"
+                       Foreground="{Binding ElementName=MyBorderTextForeColor, Path=Background}"
+                       Background="{Binding ElementName=MyBorderTextBackColor, Path=Background}"
+                       BorderBrush="{Binding ElementName=MyBorderTextBorderColor, Path=Background}">
+                <!--<TextBox.Foreground>
                   <MultiBinding Converter="{StaticResource color}">
                     <MultiBinding.Bindings>
                       <Binding ElementName="MyNumeFontA" Path="MyValue"/>
@@ -756,8 +769,8 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                       <Binding ElementName="MyNumeFontB" Path="MyValue"/>
                     </MultiBinding.Bindings>
                   </MultiBinding>
-                </TextBox.Foreground>
-                <TextBox.Background>
+                </TextBox.Foreground>-->
+                <!--<TextBox.Background>
                   <MultiBinding Converter="{StaticResource color}">
                     <MultiBinding.Bindings>
                       <Binding ElementName="MyNumeBackA" Path="MyValue"/>
@@ -776,20 +789,19 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                       <Binding ElementName="MyNumeWakuB" Path="MyValue"/>
                     </MultiBinding.Bindings>
                   </MultiBinding>
-                </TextBox.BorderBrush>
+                </TextBox.BorderBrush>-->
 
 
               </TextBox>
             </Grid>
-            <Button x:Name="MyButtonRenderText" Content="描画！" Click="ButtonRenderText_Click"/>
+            <Button x:Name="MyButtonRenderText" Content="描画！" Click="ButtonRenderText_Click2"/>
             <TextBox x:Name="MyTextBox" Text="test"
                      TextWrapping="Wrap" AcceptsTab="True" AcceptsReturn="True"/>
             <DockPanel>
-              <tomato:NumericUpDown x:Name="NumeFontSize" MyValue="30"
+              <tomato:NumericUpDown x:Name="MyNumeFontSize" MyValue="30"
                                 MyStringFormat="Size 000"
-                                MyMinValue="1" MyMaxValue="1000" MySmallChange="1" MyLargeChange="10"
-                                MouseWheel="NumericUpDown_MouseWheel"/>
-              <ComboBox x:Name="MyCombBoxFontFmilyNames" SelectedValuePath="Key" DisplayMemberPath="Value"/>
+                                MyMinValue="1" MyMaxValue="1000" MySmallChange="1" MyLargeChange="10"/>
+              <ComboBox x:Name="MyComboBoxFontFmilyNames" SelectedValuePath="Key" DisplayMemberPath="Value"/>
             </DockPanel>
             <UniformGrid Rows="1">
               <CheckBox x:Name="MyCheckIsBold" Content="太字" VerticalAlignment="Center"/>
@@ -812,20 +824,32 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             </UniformGrid>
             <UniformGrid Rows="1">
               <!--<TextBlock Text="枠色" VerticalAlignment="Center"/>-->
-              <tomato:NumericUpDown x:Name="NumeWakuThickness" MyValue="0"
+              <tomato:NumericUpDown x:Name="MyNumeTextBoxWakuWidth" MyValue="0"
                                 MyStringFormat="枠 000"
-                                MyMinValue="0" MyMaxValue="1000" MySmallChange="1" MyLargeChange="10"
-                                MouseWheel="NumericUpDown_MouseWheel"/>
+                                MyMinValue="0" MyMaxValue="1000" MySmallChange="1" MyLargeChange="10"/>
 
               <tomato:NumericUpDown x:Name="MyNumeWakuA" MyMinValue="0" MyMaxValue="255" MyValue="255" MyStringFormat="A 000"/>
               <tomato:NumericUpDown x:Name="MyNumeWakuR" MyMinValue="0" MyMaxValue="255" MyValue="255" MyStringFormat="R 000" BorderBrush="Crimson" Foreground="Black" MyButtonMarkColor="Crimson"/>
               <tomato:NumericUpDown x:Name="MyNumeWakuG" MyMinValue="0" MyMaxValue="255" MyValue="0" MyStringFormat="G 000" BorderBrush="ForestGreen" Foreground="Black" MyButtonMarkColor="ForestGreen"/>
               <tomato:NumericUpDown x:Name="MyNumeWakuB" MyMinValue="0" MyMaxValue="255" MyValue="0" MyStringFormat="B 000" BorderBrush="DodgerBlue" Foreground="Black" MyButtonMarkColor="RoyalBlue"/>
             </UniformGrid>
-            <UniformGrid DataContext="{Binding ElementName=Main}" Rows="1">
-              <Border x:Name="MyBorderFontColor" Background="Red"/>
-              <Button x:Name="MyButtonFontColor1" Content="文字色" Click="MyButtonFontColor1_Click"/>
+            <UniformGrid Rows="1">
+              <Border x:Name="MyBorderTextForeColor" d:Background="Blue"/>
+              <Button Content="文字色" Click="MyButtonTextForeColor_Click"/>
+              <tomato:NumericUpDown MyValue="{Binding TextForeColorA}" MyMinValue="0" MyMaxValue="255" MyStringFormat="透 000"/>
             </UniformGrid>
+            <UniformGrid Rows="1">
+              <Border x:Name="MyBorderTextBackColor" d:Background="Gold"/>
+              <Button Content="背景色" Click="ButtonTextBackColor_Click"/>
+              <tomato:NumericUpDown MyValue="{Binding TextBackColorA}" MyMinValue="0" MyMaxValue="255" MyStringFormat="透 000"/>
+            </UniformGrid>
+            <UniformGrid Rows="1">
+              <Border x:Name="MyBorderTextBorderColor" d:Background="Gray"/>
+              <Button Content="枠色" Click="ButtonTextBorderColor_Click"/>
+              <tomato:NumericUpDown MyValue="{Binding TextBorderColorA}" MyMinValue="0" MyMaxValue="255" MyStringFormat="透 000"/>
+            </UniformGrid>
+
+
             <!--<ComboBox x:Name="MyComboBoxFontWeight" SelectedValuePath="Key" DisplayMemberPath="Value"/>
             -->
             <!--<ComboBox.ItemTemplate>
@@ -860,25 +884,14 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               <CheckBox x:Name="MyChecBoxIsLineClose" Content="閉じる" HorizontalAlignment="Center"/>
             </UniformGrid>
             <UniformGrid Rows="1">
-              <UniformGrid Rows="1">
-                <TextBlock Text="色" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                <Border x:Name="MyBorderShapeColor">
-                  <Border.Background>
-                    <MultiBinding Converter="{StaticResource color}">
-                      <MultiBinding.Bindings>
-                        <Binding ElementName="MyNumeShapeBackA" Path="MyValue"/>
-                        <Binding ElementName="MyNumeShapeBackR" Path="MyValue"/>
-                        <Binding ElementName="MyNumeShapeBackG" Path="MyValue"/>
-                        <Binding ElementName="MyNumeShapeBackB" Path="MyValue"/>
-                      </MultiBinding.Bindings>
-                    </MultiBinding>
-                  </Border.Background>
-                </Border>
-              </UniformGrid>
-              <tomato:NumericUpDown x:Name="MyNumeShapeBackA" MyMinValue="0" MyMaxValue="255" MyValue="255" MyStringFormat="A 000" BorderBrush="Transparent"/>
-              <tomato:NumericUpDown x:Name="MyNumeShapeBackR" MyMinValue="0" MyMaxValue="255" MyValue="200" MyStringFormat="R 000" BorderBrush="Transparent" Background="Crimson" Foreground="White" MyButtonMarkColor="White"/>
+              <!--<TextBlock Text="色" VerticalAlignment="Center" HorizontalAlignment="Center"/>-->
+              <Border x:Name="MyBorderShapeColor" Background="Crimson"/>
+              <tomato:NumericUpDown x:Name="MyNumeShapeStrokeColorA" MyMinValue="0" MyMaxValue="255" MyValue="255" MyStringFormat="A 000" BorderBrush="Transparent"/>
+              <Button Content="色" Click="ButtonShapeStrokeColor_Click"/>
+
+              <!--<tomato:NumericUpDown x:Name="MyNumeShapeBackR" MyMinValue="0" MyMaxValue="255" MyValue="200" MyStringFormat="R 000" BorderBrush="Transparent" Background="Crimson" Foreground="White" MyButtonMarkColor="White"/>
               <tomato:NumericUpDown x:Name="MyNumeShapeBackG" MyMinValue="0" MyMaxValue="255" MyValue="20" MyStringFormat="G 000" BorderBrush="Transparent" Background="ForestGreen" Foreground="White" MyButtonMarkColor="White"/>
-              <tomato:NumericUpDown x:Name="MyNumeShapeBackB" MyMinValue="0" MyMaxValue="255" MyValue="20" MyStringFormat="B 000" BorderBrush="Transparent" Background="RoyalBlue" Foreground="White" MyButtonMarkColor="White"/>
+              <tomato:NumericUpDown x:Name="MyNumeShapeBackB" MyMinValue="0" MyMaxValue="255" MyValue="20" MyStringFormat="B 000" BorderBrush="Transparent" Background="RoyalBlue" Foreground="White" MyButtonMarkColor="White"/>-->
             </UniformGrid>
             <Button x:Name="ButtonAddShape" Content="追加" Click="ButtonAddShape_Click"/>
             <Button x:Name="ButtonTestDrawPolyline" Content="クリックで描画" Click="ButtonTestDrawPolyline_Click"/>
@@ -889,16 +902,17 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
 
       <TabItem Header="その他">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-          <StackPanel DataContext="{Binding ElementName=MyRoot, Path=MyTTRange.Data}">
-            <Button Content="範囲選択用Thumb表示" Click="ButtonAddTTRange_Click"/>
+          <StackPanel>
+            <!--<StackPanel DataContext="{Binding ElementName=MyRoot, Path=MyTTRange.Data}">-->
+            <Button Content="範囲選択用Thumb表示切り替え" Click="ButtonAddTTRange_Click"/>
             <Button Content="ClicedThumbからサイズ取得" Click="ButtonSetNumeSizeClickedThumb_Click"/>
             <Button Content="ActiveThumbからサイズ取得" Click="ButtonSetNumeSizeActiveThumb_Click"/>
             <Button Content="ActiveGroupからサイズ取得" Click="ButtonSetNumeSizeActiveGroup_Click"/>
             <UniformGrid Rows="1">
               <tomato:NumericUpDown x:Name="MyNumeRangeWidth" MyMinValue="1" MyMaxValue="10000" MyStringFormat="幅 0"
-                                  MyValue="{Binding Width, Mode=TwoWay}" Margin="10,2,10,2"/>
+                                  MyValue="{Binding AreaWidth, Mode=TwoWay}" Margin="10,2,10,2"/>
               <tomato:NumericUpDown x:Name="MyNumeRangeHeight" MyMinValue="1" MyMaxValue="10000" MyStringFormat="高 0"
-                                  MyValue="{Binding Height, Mode=TwoWay}" Margin="10,2,10,2"/>
+                                  MyValue="{Binding AreaHeight, Mode=TwoWay}" Margin="10,2,10,2"/>
             </UniformGrid>
           </StackPanel>
         </ScrollViewer>
@@ -907,9 +921,9 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
 
       <TabItem Header="設定" DataContext="{Binding}">
         <StackPanel>
-          <CheckBox Content="起動時に前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>
-          <CheckBox Content="複数追加時はファイル名昇順ソートで追加する" IsChecked="{Binding IsAscendingSort}"/>
-          <CheckBox Content="ファイルからのThumb追加は最上層にする" IsChecked="{Binding IsAddUpper}">
+          <!--<CheckBox Content="起動時に前回終了時の状態を読み込む" IsChecked="{Binding IsLoadPreviewData}"/>-->
+          <CheckBox Content="複数追加時はファイル名降順で追加する" IsChecked="{Binding IsDecendingSortFileName}"/>
+          <CheckBox Content="ファイルからのThumb追加は最下層にする" IsChecked="{Binding IsThumbAddUnder}">
             <CheckBox.ToolTip>
               <TextBlock>
                 初期値On、<LineBreak/>
@@ -942,6 +956,11 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
 
             </WrapPanel>
           </GroupBox>
+          <Button Content="アプリの設定を既定ファイルに保存" Click="Button_Click"/>
+          <Button Content="アプリの設定を名前を付けて保存" Click="ButtonSaveAppData_Click"/>
+          <Button Content="アプリの設定ファイルを開く" Click="Button_Click_1"/>
+          <Button Content="OpenFile" Click="Button_Click_2"/>
+          <Button Content="アプリの設定をリセット" Click="ButtonAppDataReset_Click"/>
         </StackPanel>
       </TabItem>
     </TabControl>

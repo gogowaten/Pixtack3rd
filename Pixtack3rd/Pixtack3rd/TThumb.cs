@@ -195,11 +195,11 @@ namespace Pixtack3rd
                     case ModifierKeys.Shift:
                         {
                             //カーソルキー、対象がRangeなら1ピクセル単位でサイズ変更
-                            if (e.Key == Key.Up) { root.RangeThumbHeightDown1Pix(); e.Handled = true; }
-                            else if (e.Key == Key.Down) { root.RangeThumbHeightUp1Pix(); e.Handled = true; }
-                            else if (e.Key == Key.Left) { root.RangeThumbWidthDown1Pix(); e.Handled = true; }
-                            else if (e.Key == Key.Right) { root.RangeThumbWidthUp1Pix(); e.Handled = true; }
-                            else if (e.Key == Key.PageUp) { e.Handled = true; }
+                            //if (e.Key == Key.Up) { root.RangeThumbHeightDown1Pix(); e.Handled = true; }
+                            //else if (e.Key == Key.Down) { root.RangeThumbHeightUp1Pix(); e.Handled = true; }
+                            //else if (e.Key == Key.Left) { root.RangeThumbWidthDown1Pix(); e.Handled = true; }
+                            //else if (e.Key == Key.Right) { root.RangeThumbWidthUp1Pix(); e.Handled = true; }
+                            if (e.Key == Key.PageUp) { e.Handled = true; }
                             else if (e.Key == Key.PageDown) { e.Handled = true; }
                             else if (e.Key == Key.Home) { e.Handled = true; }
                             else if (e.Key == Key.End) { e.Handled = true; }
@@ -738,8 +738,8 @@ namespace Pixtack3rd
         //自身が所属するMainWindowを登録、画像保存系メソッドを使うため
         public MainWindow? MyMainWindow { get; private set; }
 
-        //選択範囲用の特殊Thumb
-        public TTRange MyTTRange { get; private set; } = new(new Data(TType.Range) { BackColor = Color.FromArgb(255, 0, 0, 0) });
+        ////選択範囲用の特殊Thumb
+        //public TTRange MyTTRange { get; private set; } = new(new Data(TType.Range) { BackColor = Color.FromArgb(255, 0, 0, 0) });
 
         ////右クリックメニュー
         //public ContextMenu MyContextMenu { get; private set; } = new();
@@ -764,9 +764,9 @@ namespace Pixtack3rd
                 MyMainWindow = GetMainWindow(this);
                 //SetMyContextMenu();
                 //this.ContextMenuOpening += ContextMenu_ContextMenuOpening;
-                if (SetMyTTRange() is TTRange range) { MyTTRange = range; }
-                else AddThumb(MyTTRange, this);
-                Panel.SetZIndex(MyTTRange, 10);//上に表示
+                //if (SetMyTTRange() is TTRange range) { MyTTRange = range; }
+                //else AddThumb(MyTTRange, this);
+                //Panel.SetZIndex(MyTTRange, 10);//上に表示
             };
 
             //Rootにはフォーカスを移動させない
@@ -779,15 +779,15 @@ namespace Pixtack3rd
         }
 
 
-        //範囲選択Thumbの取得
-        private TTRange? SetMyTTRange()
-        {
-            foreach (var item in Thumbs)
-            {
-                if (item is TTRange range) { return range; }
-            }
-            return null;
-        }
+        ////範囲選択Thumbの取得
+        //private TTRange? SetMyTTRange()
+        //{
+        //    foreach (var item in Thumbs)
+        //    {
+        //        if (item is TTRange range) { return range; }
+        //    }
+        //    return null;
+        //}
 
         /// <summary>
         /// MainWindowの取得、Loadedに実行
@@ -1088,15 +1088,15 @@ namespace Pixtack3rd
 
 
 
-            //クリックがTTRangeだった場合、Selectedをクリア、TTRangeだけにする
-            if (clicked == MyTTRange)
-            {
-                ActiveThumb = MyTTRange;
-                SelectedThumbs.Clear();
-                SelectedThumbs.Add(MyTTRange);
-                ActiveGroup = this;
-                return;
-            }
+            ////クリックがTTRangeだった場合、Selectedをクリア、TTRangeだけにする
+            //if (clicked == MyTTRange)
+            //{
+            //    ActiveThumb = MyTTRange;
+            //    SelectedThumbs.Clear();
+            //    SelectedThumbs.Add(MyTTRange);
+            //    ActiveGroup = this;
+            //    return;
+            //}
 
             //ActiveThumbの更新
             //ClickedからActiveThumb取得、nullならRootをActiveGroupに指定
@@ -1363,6 +1363,14 @@ namespace Pixtack3rd
 
         #region 追加
 
+        //ファイルパスから追加
+        public void AddThumbFromFilePath(string path)
+        {
+
+
+        }
+
+
         /// <summary>
         /// 追加先Groupを指定して追加、挿入Indexは最後尾(最前面)
         /// </summary>
@@ -1413,19 +1421,62 @@ namespace Pixtack3rd
         /// <param name="data"></param>
         /// <param name="addUpper">trueで上層に追加、falseで下層に追加</param>
         /// <param name="locateFix">追加位置修正、通常はtrue。複製時やクリックで描画図形追加時はfalse</param>
-        public TThumb? AddThumbDataToActiveGroup(Data data, bool addUpper, bool locateFix = true)
+        //public TThumb? AddThumbDataToActiveGroup(Data data, bool addUpper, bool locateFix = true)
+        //{
+
+        //    if (BuildThumb(data) is TThumb thumb)
+        //    {
+        //        if (addUpper)
+        //        {
+        //            AddThumb(thumb, ActiveGroup);//直下にはドラッグ移動イベント付加
+        //        }
+        //        else
+        //        {
+
+        //            AddThumb(thumb, ActiveGroup, 0);
+        //        }
+        //        //位置修正、追加先のActiveThumbに合わせる
+        //        if (locateFix)
+        //        {
+        //            if (ActiveThumb != null)
+        //            {
+        //                data.X = ActiveThumb.Data.X + ActiveGroup.TTXShift;
+        //                data.Y = ActiveThumb.Data.Y + ActiveGroup.TTYShift;
+        //            }
+        //            else
+        //            {
+        //                data.X = 0;
+        //                data.Y = 0;
+        //            }
+        //        }
+
+        //        //Groupだった場合は子要素も追加、子要素にドラッグ移動イベント追加しない
+        //        if (thumb is TTGroup group)
+        //        {
+        //            SetData(group);
+        //        }
+        //        ActiveThumb = thumb;
+        //        SelectedThumbs.Clear();
+        //        SelectedThumbs.Add(thumb);
+        //        ClickedThumb = thumb;
+        //        return thumb;
+        //    }
+        //    return null;
+        //}
+        public TThumb? AddThumbDataToActiveGroup2(Data data, bool isUnder, bool locateFix = true)
         {
 
             if (BuildThumb(data) is TThumb thumb)
             {
-                if (addUpper)
+                if (isUnder)
                 {
-                    AddThumb(thumb, ActiveGroup);//直下にはドラッグ移動イベント付加
+                    //最下層に追加
+                    AddThumb(thumb, ActiveGroup, 0);
                 }
                 else
                 {
-
-                    AddThumb(thumb, ActiveGroup, 0);
+                    //最上層に追加
+                    AddThumb(thumb, ActiveGroup);//直下にはドラッグ移動イベント付加
                 }
                 //位置修正、追加先のActiveThumbに合わせる
                 if (locateFix)
@@ -1496,9 +1547,9 @@ namespace Pixtack3rd
                 case TType.Geometric:
                     result = new TTGeometricShape(data);
                     break;
-                case TType.Range:
-                    result = new TTRange(data);
-                    break;
+                //case TType.Range:
+                //    result = new TTRange(data);
+                //    break;
                 //case TType.Polyline2:
                 //result = new TTPolyline(data);
                 //break;
@@ -2075,6 +2126,7 @@ namespace Pixtack3rd
         private BitmapSource? MakeBitmapFromThumb2(TThumb? el)
         {
             if (el == null) { return null; }
+            if (el.Type == TType.Image) { return el.Data.BitmapSource; };
             if (el.ActualHeight == 0 || el.ActualWidth == 0) { return null; }
 
             //枠を一時的に非表示にする
@@ -2086,10 +2138,9 @@ namespace Pixtack3rd
             Rect bounds = VisualTreeHelper.GetDescendantBounds(el);
             bounds = el.RenderTransform.TransformBounds(bounds);
             DrawingVisual dVisual = new();
-            //サイズを切り上げ、UselayoutRoundingをtrueにしていたら必要なさそう
-            bounds.Width = (int)(bounds.Width + 1.0);
-            bounds.Height = (int)(bounds.Height + 1.0);
-
+            //サイズを四捨五入
+            bounds.Width = Math.Round(bounds.Width, MidpointRounding.AwayFromZero);
+            bounds.Height = Math.Round(bounds.Height, MidpointRounding.AwayFromZero);
             using (DrawingContext context = dVisual.RenderOpen())
             {
                 VisualBrush vBrush = new(el) { Stretch = Stretch.None };
@@ -2161,7 +2212,8 @@ namespace Pixtack3rd
         {
             if (MyClipboard.GetImageFromClipboardPreferPNG() is BitmapSource bmp)
             {
-                AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp }, true);
+                AddThumbDataToActiveGroup2(new Data(TType.Image) { BitmapSource = bmp }, false);
+                //AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp }, true);
             }
             else { MessageBox.Show("画像は得られなかった"); }
         }
@@ -2170,7 +2222,8 @@ namespace Pixtack3rd
         {
             if (MyClipboard.GetClipboardImagePngWithAlphaFix() is BitmapSource bmp)
             {
-                AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp }, true);
+                AddThumbDataToActiveGroup2(new Data(TType.Image) { BitmapSource = bmp }, false);
+                //AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp }, true);
             }
             else { MessageBox.Show("画像は得られなかった"); }
         }
@@ -2179,7 +2232,8 @@ namespace Pixtack3rd
         {
             if (MyClipboard.GetClipboardImageBgr32() is BitmapSource bmp)
             {
-                AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp }, true);
+                AddThumbDataToActiveGroup2(new Data(TType.Image) { BitmapSource = bmp }, false);
+                //AddThumbDataToActiveGroup(new Data(TType.Image) { BitmapSource = bmp }, true);
             }
             else { MessageBox.Show("画像は得られなかった"); }
         }
@@ -2301,11 +2355,16 @@ namespace Pixtack3rd
             List<TThumb> selection = new();
             foreach (var item in datas)
             {
-                if (AddThumbDataToActiveGroup(item, true, false) is TThumb thumb)
+                if (AddThumbDataToActiveGroup2(item, false, false) is TThumb thumb)
                 {
                     selection.Add(thumb);
                     count++;
                 }
+                //if (AddThumbDataToActiveGroup(item, true, false) is TThumb thumb)
+                //{
+                //    selection.Add(thumb);
+                //    count++;
+                //}
             }
 
             //SelectedThumbsを複製したThumbに置き換える
@@ -2346,11 +2405,16 @@ namespace Pixtack3rd
             List<TThumb> selection = new();
             foreach (var item in datas)
             {
-                if (AddThumbDataToActiveGroup(item, true, false) is TThumb thumb)
+                if (AddThumbDataToActiveGroup2(item, false, false) is TThumb thumb)
                 {
                     selection.Add(thumb);
                     count++;
                 }
+                //if (AddThumbDataToActiveGroup(item, true, false) is TThumb thumb)
+                //{
+                //    selection.Add(thumb);
+                //    count++;
+                //}
             }
 
             //SelectedThumbsを複製したThumbに置き換える
@@ -2369,54 +2433,54 @@ namespace Pixtack3rd
         #endregion ショートカットキー
 
         #region 範囲選択系
-        //非表示(リストから削除)
-        public void TTRangeInvisible()
-        {
-            _ = RemoveThumb(MyTTRange, this);
-        }
-        //表示(リストに追加)
-        public void TTRangeVisible()
-        {
-            var range = GetTTRange();
-            if (range == null)
-            {
-                AddThumb(MyTTRange, this);
-                ClickedThumb = MyTTRange;
-                ActiveThumb = MyTTRange;
-                SelectedThumbs.Clear();
-                SelectedThumbs.Add(MyTTRange);
-                TTGroupUpdateLayout();
-            }
-        }
-        //範囲選択がThumbsリストに存在するかのチェック
-        public TTRange? GetTTRange()
-        {
-            foreach (var item in Thumbs)
-            {
-                if (item is TTRange range)
-                {
-                    return range;
-                }
-            }
-            return null;
-        }
+        ////非表示(リストから削除)
+        //public void TTRangeInvisible()
+        //{
+        //    _ = RemoveThumb(MyTTRange, this);
+        //}
+        ////表示(リストに追加)
+        //public void TTRangeVisible()
+        //{
+        //    var range = GetTTRange();
+        //    if (range == null)
+        //    {
+        //        AddThumb(MyTTRange, this);
+        //        ClickedThumb = MyTTRange;
+        //        ActiveThumb = MyTTRange;
+        //        SelectedThumbs.Clear();
+        //        SelectedThumbs.Add(MyTTRange);
+        //        TTGroupUpdateLayout();
+        //    }
+        //}
+        ////範囲選択がThumbsリストに存在するかのチェック
+        //public TTRange? GetTTRange()
+        //{
+        //    foreach (var item in Thumbs)
+        //    {
+        //        if (item is TTRange range)
+        //        {
+        //            return range;
+        //        }
+        //    }
+        //    return null;
+        //}
 
-        public void RangeThumbWidthUp1Pix()
-        {
-            if (MyTTRange == ActiveThumb) MyTTRange.Width++;
-        }
-        public void RangeThumbWidthDown1Pix()
-        {
-            if (MyTTRange.Width > 1 && MyTTRange == ActiveThumb) MyTTRange.Width--;
-        }
-        public void RangeThumbHeightUp1Pix()
-        {
-            if (MyTTRange == ActiveThumb) MyTTRange.Height++;
-        }
-        public void RangeThumbHeightDown1Pix()
-        {
-            if (MyTTRange.Height > 1 && MyTTRange == ActiveThumb) MyTTRange.Height--;
-        }
+        //public void RangeThumbWidthUp1Pix()
+        //{
+        //    if (MyTTRange == ActiveThumb) MyTTRange.Width++;
+        //}
+        //public void RangeThumbWidthDown1Pix()
+        //{
+        //    if (MyTTRange.Width > 1 && MyTTRange == ActiveThumb) MyTTRange.Width--;
+        //}
+        //public void RangeThumbHeightUp1Pix()
+        //{
+        //    if (MyTTRange == ActiveThumb) MyTTRange.Height++;
+        //}
+        //public void RangeThumbHeightDown1Pix()
+        //{
+        //    if (MyTTRange.Height > 1 && MyTTRange == ActiveThumb) MyTTRange.Height--;
+        //}
 
         #endregion 範囲選択系
 
@@ -2833,25 +2897,25 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
 
-        public Brush Stroke
+        public Brush StrokeBrush
         {
-            get { return (Brush)GetValue(StrokeProperty); }
-            set { SetValue(StrokeProperty, value); }
+            get { return (Brush)GetValue(StrokeBrushProperty); }
+            set { SetValue(StrokeBrushProperty, value); }
         }
-        public static readonly DependencyProperty StrokeProperty =
-            DependencyProperty.Register(nameof(Stroke), typeof(Brush), typeof(TTGeometricShape),
+        public static readonly DependencyProperty StrokeBrushProperty =
+            DependencyProperty.Register(nameof(StrokeBrush), typeof(Brush), typeof(TTGeometricShape),
                 new FrameworkPropertyMetadata(Brushes.Red,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        public Brush TTFill
+        public Brush TTFillBrush
         {
-            get { return (Brush)GetValue(TTFillProperty); }
-            set { SetValue(TTFillProperty, value); }
+            get { return (Brush)GetValue(TTFillBrushProperty); }
+            set { SetValue(TTFillBrushProperty, value); }
         }
-        public static readonly DependencyProperty TTFillProperty =
-            DependencyProperty.Register(nameof(TTFill), typeof(Brush), typeof(TTGeometricShape),
+        public static readonly DependencyProperty TTFillBrushProperty =
+            DependencyProperty.Register(nameof(TTFillBrush), typeof(Brush), typeof(TTGeometricShape),
                 new FrameworkPropertyMetadata(Brushes.Red,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
@@ -3068,9 +3132,9 @@ namespace Pixtack3rd
 
             //Shape <- this            
             MyShape.SetBinding(GeometricShape.MyIsEditingProperty, new Binding() { Source = this, Path = new PropertyPath(IsEditingProperty) });
-            MyShape.SetBinding(GeometricShape.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeProperty) });
+            MyShape.SetBinding(GeometricShape.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeBrushProperty) });
             MyShape.SetBinding(GeometricShape.StrokeThicknessProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeThicknessProperty) });
-            MyShape.SetBinding(GeometricShape.FillProperty, new Binding() { Source = this, Path = new PropertyPath(TTFillProperty) });
+            MyShape.SetBinding(GeometricShape.FillProperty, new Binding() { Source = this, Path = new PropertyPath(TTFillBrushProperty) });
 
             MyShape.SetBinding(GeometricShape.MyShapeTypeProperty, new Binding() { Source = this, Path = new PropertyPath(MyShapeTypeProperty) });
             MyShape.SetBinding(GeometricShape.ArrowHeadAngleProperty, new Binding() { Source = this, Path = new PropertyPath(ArrowHeadAngleProperty) });
@@ -3101,10 +3165,10 @@ namespace Pixtack3rd
             mb.Bindings.Add(b1);
             mb.Bindings.Add(b2);
             mb.Bindings.Add(b3);
-            SetBinding(StrokeProperty, mb);
+            SetBinding(StrokeBrushProperty, mb);
 
             SetBinding(StrokeThicknessProperty, nameof(Data.StrokeThickness));
-            SetBinding(TTFillProperty, nameof(Data.Fill));
+            SetBinding(TTFillBrushProperty, nameof(Data.Fill));
             SetBinding(ArrowHeadAngleProperty, nameof(Data.HeadAngle));
             SetBinding(HeadBeginTypeProperty, nameof(Data.HeadBeginType));
             SetBinding(HeadEndTypeProperty, nameof(Data.HeadEndType));
@@ -3242,183 +3306,184 @@ namespace Pixtack3rd
     }
     #endregion TTImage
 
-    #region 範囲選択用TThumb
-    //かなり特殊なTThumb、フィールドにTTRootを持つのは、これで画像として複製や枠の表示切り替えなどを行うため
-    //単一の存在にしたいので複製やグループ化の要素にはならないようにする
-    //画像として複製は可能、Data複製は不可
-    //TTRootにフィールドを用意しておいてそこに保存、削除時はThumbsから削除するだけで
-    //もう一度表示するときはフィールドからThumbsに追加し直すことで、削除時のRectを維持する
-    public class TTRange : TThumb
-    {
-        #region 依存関係プロパティ
+    //#region 範囲選択用TThumb
+    ////かなり特殊なTThumb、フィールドにTTRootを持つのは、これで画像として複製や枠の表示切り替えなどを行うため
+    ////単一の存在にしたいので複製やグループ化の要素にはならないようにする
+    ////画像として複製は可能、Data複製は不可
+    ////TTRootにフィールドを用意しておいてそこに保存、削除時はThumbsから削除するだけで
+    ////もう一度表示するときはフィールドからThumbsに追加し直すことで、削除時のRectを維持する
+    //public class TTRange : TThumb
+    //{
+    //    #region 依存関係プロパティ
 
 
-        #endregion 依存関係プロパティ
+    //    #endregion 依存関係プロパティ
 
-        public Canvas MyTemplateCanvas { get; private set; }
-        public ContextMenu MyContextMenu { get; private set; } = new();
-        public TTRoot? MyRoot { get; private set; }
-        public RangeAdorner MyRangeAdorner { get; private set; }
+    //    public Canvas MyTemplateCanvas { get; private set; }
+    //    public ContextMenu MyContextMenu { get; private set; } = new();
+    //    public TTRoot? MyRoot { get; private set; }
+    //    public RangeAdorner MyRangeAdorner { get; private set; }
 
-        #region コンストラクタ
-        public TTRange() : this(new Data(TType.Range)) { }
-        public TTRange(Data data) : base(data)
-        {
-            Data = data;
-            this.DataContext = Data;
-            if (MakeTemplate<Canvas>() is Canvas element) { MyTemplateElement = element; }
-            else { throw new ArgumentException("テンプレート作成できんかった"); }
-            MyTemplateCanvas = (Canvas)MyTemplateElement;
-            MyRangeAdorner = new RangeAdorner(this) { ThumbSize = 20.0 };
-            Loaded += TTRange_Loaded;
-            Opacity = 0.2;
-            SetMyContextMenu();
+    //    #region コンストラクタ
+    //    public TTRange() : this(new Data(TType.Range)) { }
+    //    public TTRange(Data data) : base(data)
+    //    {
+    //        Data = data;
+    //        this.DataContext = Data;
+    //        if (MakeTemplate<Canvas>() is Canvas element) { MyTemplateElement = element; }
+    //        else { throw new ArgumentException("テンプレート作成できんかった"); }
+    //        MyTemplateCanvas = (Canvas)MyTemplateElement;
+    //        MyRangeAdorner = new RangeAdorner(this) { ThumbSize = 20.0 };
+    //        Loaded += TTRange_Loaded;
+    //        Opacity = 0.2;
+    //        SetMyContextMenu();
 
-            //BindingタイミングはLoadedイベントでは遅いので起動時にBinding
-            //ModeがTwowayのBindingでもLoadedで実行するとXAMLで指定したものよりDataの初期値が優先される
-            SetMyBindings();
+    //        //BindingタイミングはLoadedイベントでは遅いので起動時にBinding
+    //        //ModeがTwowayのBindingでもLoadedで実行するとXAMLで指定したものよりDataの初期値が優先される
+    //        SetMyBindings();
 
-        }
-        #endregion コンストラクタ
+    //    }
+    //    #endregion コンストラクタ
 
-        private void TTRange_Loaded(object sender, RoutedEventArgs e)
-        {
-            //ハンドル表示用のアドーナーを追加
-            //ハンドル自体にも同じ右クリックメニュー追加
-            MyRangeAdorner.ContextMenu = MyContextMenu;
-            AdornerLayer.GetAdornerLayer(this).Add(MyRangeAdorner);
-            //TTRoot取得
-            MyRoot = GetRoot(this);
-        }
-        #region 右クリックメニュー関連
+    //    private void TTRange_Loaded(object sender, RoutedEventArgs e)
+    //    {
+    //        //ハンドル表示用のアドーナーを追加
+    //        //ハンドル自体にも同じ右クリックメニュー追加
+    //        MyRangeAdorner.ContextMenu = MyContextMenu;
+    //        AdornerLayer.GetAdornerLayer(this).Add(MyRangeAdorner);
+    //        //TTRoot取得
+    //        //MyRoot = GetRoot(this);
+    //    }
+    //    #region 右クリックメニュー関連
 
-        //右クリックメニュー項目作成
-        private void SetMyContextMenu()
-        {
-            this.ContextMenu = MyContextMenu;
-            MenuItem item = new() { Header = "コピー" };
-            MyContextMenu.Items.Add(item);
-            item.Click += Item_Click;
-            item = new() { Header = "複製" };
-            MyContextMenu.Items.Add(item);
-            item.Click += Item_Click1;
-            item = new() { Header = "名前をつけて保存" };
-            MyContextMenu.Items.Add(item);
-            item.Click += Item_Click2;
-        }
+    //    //右クリックメニュー項目作成
+    //    private void SetMyContextMenu()
+    //    {
+    //        this.ContextMenu = MyContextMenu;
+    //        MenuItem item = new() { Header = "コピー" };
+    //        MyContextMenu.Items.Add(item);
+    //        item.Click += Item_Click;
+    //        item = new() { Header = "複製" };
+    //        MyContextMenu.Items.Add(item);
+    //        item.Click += Item_Click1;
+    //        item = new() { Header = "名前をつけて保存" };
+    //        MyContextMenu.Items.Add(item);
+    //        item.Click += Item_Click2;
+    //    }
 
-        //名前をつけて保存
-        private void Item_Click2(object sender, RoutedEventArgs e)
-        {
-            if (MyRoot != null && GetRangesBitmap() is BitmapSource bmp)
-            {
-                MyRoot?.MyMainWindow?.SaveBitmap2(bmp);                
-            }
-        }
+    //    //名前をつけて保存
+    //    private void Item_Click2(object sender, RoutedEventArgs e)
+    //    {
+    //        if (MyRoot != null && GetRangesBitmap() is BitmapSource bmp)
+    //        {
+    //            MyRoot?.MyMainWindow?.SaveBitmap2(bmp);
+    //        }
+    //    }
 
-        //複製
-        private void Item_Click1(object sender, RoutedEventArgs e)
-        {
-            if (MyRoot != null && GetRangesBitmap() is BitmapSource bmp)
-            {
-                Data data = new(TType.Image) { BitmapSource = bmp };
-                MyRoot.AddThumbDataToActiveGroup(data, true, true);
-            }
-        }
+    //    //複製
+    //    private void Item_Click1(object sender, RoutedEventArgs e)
+    //    {
+    //        if (MyRoot != null && GetRangesBitmap() is BitmapSource bmp)
+    //        {
+    //            Data data = new(TType.Image) { BitmapSource = bmp };
+    //            MyRoot.AddThumbDataToActiveGroup2(data, false, true);
+    //            //MyRoot.AddThumbDataToActiveGroup(data, true, true);
+    //        }
+    //    }
 
-        //選択範囲を画像としてクリップボードにコピー
-        private void Item_Click(object sender, RoutedEventArgs e)
-        {
-            if (MyRoot != null && GetRangesBitmap() is BitmapSource bmp)
-            {
-                MyRoot.ClipboardSetBitmapWithPng(bmp);
-            }
-        }
+    //    //選択範囲を画像としてクリップボードにコピー
+    //    private void Item_Click(object sender, RoutedEventArgs e)
+    //    {
+    //        if (MyRoot != null && GetRangesBitmap() is BitmapSource bmp)
+    //        {
+    //            MyRoot.ClipboardSetBitmapWithPng(bmp);
+    //        }
+    //    }
 
-        /// <summary>
-        /// 選択範囲を画像として取得
-        /// Root全体のVisualからRange部分だけをDrawing
-        /// </summary>
-        /// <returns></returns>
-        private BitmapSource? GetRangesBitmap()
-        {
-            if (MyRoot == null) return null;
+    //    /// <summary>
+    //    /// 選択範囲を画像として取得
+    //    /// Root全体のVisualからRange部分だけをDrawing
+    //    /// </summary>
+    //    /// <returns></returns>
+    //    private BitmapSource? GetRangesBitmap()
+    //    {
+    //        if (MyRoot == null) return null;
 
-            //枠と範囲選択を一時的に非表示にする
-            WakuVisibleType waku = MyRoot.TTWakuVisibleType;
-            MyRoot.TTWakuVisibleType = WakuVisibleType.None;
-            UpdateLayout();//再描画？これで枠が消える;
-            this.Visibility = Visibility.Collapsed;
+    //        //枠と範囲選択を一時的に非表示にする
+    //        WakuVisibleType waku = MyRoot.TTWakuVisibleType;
+    //        MyRoot.TTWakuVisibleType = WakuVisibleType.None;
+    //        UpdateLayout();//再描画？これで枠が消える;
+    //        this.Visibility = Visibility.Collapsed;
 
-            //描画のRect取得
-            var bounds = this.TransformToVisual(MyRoot)
-                .TransformBounds(VisualTreeHelper.GetDescendantBounds(this));
-            DrawingVisual dv = new() { Offset = new Vector(-bounds.X, -bounds.Y) };
-            using (var context = dv.RenderOpen())
-            {
-                VisualBrush vb = new(MyRoot) { Stretch = Stretch.None };
-                context.DrawRectangle(vb, null, VisualTreeHelper.GetDescendantBounds(MyRoot));
-            }
-            RenderTargetBitmap bitmap = new(
-                (int)Math.Ceiling(bounds.Width), (int)Math.Ceiling(bounds.Height)
-                , 96, 96, PixelFormats.Pbgra32);
-            bitmap.Render(dv);
+    //        //描画のRect取得
+    //        var bounds = this.TransformToVisual(MyRoot)
+    //            .TransformBounds(VisualTreeHelper.GetDescendantBounds(this));
+    //        DrawingVisual dv = new() { Offset = new Vector(-bounds.X, -bounds.Y) };
+    //        using (var context = dv.RenderOpen())
+    //        {
+    //            VisualBrush vb = new(MyRoot) { Stretch = Stretch.None };
+    //            context.DrawRectangle(vb, null, VisualTreeHelper.GetDescendantBounds(MyRoot));
+    //        }
+    //        RenderTargetBitmap bitmap = new(
+    //            (int)Math.Ceiling(bounds.Width), (int)Math.Ceiling(bounds.Height)
+    //            , 96, 96, PixelFormats.Pbgra32);
+    //        bitmap.Render(dv);
 
-            //枠と範囲選択の表示を元に戻す
-            MyRoot.TTWakuVisibleType = waku;
-            this.Visibility = Visibility.Visible;
-            return bitmap;
-        }
-        #endregion 右クリックメニュー関連
+    //        //枠と範囲選択の表示を元に戻す
+    //        MyRoot.TTWakuVisibleType = waku;
+    //        this.Visibility = Visibility.Visible;
+    //        return bitmap;
+    //    }
+    //    #endregion 右クリックメニュー関連
 
-        /// <summary>
-        /// TTRoot取得
-        /// </summary>
-        /// <param name="element"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
-        private TTRoot GetRoot(TThumb? element)
-        {
-            if (element == null) throw new ArgumentException();
-            if (element.TTParent is TTRoot root)
-            {
-                return root;
-            }
-            else
-            {
-                return GetRoot(element.TTParent as TThumb);
-            }
-        }
-
-
-        private void SetMyBindings()
-        {
-            //SetBinding(BackgroundProperty, new Binding(nameof(Data.BackColor)) { Source = Data, Converter = new MyConverterColorSolidBrush(), Mode = BindingMode.TwoWay });
-            //MyTemplateCanvas.SetBinding(BackgroundProperty, new Binding() { Source = this, Path = new PropertyPath(BackgroundProperty), Mode = BindingMode.TwoWay });
+    //    /// <summary>
+    //    /// TTRoot取得
+    //    /// </summary>
+    //    /// <param name="element"></param>
+    //    /// <returns></returns>
+    //    /// <exception cref="ArgumentException"></exception>
+    //    private TTRoot GetRoot(TThumb? element)
+    //    {
+    //        if (element == null) throw new ArgumentException();
+    //        if (element.TTParent is TTRoot root)
+    //        {
+    //            return root;
+    //        }
+    //        else
+    //        {
+    //            return GetRoot(element.TTParent as TThumb);
+    //        }
+    //    }
 
 
-            //背景色
-            Binding b;
-            b = new(nameof(Data.BackColor));
-            b.Converter = new MyConverterColorSolidBrush();
-            b.Mode = BindingMode.TwoWay;
-            SetBinding(BackgroundProperty, b);
-            MyTemplateElement.SetBinding(BackgroundProperty, b);
+    //    private void SetMyBindings()
+    //    {
+    //        //SetBinding(BackgroundProperty, new Binding(nameof(Data.BackColor)) { Source = Data, Converter = new MyConverterColorSolidBrush(), Mode = BindingMode.TwoWay });
+    //        //MyTemplateCanvas.SetBinding(BackgroundProperty, new Binding() { Source = this, Path = new PropertyPath(BackgroundProperty), Mode = BindingMode.TwoWay });
 
-            b = new(nameof(Data.Width));
-            b.Mode = BindingMode.TwoWay;
-            SetBinding(WidthProperty, b);
-            MyTemplateCanvas.SetBinding(WidthProperty, b);
-            b = new(nameof(Data.Height));
-            b.Mode = BindingMode.TwoWay;
-            SetBinding(HeightProperty, b);
-            MyTemplateCanvas.SetBinding(HeightProperty, b);
 
-        }
+    //        //背景色
+    //        Binding b;
+    //        b = new(nameof(Data.BackColor));
+    //        b.Converter = new MyConverterColorSolidBrush();
+    //        b.Mode = BindingMode.TwoWay;
+    //        SetBinding(BackgroundProperty, b);
+    //        MyTemplateElement.SetBinding(BackgroundProperty, b);
 
-    }
+    //        b = new(nameof(Data.Width));
+    //        b.Mode = BindingMode.TwoWay;
+    //        SetBinding(WidthProperty, b);
+    //        MyTemplateCanvas.SetBinding(WidthProperty, b);
+    //        b = new(nameof(Data.Height));
+    //        b.Mode = BindingMode.TwoWay;
+    //        SetBinding(HeightProperty, b);
+    //        MyTemplateCanvas.SetBinding(HeightProperty, b);
 
-    #endregion 範囲選択用TThumb
+    //    }
+
+    //}
+
+    //#endregion 範囲選択用TThumb
 
 
 

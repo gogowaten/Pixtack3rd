@@ -24,11 +24,52 @@ namespace Pixtack3rd
 
 
 
-    [DataContract]
-    [KnownType(typeof(FontFamily)), KnownType(typeof(KeyValuePair<string, FontFamily>)), KnownType(typeof(SolidColorBrush)),
-        KnownType(typeof(MatrixTransform))]
-    public class Data : IExtensibleDataObject, INotifyPropertyChanged
+    //[KnownType(typeof(FontFamily)), KnownType(typeof(KeyValuePair<string, FontFamily>)), KnownType(typeof(SolidColorBrush)), KnownType(typeof(MatrixTransform))]
+    //[KnownType(typeof(FontFamily)), KnownType(typeof(KeyValuePair<string, FontFamily>)), KnownType(typeof(SolidColorBrush)), KnownType(typeof(MatrixTransform)), KnownType(typeof(Data))]
+    //[DataContract]
+    [KnownType(typeof(SolidColorBrush)), KnownType(typeof(MatrixTransform)), KnownType(typeof(Data))]
+    public class Data : DependencyObject, IExtensibleDataObject, INotifyPropertyChanged
     {
+
+        #region コンストラクタ
+        //c# - Datacontract exception. Cannot be serialized - Stack Overflow
+        //        https://stackoverflow.com/questions/10077121/datacontract-exception-cannot-be-serialized
+
+        //DependencyObjectを継承したクラスのシリアル化には、
+        //引数のないコンストラクタが必要
+        public Data() { throw new NotImplementedException("このクラスのnewにはTTypeの引数が必要"); }
+        public Data(TType type)
+        {
+
+            Type = type;
+            switch (type)
+            {
+                case TType.None:
+                    break;
+                case TType.Root:
+                    Datas = new ObservableCollection<Data>();
+                    break;
+                case TType.Group:
+                    Datas = new ObservableCollection<Data>();
+                    break;
+                case TType.TextBlock:
+                    break;
+                case TType.Image:
+                    break;
+                case TType.Rectangle:
+                    break;
+                case TType.TextBox:
+                    break;
+                case TType.Geometric:
+                    break;
+                case TType.Range:
+                    break;
+                default:
+                    break;
+            }
+        }
+        #endregion コンストラクタ
+
         #region 必要
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -57,6 +98,10 @@ namespace Pixtack3rd
         //グループの表示非表示
         private bool _isVisibleThumb = false;
         [DataMember] public bool IsNotVisiblle { get => _isVisibleThumb; set => SetProperty(ref _isVisibleThumb, value); }
+
+        ////新規Thumb追加場所
+        //private bool _isAddUnder = false;
+        //[DataMember] public bool IsAddUnder { get => _isAddUnder = false; set => SetProperty(ref _isAddUnder = false, value); }
 
         #endregion Group専用
 
@@ -194,39 +239,6 @@ namespace Pixtack3rd
 
 
         #endregion 固有
-
-        #region コンストラクタ
-        public Data(TType type)
-        {
-
-            Type = type;
-            switch (type)
-            {
-                case TType.None:
-                    break;
-                case TType.Root:
-                    Datas = new ObservableCollection<Data>();
-                    break;
-                case TType.Group:
-                    Datas = new ObservableCollection<Data>();
-                    break;
-                case TType.TextBlock:
-                    break;
-                case TType.Image:
-                    break;
-                case TType.Rectangle:
-                    break;
-                case TType.TextBox:
-                    break;
-                case TType.Geometric:
-                    break;
-                case TType.Range:
-                    break;
-                default:
-                    break;
-            }
-        }
-        #endregion コンストラクタ
 
         #region ディープコピー
 

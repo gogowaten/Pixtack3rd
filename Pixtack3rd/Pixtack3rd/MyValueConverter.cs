@@ -76,7 +76,14 @@ namespace Pixtack3rd
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            SolidColorBrush solid = (SolidColorBrush)value;
+
+            object[] obj = new object[4];
+            obj[0] = solid.Color.A;
+            obj[1] = solid.Color.R;
+            obj[2] = solid.Color.G;
+            obj[3] = solid.Color.B;
+            return obj;
         }
     }
 
@@ -415,6 +422,11 @@ namespace Pixtack3rd
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
+
+            if (values[0] == DependencyProperty.UnsetValue)
+            {
+                return new SolidColorBrush(Colors.Black);
+            }
             byte a = (byte)values[0];
             byte r = (byte)values[1];
             byte g = (byte)values[2];
@@ -457,5 +469,29 @@ namespace Pixtack3rd
         }
     }
 
+    //public class MyConverterFontName2Falily : IValueConverter
+    //{
+    //    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        string name = (string)value;
+    //        FontFamily fm = new FontFamily(name);
+    //        return fm;
+    //    }
+
+    //    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        FontFamily fm = (FontFamily)value;
+    //        foreach (Typeface typeface in fm.GetTypefaces())
+    //        {
+    //            typeface.TryGetGlyphTypeface(out GlyphTypeface gType);
+    //            if (gType != null)
+    //            {
+    //                string inu = gType.Win32FamilyNames[CultureInfo.CurrentCulture];
+    //                return inu;
+    //            }
+    //        }
+    //        return "";
+    //    }
+    //}
 
 }
