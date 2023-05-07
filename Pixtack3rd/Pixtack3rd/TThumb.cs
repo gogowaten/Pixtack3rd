@@ -2897,25 +2897,25 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
 
-        public Brush Stroke
+        public Brush StrokeBrush
         {
-            get { return (Brush)GetValue(StrokeProperty); }
-            set { SetValue(StrokeProperty, value); }
+            get { return (Brush)GetValue(StrokeBrushProperty); }
+            set { SetValue(StrokeBrushProperty, value); }
         }
-        public static readonly DependencyProperty StrokeProperty =
-            DependencyProperty.Register(nameof(Stroke), typeof(Brush), typeof(TTGeometricShape),
+        public static readonly DependencyProperty StrokeBrushProperty =
+            DependencyProperty.Register(nameof(StrokeBrush), typeof(Brush), typeof(TTGeometricShape),
                 new FrameworkPropertyMetadata(Brushes.Red,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        public Brush TTFill
+        public Brush TTFillBrush
         {
-            get { return (Brush)GetValue(TTFillProperty); }
-            set { SetValue(TTFillProperty, value); }
+            get { return (Brush)GetValue(TTFillBrushProperty); }
+            set { SetValue(TTFillBrushProperty, value); }
         }
-        public static readonly DependencyProperty TTFillProperty =
-            DependencyProperty.Register(nameof(TTFill), typeof(Brush), typeof(TTGeometricShape),
+        public static readonly DependencyProperty TTFillBrushProperty =
+            DependencyProperty.Register(nameof(TTFillBrush), typeof(Brush), typeof(TTGeometricShape),
                 new FrameworkPropertyMetadata(Brushes.Red,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
@@ -3132,9 +3132,9 @@ namespace Pixtack3rd
 
             //Shape <- this            
             MyShape.SetBinding(GeometricShape.MyIsEditingProperty, new Binding() { Source = this, Path = new PropertyPath(IsEditingProperty) });
-            MyShape.SetBinding(GeometricShape.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeProperty) });
+            MyShape.SetBinding(GeometricShape.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeBrushProperty) });
             MyShape.SetBinding(GeometricShape.StrokeThicknessProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeThicknessProperty) });
-            MyShape.SetBinding(GeometricShape.FillProperty, new Binding() { Source = this, Path = new PropertyPath(TTFillProperty) });
+            MyShape.SetBinding(GeometricShape.FillProperty, new Binding() { Source = this, Path = new PropertyPath(TTFillBrushProperty) });
 
             MyShape.SetBinding(GeometricShape.MyShapeTypeProperty, new Binding() { Source = this, Path = new PropertyPath(MyShapeTypeProperty) });
             MyShape.SetBinding(GeometricShape.ArrowHeadAngleProperty, new Binding() { Source = this, Path = new PropertyPath(ArrowHeadAngleProperty) });
@@ -3165,10 +3165,10 @@ namespace Pixtack3rd
             mb.Bindings.Add(b1);
             mb.Bindings.Add(b2);
             mb.Bindings.Add(b3);
-            SetBinding(StrokeProperty, mb);
+            SetBinding(StrokeBrushProperty, mb);
 
             SetBinding(StrokeThicknessProperty, nameof(Data.StrokeThickness));
-            SetBinding(TTFillProperty, nameof(Data.Fill));
+            SetBinding(TTFillBrushProperty, nameof(Data.Fill));
             SetBinding(ArrowHeadAngleProperty, nameof(Data.HeadAngle));
             SetBinding(HeadBeginTypeProperty, nameof(Data.HeadBeginType));
             SetBinding(HeadEndTypeProperty, nameof(Data.HeadEndType));

@@ -205,7 +205,8 @@ namespace Pixtack3rd
         public WriteableBitmap SVWriteableBitmap { get; private set; }
         public byte[] SVPixels { get; private set; }
         private readonly int SVStride;
-
+        //初期色、バックアップ
+        public Color OriginColor { get; private set; }
 
         #region コンストラクタ
 
@@ -230,16 +231,19 @@ namespace Pixtack3rd
             PickColor = Color.FromArgb(255, 255, 0, 0);
             Loaded += Picker_Loaded;
             //Closing += Picker_Closing;
+            this.WindowStartupLocation = WindowStartupLocation.CenterOwner;
         }
 
         //色指定あり
         public ColorPicker(Color color) : this()
         {
             PickColor = color;
+            OriginColor = color;
         }
         public ColorPicker(SolidColorBrush brush) : this()
         {
             PickColorBrush = brush;
+            OriginColor = brush.Color;
         }
 
         #endregion コンストラクタ
@@ -348,31 +352,25 @@ namespace Pixtack3rd
             mb.Bindings.Add(new Binding() { Source = this, Path = new PropertyPath(BProperty) });
             mb.Converter = new MyConverterARGB2Color();
             SetBinding(PickColorProperty, mb);
-
             SetBinding(PickColorBrushProperty, new Binding() { Source = this, Path = new PropertyPath(PickColorProperty), Converter = new MyConverterColorSolidBrush() });
 
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            PickColor = Colors.Blue;
-            var mark = MyMarker.Saturation;
-            var neko = S;
-            var blue = B;
-            var green = G;
 
         }
 
         private void Button_Click_Ok(object sender, RoutedEventArgs e)
         {
             DialogResult = true;
-            Close();
+            //Close();
         }
 
         private void Button_Click_Cancel(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
-            Close();
+            //Close();
         }
 
         private void MySliderHue_MouseWheel(object sender, MouseWheelEventArgs e)

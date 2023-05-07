@@ -84,6 +84,9 @@ namespace Pixtack3rd
         //範囲選択
         //private TTRange MyTTRange = new();
 
+        //カラーピッカー
+        //private readonly ColorPicker MyColorPicker = new();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -109,7 +112,7 @@ namespace Pixtack3rd
 
 
 
-            MyTabControl.SelectedIndex = 2;
+            MyTabControl.SelectedIndex = 3;
 
             // マウスクリックでShape描画
             MyDrawCanvas.MouseLeftButtonDown += MyDrawCanvas_MouseLeftButtonDown;
@@ -166,14 +169,6 @@ namespace Pixtack3rd
             //アプリ終了時に保存したDataファイルのフルパスを上書き保存パスにセット
             CurrentDataFilePath = AppLastEndTimeDataFilePath;
 
-            ////アプリ終了時のデータを読み込み
-            //if (MyAppConfig.IsLoadPreviewData)
-            //{
-            //    //アプリ終了時のデータと設定を読み込んでセット
-            //    (Data? data, AppConfig? config) = LoadDataFromFile(CurrentFileFullPath);
-            //    if (data is not null) { MyRoot.SetRootData(data); }
-            //}
-
             //枠表示の設定Binding、これはいまいちな処理
             MyRoot.SetBinding(TTRoot.TTWakuVisibleTypeProperty, new Binding(nameof(MyAppData.WakuVisibleType)) { Source = this.MyAppData });
 
@@ -214,25 +209,24 @@ namespace Pixtack3rd
 
             MyAreaCanvas.ContextMenu = MakeContextMenuForAreaThumb();
 
-
-
+            //MyColorPicker.Closing += MyColorPicker_Closing;
+            //MyColorPicker.Closed += MyColorPicker_Closed;
         }
+
+        //private void MyColorPicker_Closed(object? sender, EventArgs e)
+        //{
+
+        //}
+
+        //private void MyColorPicker_Closing(object? sender, CancelEventArgs e)
+        //{
+        //    MyColorPicker.Visibility = Visibility.Collapsed;
+        //    e.Cancel = true;
+        //}
 
         private void SetMyBindings()
         {
-            //文字色Binding
-            MultiBinding mb = new();
-            //mb.Converter = new MyConverterARGB2SolidBrush();
-            //mb.Mode = BindingMode.TwoWay;
-            ////mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorA)));//Source指定なしだとunsetvalueでConverterエラー
-            //mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorA)) { Source = MyAppConfig, Mode = BindingMode.TwoWay });
-            //mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorR)) { Source = MyAppConfig, Mode = BindingMode.TwoWay });
-            //mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorG)) { Source = MyAppConfig, Mode = BindingMode.TwoWay });
-            //mb.Bindings.Add(new Binding(nameof(AppConfig.TextColorB)) { Source = MyAppConfig, Mode = BindingMode.TwoWay });
-            //MyBorderFontColor.SetBinding(BackgroundProperty, mb);
 
-            //初期値の指定方法がわからんのでここで透明度0なら255にする
-            //if (MyAppConfig.TextColorA == 0) MyAppConfig.TextColorA = 255;
 
             //AreaThumb範囲選択用
             MyAreaThumb.DataContext = MyAppData;
@@ -241,17 +235,8 @@ namespace Pixtack3rd
             MyAreaThumb.SetBinding(Canvas.LeftProperty, new Binding(nameof(AppData.AreaLeft)) { Mode = BindingMode.TwoWay });
             MyAreaThumb.SetBinding(Canvas.TopProperty, new Binding(nameof(AppData.AreaTop)) { Mode = BindingMode.TwoWay });
 
-            //mb = new()
-            //{
-            //    Converter = new MyConverterARGB2SolidBrush(),
-            //    Mode = BindingMode.TwoWay
-            //};
-            //mb.Bindings.Add(new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.TextForeColorAProperty), Mode = BindingMode.TwoWay });
-            //mb.Bindings.Add(new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.TextForeColorRProperty), Mode = BindingMode.TwoWay });
-            //mb.Bindings.Add(new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.TextForeColorGProperty), Mode = BindingMode.TwoWay });
-            //mb.Bindings.Add(new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.TextForeColorBProperty), Mode = BindingMode.TwoWay });
-            //MyBorderFontColor.SetBinding(BackgroundProperty, mb);
 
+            MultiBinding mb;
             //文字列描画
             MyBorderTextForeColor.DataContext = MyAppData;
             mb = new()
@@ -300,7 +285,12 @@ namespace Pixtack3rd
             MyNumeTextBoxWakuWidth.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(AppData.TextBoxBorderWidth)) { Source = MyAppData, Mode = BindingMode.TwoWay });
             MyCheckIsBold.SetBinding(CheckBox.IsCheckedProperty, new Binding(nameof(AppData.IsTextBold)) { Source = MyAppData, Mode = BindingMode.TwoWay });
             MyCheckIsItalic.SetBinding(CheckBox.IsCheckedProperty, new Binding(nameof(AppData.IsTextItalic)) { Source = MyAppData, Mode = BindingMode.TwoWay });
-            
+
+            //図形タブ
+            MyNumeStrokeThickness.SetBinding(NumericUpDown.MyValueProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.StrokeWidthProperty), Mode = BindingMode.TwoWay });
+
+            MyBorderShapeColor.SetBinding(BackgroundProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeStrokeColorProperty), Converter = new MyConverterColorSolidBrush() });
+
         }
 
 
@@ -574,31 +564,6 @@ namespace Pixtack3rd
         #endregion 右クリックメニュー
 
         #region アプリの設定保存
-        //private bool SaveConfig<T>(string path, T obj)
-        //{
-        //    try
-        //    {
-        //        XmlWriterSettings settings = new()
-        //        {
-        //            Indent = true,
-        //            Encoding = Encoding.UTF8,
-        //            NewLineOnAttributes = true,
-        //            ConformanceLevel = ConformanceLevel.Fragment,
-        //        };
-        //        using (XmlWriter writer = XmlWriter.Create(path, settings))
-        //        {
-        //            DataContractSerializer serializer = new(typeof(T));
-        //            serializer.WriteObject(writer, obj);
-        //        }
-        //        return true;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        MessageBox.Show($"保存できなかった\n{ex.Message}");
-        //        return false;
-        //        //throw new ArgumentException("保存できなかった", ex.Message);                
-        //    }
-        //}
         private void SaveAppData<T>(string path, T data)
         {
             XmlWriterSettings settings = new()
@@ -855,45 +820,6 @@ namespace Pixtack3rd
             ShowMessageBoxStringList(errorList);
         }
 
-        //private void OpenFiles(string[] paths)
-        //{
-        //    List<string> errorList = new();
-        //    Array.Sort(paths);
-        //    if (MyAppData.IsDecendingSortFileName) { Array.Reverse(paths); }
-        //    foreach (var path in paths)
-        //    {
-        //        //拡張子で判定、関連ファイルならDataで追加
-        //        var ext = System.IO.Path.GetExtension(path);
-        //        if (ext == EXT_DATA && LoadData3(path) is Data data)
-        //        {
-        //            //DataファイルならデシリアライズしてThumb追加
-        //            MyRoot.AddThumbDataToActiveGroup2(data, MyAppData.IsThumbAddUnder);
-        //        }
-        //        else
-        //        {
-        //            //Dataファイル以外は画像ファイルとして開いてエラーにならなかったら追加
-        //            if (GetBitmapFromFilePath(path) is BitmapSource bmp)
-        //            {
-        //                data = new(TType.Image) { BitmapSource = bmp };
-        //                MyRoot.AddThumbDataToActiveGroup2(data, MyAppData.IsThumbAddUnder);
-        //            }
-        //            else
-        //            {
-        //                errorList.Add(path);
-        //            }
-        //        }
-        //    }
-        //    if (errorList.Count != 0)
-        //    {
-        //        string ms = "";
-        //        foreach (var name in errorList)
-        //        {
-        //            ms += $"{name}\n";
-        //        }
-        //        MessageBox.Show(ms, "開くことができなかったファイル一覧",
-        //                        MessageBoxButton.OK, MessageBoxImage.Information);
-        //    }
-        //}
 
         /// <summary>
         /// ファイルパスからDataを返す、Dataファイルならデシリアライズ、それ以外は画像として開く、エラー時はnullを返す
@@ -1611,97 +1537,6 @@ namespace Pixtack3rd
 
         #region ファイルドロップで開く
 
-        //private void AddThumbFromFiles(string[] fileList2)
-        //{
-        //    List<string> errorFiles = new();
-
-        //    foreach (var item in fileList2)
-        //    {
-        //        //拡張子で判定、関連ファイルならDataで追加
-        //        var ext = System.IO.Path.GetExtension(item);
-        //        if (ext == EXTENSION_NAME_DATA || ext == EXTENSION_NAME_APP)
-        //        {
-        //            var (data, appConfig) = LoadDataFromFile(item);
-        //            if (data == null)
-        //            {
-        //                errorFiles.Add(item); continue;
-        //            }
-        //            //DataがRootならGroupに変換して追加
-        //            if (data.Type == TType.Root)
-        //            {
-        //                data = ConvertDataRootToGroup(data);
-        //                if (data != null && MyAppConfig != null)
-        //                {
-        //                    MyRoot.AddThumbDataToActiveGroup2(data, MyAppData.IsThumbAddUnder);
-        //                    //MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
-        //                }
-        //                else { errorFiles.Add(item); continue; }
-        //            }
-        //            else if (MyAppConfig is not null)
-        //            {
-        //                MyRoot.AddThumbDataToActiveGroup2(data, MyAppData.IsThumbAddUnder);
-        //                //MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
-        //            }
-
-
-        //        }
-        //        //それ以外の拡張子ファイルは画像として読み込む
-        //        else
-        //        {
-        //            //試みてエラーだったらファイル名を表示
-        //            try
-        //            {
-        //                //using FileStream stream = new(item, FileMode.Open, FileAccess.Read);
-        //                //BitmapImage img = new();
-        //                //img.BeginInit();
-        //                //img.CacheOption = BitmapCacheOption.OnLoad;
-        //                //img.StreamSource = stream;
-        //                //img.EndInit();
-
-        //                using var stream = System.IO.File.OpenRead(item);
-        //                BitmapSource img = BitmapFrame.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
-        //                if (img.DpiX != 96.0)
-        //                {
-        //                    FormatConvertedBitmap fcb = new(img, PixelFormats.Bgra32, null, 0.0);
-        //                    int w = fcb.PixelWidth;
-        //                    int h = fcb.PixelHeight;
-        //                    int stride = w * 4;
-        //                    byte[] pixels = new byte[stride * h];
-        //                    fcb.CopyPixels(pixels, stride, 0);
-        //                    img = BitmapSource.Create(w, h, 96.0, 96.0, fcb.Format, null, pixels, stride);
-
-        //                }
-
-        //                Data data = new(TType.Image)
-        //                {
-        //                    BitmapSource = img
-        //                };
-
-        //                if (MyAppConfig is not null)
-        //                {
-        //                    MyRoot.AddThumbDataToActiveGroup2(data, MyAppData.IsThumbAddUnder);
-        //                    //MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper);
-        //                }
-        //            }
-        //            catch (Exception)
-        //            {
-        //                errorFiles.Add(item);
-        //                continue;
-        //            }
-        //        }
-        //    }
-        //    if (errorFiles.Count > 0)
-        //    {
-        //        string ms = "";
-        //        foreach (var name in errorFiles)
-        //        {
-        //            ms += $"{name}\n";
-        //        }
-        //        MessageBox.Show(ms, "開くことができなかったファイル一覧",
-        //                        MessageBoxButton.OK, MessageBoxImage.Information);
-        //    }
-        //}
-
 
         private void MainWindow_Drop(object sender, DragEventArgs e)
         {
@@ -1932,95 +1767,7 @@ namespace Pixtack3rd
             else return string.Empty;
         }
 
-        ////Data＋アプリ設定ファイルのp3ファイルを読み込むけど、アプリ設定は無視する
-        ////RootDataはTTGroupに変換して追加
-        ////変換部分が怪しい、項目が増えた場合はここも増やす必要があるのでバグ発生源になる？
-        //private void ButtonLoadDataRootToGroup_Click(object sender, RoutedEventArgs e)
-        //{
-        //    LoadDataRootToGroup(false);
-        //}
 
-        ///// <summary>
-        ///// p3ファイルを開く、Dataは読み込むけどアプリ設定は無視する
-        ///// </summary>
-        ///// <param name="isOverrideRoot">開いたファイルでRootを上書きする(入れ替える)</param>
-        ///// <returns></returns>
-        //private bool LoadDataRootToGroup(bool isOverrideRoot)
-        //{
-        //    if (GetLoadFilePathFromFileDialog(EXTENSION_FILTER_P3) is string filePath)
-        //    {
-        //        (Data? data, AppConfig? appConfig) = LoadDataFromFile(filePath);
-        //        if (data != null)
-        //        {
-        //            if (isOverrideRoot)
-        //            {
-        //                MyRoot.SetRootData(data);
-        //                return true;
-        //            }
-        //            else if (ConvertDataRootToGroup(data) is Data groupData)
-        //            {
-        //                MyRoot.AddThumbDataToActiveGroup2(groupData, MyAppData.IsThumbAddUnder);
-        //                //MyRoot.AddThumbDataToActiveGroup(groupData, MyAppConfig.IsAddUpper);
-        //                return true;
-        //            }
-        //        }
-        //        return false;
-        //    }
-        //    return false;
-        //}
-        //private void ButtonLoadDataP3WithoutConfig_Click(object sender, RoutedEventArgs e)
-        //{
-        //    _ = LoadP3FileWithoutConfig();
-        //}
-        ///// <summary>
-        ///// p3ファイルを開く、RootDataだけ読み込んで、設定ファイルは無視する
-        ///// </summary>
-        ///// <returns></returns>
-        //private bool LoadP3FileWithoutConfig()
-        //{
-        //    if (GetLoadFilePathFromFileDialog(EXTENSION_FILTER_P3) is string filePath)
-        //    {
-        //        (Data? data, AppConfig? appConfig) = LoadDataFromFile(filePath);
-        //        if (data != null)
-        //        {
-        //            MyRoot.SetRootData(data);
-        //            return true;
-        //        }
-        //        return false;
-        //    }
-        //    return false;
-        //}
-
-        //個別Data読み込み
-        //private void ButtonLoadDataThumb_Click(object sender, RoutedEventArgs e)
-        //{
-        //    LoadDataThumb();
-        //}
-        //private bool LoadDataThumb()
-        //{
-        //    if (GetLoadFilePathFromFileDialog(EXTENSION_FILTER_P3D) is string filePath)
-        //    {
-        //        (Data? data, AppData? config) = LoadDataFromFile2(filePath);
-        //        if (data is not null && config is not null)
-        //        {
-        //            MyRoot.AddThumbDataToActiveGroup2(data, config.IsThumbAddUnder);
-        //            return true;
-        //        }
-        //        return false;
-        //    }
-        //    return false;
-        //    //if (GetLoadFilePathFromFileDialog(EXTENSION_FILTER_P3D) is string filePath)
-        //    //{
-        //    //    (Data? data, AppConfig? config) = LoadDataFromFile(filePath);
-        //    //    if (data is not null && config is not null)
-        //    //    {
-        //    //        MyRoot.AddThumbDataToActiveGroup(data, config.IsAddUpper);
-        //    //        return true;
-        //    //    }
-        //    //    return false;
-        //    //}
-        //    //return false;
-        //}
 
         //複数ファイル
         private void ButtonLoadFiles_Click(object sender, RoutedEventArgs e)
@@ -2067,9 +1814,15 @@ namespace Pixtack3rd
                 //DataにブラシプロパティをBindingするのは無理そう、なのでARGBに分解した
                 //MyNumeShapeBackA.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = geoThumb.Stroke, Converter = new MyConverterBrushColorA() });
                 MyNumeShapeBackA.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.StrokeA));
-                MyNumeShapeBackR.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.StrokeR));
-                MyNumeShapeBackG.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.StrokeG));
-                MyNumeShapeBackB.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.StrokeB));
+                //MyNumeShapeBackR.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.StrokeR));
+                //MyNumeShapeBackG.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.StrokeG));
+                //MyNumeShapeBackB.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.StrokeB));
+
+                Data geoData = geoThumb.Data;
+                BindingOperations.SetBinding(MyAppData, AppData.ShapeStrokeColorAProperty, new Binding(nameof(Data.StrokeA)) { Source = geoData, Mode = BindingMode.TwoWay });
+                BindingOperations.SetBinding(MyAppData, AppData.ShapeStrokeColorRProperty, new Binding(nameof(Data.StrokeR)) { Source = geoData, Mode = BindingMode.TwoWay });
+                BindingOperations.SetBinding(MyAppData, AppData.ShapeStrokeColorGProperty, new Binding(nameof(Data.StrokeG)) { Source = geoData, Mode = BindingMode.TwoWay });
+                BindingOperations.SetBinding(MyAppData, AppData.ShapeStrokeColorBProperty, new Binding(nameof(Data.StrokeB)) { Source = geoData, Mode = BindingMode.TwoWay });
 
             }
         }
@@ -2093,11 +1846,11 @@ namespace Pixtack3rd
             MyComboBoxLineHeadEndType.SelectedValue = geoThumb.HeadEndType;
             MyComboBoxShapeType.SelectedValue = geoThumb.MyShapeType;
             //BindingOperations.ClearAllBindings(MyNumeShapeBackB);
-            SolidColorBrush brush = (SolidColorBrush)geoThumb.Stroke;
+            SolidColorBrush brush = (SolidColorBrush)geoThumb.StrokeBrush;
             MyNumeShapeBackA.MyValue = (decimal)brush.Color.A;
-            MyNumeShapeBackR.MyValue = (decimal)brush.Color.R;
-            MyNumeShapeBackG.MyValue = (decimal)brush.Color.G;
-            MyNumeShapeBackB.MyValue = (decimal)brush.Color.B;
+            //MyNumeShapeBackR.MyValue = (decimal)brush.Color.R;
+            //MyNumeShapeBackG.MyValue = (decimal)brush.Color.G;
+            //MyNumeShapeBackB.MyValue = (decimal)brush.Color.B;
         }
 
         #endregion 図形編集の開始と終了
@@ -2506,7 +2259,8 @@ namespace Pixtack3rd
             var fname = (KeyValuePair<string, FontFamily>)(MyComboBoxFontFmilyNames.SelectedItem);
             var key = fname.Key;
             if (MyRoot.ClickedThumb == null) return;
-
+            var clickdaa = MyRoot.ClickedThumb.Data;
+            MyRoot.ClickedThumb.Data.StrokeR = 0;
         }
 
         private void ButtonTest2_Click(object sender, RoutedEventArgs e)
@@ -2559,8 +2313,10 @@ namespace Pixtack3rd
             GeometricShape shape = new()
             {
                 ArrowHeadAngle = (double)MyNumeArrowHeadAngle.MyValue,
-                Fill = GetBrush(),
-                Stroke = GetBrush(),
+                //Fill = GetBrush(),
+                //Stroke = GetBrush(),
+                Fill = MyBorderShapeColor.Background,
+                Stroke = MyBorderShapeColor.Background,
                 StrokeThickness = (double)MyNumeStrokeThickness.MyValue,
                 HeadEndType = (HeadType)MyComboBoxLineHeadEndType.SelectedValue,
                 HeadBeginType = (HeadType)MyComboBoxLineHeadBeginType.SelectedValue,
@@ -2574,11 +2330,11 @@ namespace Pixtack3rd
             MyDrawCanvas.Children.Add(MyTempShape);
         }
 
-        private SolidColorBrush GetBrush()
-        {
-            return new SolidColorBrush(Color.FromArgb((byte)MyNumeShapeBackA.MyValue,
-                (byte)MyNumeShapeBackR.MyValue, (byte)MyNumeShapeBackG.MyValue, (byte)MyNumeShapeBackB.MyValue));
-        }
+        //private SolidColorBrush GetBrush()
+        //{
+        //    return new SolidColorBrush(Color.FromArgb((byte)MyNumeShapeBackA.MyValue,
+        //        (byte)MyNumeShapeBackR.MyValue, (byte)MyNumeShapeBackG.MyValue, (byte)MyNumeShapeBackB.MyValue));
+        //}
 
         //右クリックで終了
         //MyTempPointsからData作成してRootに追加
@@ -2757,12 +2513,16 @@ namespace Pixtack3rd
             {
                 HeadAngle = (double)MyNumeArrowHeadAngle.MyValue,
                 StrokeA = (byte)MyNumeShapeBackA.MyValue,
-                StrokeR = (byte)MyNumeShapeBackR.MyValue,
-                StrokeG = (byte)MyNumeShapeBackG.MyValue,
-                StrokeB = (byte)MyNumeShapeBackB.MyValue,
+                StrokeR = MyAppData.ShapeStrokeColorR,
+                StrokeG = MyAppData.ShapeStrokeColorG,
+                StrokeB = MyAppData.ShapeStrokeColorB,
+                //StrokeR = (byte)MyNumeShapeBackR.MyValue,
+                //StrokeG = (byte)MyNumeShapeBackG.MyValue,
+                //StrokeB = (byte)MyNumeShapeBackB.MyValue,
 
                 StrokeThickness = (double)MyNumeStrokeThickness.MyValue,
-                Fill = GetBrush(),
+                Fill = MyBorderShapeColor.Background,
+                //Fill = GetBrush(),
                 PointCollection = points,
                 HeadBeginType = (HeadType)MyComboBoxLineHeadBeginType.SelectedItem,
                 HeadEndType = (HeadType)MyComboBoxLineHeadEndType.SelectedItem,
@@ -2855,13 +2615,27 @@ namespace Pixtack3rd
 
         private void TextColorPicker(Border border)
         {
-            Brush b = border.Background;
-            ColorPicker picker = new((SolidColorBrush)b);
+            SolidColorBrush b = (SolidColorBrush)border.Background;
+            ColorPicker picker = new(b);
+
             if (picker.ShowDialog() == true)
             {
-                border.Background = new SolidColorBrush(picker.PickColor);
+                border.Background = picker.PickColorBrush;
             }
             else border.Background = b;
+
+
+            //Brush b = border.Background;
+            //MyColorPicker.PickColorBrush = (SolidColorBrush)border.Background;
+            //MyColorPicker.Visibility = Visibility.Visible;
+            //if (MyColorPicker.ShowDialog() == true)
+            //{
+            //    border.Background = MyColorPicker.PickColorBrush;
+            //}
+            //else border.Background = b;
+            //MyColorPicker.Visibility = Visibility.Collapsed;
+
+
         }
 
         #endregion 文字列色
@@ -2906,90 +2680,117 @@ namespace Pixtack3rd
             }
 
         }
-    }
 
-
-
-
-
-
-    #region 列挙型
-
-    public enum ImageType
-    {
-        png,
-        bmp,
-        jpg,
-        gif,
-        tiff,
-
-    }
-    public enum CaptureRectType
-    {
-        Screen,
-        Window,
-        WindowClient,
-        UnderCursor,
-        UnderCursorClient,
-        WindowWithMenu,
-        WindowWithRelatedWindow,
-        WindowWithRelatedWindowPlus,
-
-    }
-
-    public enum MySoundPlay
-    {
-        None,
-        PlayDefault,
-        PlayOrder
-    }
-
-    public enum SaveBehaviorType
-    {
-        Save,
-        Copy,
-        SaveAndCopy,
-        SaveAtClipboardChange,
-        AddPreviewWindowFromClopboard
-    }
-    #endregion 列挙型
-
-    /// <summary>
-    /// TabControlに改変したContextMenu右クリックメニュー
-    /// </summary>
-    public class ContextTabMenu : ContextMenu
-    {
-        public TabControl TempTabControl { get; private set; }
-        public ContextTabMenu()
+        private void ButtonShapeStrokeColor_Click(object sender, RoutedEventArgs e)
         {
-            TempTabControl = SetTemplate();
-            //マウスホイールでタブ切り替え
-            TempTabControl.MouseWheel += (s, e) =>
-            {
-                int index = TempTabControl.SelectedIndex;
-                if (e.Delta > 0 && index < TempTabControl.Items.Count - 1)
-                {
-                    TempTabControl.SelectedIndex++;
-                }
-                else if (index > 0) TempTabControl.SelectedIndex--;
-            };
+            ShowColorPicker();
         }
-        private TabControl SetTemplate()
+        private void ShowColorPicker()
         {
-            FrameworkElementFactory factory = new(typeof(TabControl), "nemo");
-            Template = new() { VisualTree = factory };
-            ApplyTemplate();
-            if (Template.FindName("nemo", this) is TabControl tab)
+            Color backup = MyAppData.ShapeStrokeColor;
+            ColorPicker picker = new();
+            picker.SetBinding(ColorPicker.AProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeStrokeColorAProperty), Mode = BindingMode.TwoWay });
+            picker.SetBinding(ColorPicker.RProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeStrokeColorRProperty), Mode = BindingMode.TwoWay });
+            picker.SetBinding(ColorPicker.GProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeStrokeColorGProperty), Mode = BindingMode.TwoWay });
+            picker.SetBinding(ColorPicker.BProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeStrokeColorBProperty), Mode = BindingMode.TwoWay });
+
+            if (picker.ShowDialog() == true)
             {
-                return tab;
+
             }
-            else throw new ArgumentException();
+            else
+            {
+                MyAppData.ShapeStrokeColor = backup;
+            }
         }
-        public void AddMenuTab(TabItem item)
-        {
-            TempTabControl.Items.Add(item);
-        }
-    }
 
+
+
+    }
+}
+
+
+
+
+
+
+#region 列挙型
+
+public enum ImageType
+{
+    png,
+    bmp,
+    jpg,
+    gif,
+    tiff,
 
 }
+public enum CaptureRectType
+{
+    Screen,
+    Window,
+    WindowClient,
+    UnderCursor,
+    UnderCursorClient,
+    WindowWithMenu,
+    WindowWithRelatedWindow,
+    WindowWithRelatedWindowPlus,
+
+}
+
+public enum MySoundPlay
+{
+    None,
+    PlayDefault,
+    PlayOrder
+}
+
+public enum SaveBehaviorType
+{
+    Save,
+    Copy,
+    SaveAndCopy,
+    SaveAtClipboardChange,
+    AddPreviewWindowFromClopboard
+}
+#endregion 列挙型
+
+/// <summary>
+/// TabControlに改変したContextMenu右クリックメニュー
+/// </summary>
+public class ContextTabMenu : ContextMenu
+{
+    public TabControl TempTabControl { get; private set; }
+    public ContextTabMenu()
+    {
+        TempTabControl = SetTemplate();
+        //マウスホイールでタブ切り替え
+        TempTabControl.MouseWheel += (s, e) =>
+        {
+            int index = TempTabControl.SelectedIndex;
+            if (e.Delta > 0 && index < TempTabControl.Items.Count - 1)
+            {
+                TempTabControl.SelectedIndex++;
+            }
+            else if (index > 0) TempTabControl.SelectedIndex--;
+        };
+    }
+    private TabControl SetTemplate()
+    {
+        FrameworkElementFactory factory = new(typeof(TabControl), "nemo");
+        Template = new() { VisualTree = factory };
+        ApplyTemplate();
+        if (Template.FindName("nemo", this) is TabControl tab)
+        {
+            return tab;
+        }
+        else throw new ArgumentException();
+    }
+    public void AddMenuTab(TabItem item)
+    {
+        TempTabControl.Items.Add(item);
+    }
+}
+
+
+

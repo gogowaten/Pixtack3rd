@@ -25,8 +25,8 @@ namespace Pixtack3rd
 
 
     [DataContract]
-    [KnownType(typeof(FontFamily)), KnownType(typeof(KeyValuePair<string, FontFamily>)), KnownType(typeof(SolidColorBrush)),
-        KnownType(typeof(MatrixTransform))]
+    [KnownType(typeof(FontFamily)), KnownType(typeof(KeyValuePair<string, FontFamily>)), KnownType(typeof(SolidColorBrush)), KnownType(typeof(MatrixTransform))]
+    //[KnownType(typeof(FontFamily)), KnownType(typeof(KeyValuePair<string, FontFamily>)), KnownType(typeof(SolidColorBrush)), KnownType(typeof(MatrixTransform)), KnownType(typeof(Data))]
     public class Data : IExtensibleDataObject, INotifyPropertyChanged
     {
         #region 必要

@@ -235,7 +235,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection3.png"/>
         <local:TTImage x:Name="MyImage2" TTLeft="120" TTTop="120"
                        TTSourcePath="D:\\ブログ用\\テスト用画像\\collection4.png"/>-->
-          
+
           <!--<local:TTImage x:Name="MyImage" TTLeft="0" TTTop="0"
                        TTSourcePath="D:\ブログ用\テスト用画像\hueRect000.png"/>
           <local:TTImage x:Name="MyImage1" TTLeft="24" TTTop="24"
@@ -250,7 +250,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               <RotateTransform Angle="0"/>
             </local:TTImage.RenderTransform>
           </local:TTImage>-->
-          
+
           <!--<local:TTTextBox x:Name="MyTextBox1" FontFamily="Bahnschrift SemiBold Condensed"
             TTText="TextBox" TTLeft="152" TTTop="152" FontSize="30" FontStretch="Medium"/>-->
           <!--<local:TTTextBox x:Name="MyTextBox1" FontFamily="ＭＳ 明朝" FontStyle="Italic"
@@ -286,7 +286,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
       </Canvas>
 
       <Canvas x:Name="MyAreaCanvas">
-        <local:AreaThumb x:Name="MyAreaThumb" Width="100" Height="70" Canvas.Left="180" Canvas.Top="30" Background="Blue" AreaOpacity="0.2"/>        
+        <local:AreaThumb x:Name="MyAreaThumb" Width="100" Height="70" Canvas.Left="180" Canvas.Top="30" Background="Blue" AreaOpacity="0.2"/>
       </Canvas>
 
 
@@ -456,13 +456,15 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             </GroupBox>
             <GroupBox Header="ファイルを開く">
               <!--<WrapPanel>
-                --><!--<Button x:Name="ButtonLoadDataPrevious" Content="前回" Click="ButtonLoadDataPrevious_Click"/>-->
-                <!--<Button x:Name="ButtonLoadData" Content="p3を開く" Click="ButtonLoadData_Click"/>-->
-                <!--<Button x:Name="ButtonLoadDataThumb" Content="個別" Click="ButtonLoadDataThumb_Click"/>-->
-                <!--<Button x:Name="ButtonLoadDataRootToGroup" Content="p3をグループとして追加" Click="ButtonLoadDataRootToGroup_Click"/>-->
-                <!--<Button x:Name="ButtonLoadDataP3WithoutConfig" Content="アプリ設定はそのままでp3を開く" Click="ButtonLoadDataP3WithoutConfig_Click"/>--><!--
+                -->
+              <!--<Button x:Name="ButtonLoadDataPrevious" Content="前回" Click="ButtonLoadDataPrevious_Click"/>-->
+              <!--<Button x:Name="ButtonLoadData" Content="p3を開く" Click="ButtonLoadData_Click"/>-->
+              <!--<Button x:Name="ButtonLoadDataThumb" Content="個別" Click="ButtonLoadDataThumb_Click"/>-->
+              <!--<Button x:Name="ButtonLoadDataRootToGroup" Content="p3をグループとして追加" Click="ButtonLoadDataRootToGroup_Click"/>-->
+              <!--<Button x:Name="ButtonLoadDataP3WithoutConfig" Content="アプリ設定はそのままでp3を開く" Click="ButtonLoadDataP3WithoutConfig_Click"/>-->
+              <!--
               </WrapPanel>-->
-                <Button x:Name="ButtonLoadFiles" Content="対応ファイル(複数)" Click="ButtonLoadFiles_Click"/>
+              <Button x:Name="ButtonLoadFiles" Content="対応ファイル(複数)" Click="ButtonLoadFiles_Click"/>
             </GroupBox>
             <GroupBox Header="クリップボードから画像貼り付け">
               <UniformGrid Rows="1">
@@ -882,25 +884,14 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
               <CheckBox x:Name="MyChecBoxIsLineClose" Content="閉じる" HorizontalAlignment="Center"/>
             </UniformGrid>
             <UniformGrid Rows="1">
-              <UniformGrid Rows="1">
-                <TextBlock Text="色" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                <Border x:Name="MyBorderShapeColor">
-                  <Border.Background>
-                    <MultiBinding Converter="{StaticResource color}">
-                      <MultiBinding.Bindings>
-                        <Binding ElementName="MyNumeShapeBackA" Path="MyValue"/>
-                        <Binding ElementName="MyNumeShapeBackR" Path="MyValue"/>
-                        <Binding ElementName="MyNumeShapeBackG" Path="MyValue"/>
-                        <Binding ElementName="MyNumeShapeBackB" Path="MyValue"/>
-                      </MultiBinding.Bindings>
-                    </MultiBinding>
-                  </Border.Background>
-                </Border>
-              </UniformGrid>
+              <!--<TextBlock Text="色" VerticalAlignment="Center" HorizontalAlignment="Center"/>-->
+              <Border x:Name="MyBorderShapeColor" Background="Crimson"/>
               <tomato:NumericUpDown x:Name="MyNumeShapeBackA" MyMinValue="0" MyMaxValue="255" MyValue="255" MyStringFormat="A 000" BorderBrush="Transparent"/>
-              <tomato:NumericUpDown x:Name="MyNumeShapeBackR" MyMinValue="0" MyMaxValue="255" MyValue="200" MyStringFormat="R 000" BorderBrush="Transparent" Background="Crimson" Foreground="White" MyButtonMarkColor="White"/>
+              <Button Content="色" Click="ButtonShapeStrokeColor_Click"/>
+
+              <!--<tomato:NumericUpDown x:Name="MyNumeShapeBackR" MyMinValue="0" MyMaxValue="255" MyValue="200" MyStringFormat="R 000" BorderBrush="Transparent" Background="Crimson" Foreground="White" MyButtonMarkColor="White"/>
               <tomato:NumericUpDown x:Name="MyNumeShapeBackG" MyMinValue="0" MyMaxValue="255" MyValue="20" MyStringFormat="G 000" BorderBrush="Transparent" Background="ForestGreen" Foreground="White" MyButtonMarkColor="White"/>
-              <tomato:NumericUpDown x:Name="MyNumeShapeBackB" MyMinValue="0" MyMaxValue="255" MyValue="20" MyStringFormat="B 000" BorderBrush="Transparent" Background="RoyalBlue" Foreground="White" MyButtonMarkColor="White"/>
+              <tomato:NumericUpDown x:Name="MyNumeShapeBackB" MyMinValue="0" MyMaxValue="255" MyValue="20" MyStringFormat="B 000" BorderBrush="Transparent" Background="RoyalBlue" Foreground="White" MyButtonMarkColor="White"/>-->
             </UniformGrid>
             <Button x:Name="ButtonAddShape" Content="追加" Click="ButtonAddShape_Click"/>
             <Button x:Name="ButtonTestDrawPolyline" Content="クリックで描画" Click="ButtonTestDrawPolyline_Click"/>

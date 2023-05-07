@@ -59,7 +59,7 @@
           <TextBlock Text="見本" Background="{Binding Path=PickColorBrush}" Foreground="White"/>
           <Button Content="決定" Click="Button_Click_Ok"/>
           <Button Content="中止" Click="Button_Click_Cancel"/>
-          <Button Content="test" Click="Button_Click"/>
+          <!--<Button Content="test" Click="Button_Click"/>-->
         </StackPanel>
 
         <Image x:Name="MyImageSV" Grid.Column="0" Margin="20" 

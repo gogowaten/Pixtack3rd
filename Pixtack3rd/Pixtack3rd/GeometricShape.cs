@@ -229,19 +229,6 @@ namespace Pixtack3rd
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
-        //以下必要？
-        //private Rect _myBounds;
-        //public Rect MyBounds { get => _myBounds; set => SetProperty(ref _myBounds, value); }
-
-        //private Rect _myTFBounds;
-        //public Rect MyTFBounds { get => _myTFBounds; set => SetProperty(ref _myTFBounds, value); }
-
-        //private double _myTFWidth;
-        //public double MyTFWidth { get => _myTFWidth; set => SetProperty(ref _myTFWidth, value); }
-
-        //private double _myTFHeight;
-        //public double MyTFHeight { get => _myTFHeight; set => SetProperty(ref _myTFHeight, value); }
-
 
         #endregion 依存関係プロパティと通知プロパティ
 
@@ -572,26 +559,6 @@ namespace Pixtack3rd
 
     }
 
-
-
-
-
-    //public class MyConverterBoolVisible : IValueConverter
-    //{
-    //    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    //    {
-    //        bool b = (bool)value;
-    //        if (b) return Visibility.Visible;
-    //        else return Visibility.Collapsed;
-    //    }
-
-    //    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    //    {
-    //        Visibility vis = (Visibility)value;
-    //        if (vis == Visibility.Visible) return true;
-    //        else return false;
-    //    }
-    //}
 
 
 
