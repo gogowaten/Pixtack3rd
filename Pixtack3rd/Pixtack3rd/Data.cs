@@ -24,11 +24,49 @@ namespace Pixtack3rd
 
 
 
-    [DataContract]
-    [KnownType(typeof(FontFamily)), KnownType(typeof(KeyValuePair<string, FontFamily>)), KnownType(typeof(SolidColorBrush)), KnownType(typeof(MatrixTransform))]
+    //[KnownType(typeof(FontFamily)), KnownType(typeof(KeyValuePair<string, FontFamily>)), KnownType(typeof(SolidColorBrush)), KnownType(typeof(MatrixTransform))]
     //[KnownType(typeof(FontFamily)), KnownType(typeof(KeyValuePair<string, FontFamily>)), KnownType(typeof(SolidColorBrush)), KnownType(typeof(MatrixTransform)), KnownType(typeof(Data))]
-    public class Data : IExtensibleDataObject, INotifyPropertyChanged
+    //[DataContract]
+    [KnownType(typeof(SolidColorBrush)), KnownType(typeof(MatrixTransform)),KnownType(typeof(Data))]
+    public class Data :DependencyObject, IExtensibleDataObject, INotifyPropertyChanged
     {
+
+        #region コンストラクタ
+        //DependencyObjectを継承したクラスのシリアル化には、
+        //引数のないコンストラクタが必要
+        public Data() { }
+        public Data(TType type)
+        {
+
+            Type = type;
+            switch (type)
+            {
+                case TType.None:
+                    break;
+                case TType.Root:
+                    Datas = new ObservableCollection<Data>();
+                    break;
+                case TType.Group:
+                    Datas = new ObservableCollection<Data>();
+                    break;
+                case TType.TextBlock:
+                    break;
+                case TType.Image:
+                    break;
+                case TType.Rectangle:
+                    break;
+                case TType.TextBox:
+                    break;
+                case TType.Geometric:
+                    break;
+                case TType.Range:
+                    break;
+                default:
+                    break;
+            }
+        }
+        #endregion コンストラクタ
+
         #region 必要
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -198,39 +236,6 @@ namespace Pixtack3rd
 
 
         #endregion 固有
-
-        #region コンストラクタ
-        public Data(TType type)
-        {
-
-            Type = type;
-            switch (type)
-            {
-                case TType.None:
-                    break;
-                case TType.Root:
-                    Datas = new ObservableCollection<Data>();
-                    break;
-                case TType.Group:
-                    Datas = new ObservableCollection<Data>();
-                    break;
-                case TType.TextBlock:
-                    break;
-                case TType.Image:
-                    break;
-                case TType.Rectangle:
-                    break;
-                case TType.TextBox:
-                    break;
-                case TType.Geometric:
-                    break;
-                case TType.Range:
-                    break;
-                default:
-                    break;
-            }
-        }
-        #endregion コンストラクタ
 
         #region ディープコピー
 

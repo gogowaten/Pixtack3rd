@@ -288,7 +288,7 @@ namespace Pixtack3rd
 
             //図形タブ
             MyNumeStrokeThickness.SetBinding(NumericUpDown.MyValueProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.StrokeWidthProperty), Mode = BindingMode.TwoWay });
-
+            MyNumeShapeStrokeColorA.SetBinding(NumericUpDown.MyValueProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeStrokeColorAProperty), Mode = BindingMode.TwoWay });
             MyBorderShapeColor.SetBinding(BackgroundProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeStrokeColorProperty), Converter = new MyConverterColorSolidBrush() });
 
         }
@@ -1811,18 +1811,14 @@ namespace Pixtack3rd
                 MyChecBoxIsLineClose.SetBinding(CheckBox.IsCheckedProperty, nameof(Data.IsLineClose));
                 MyChecBoxIsLineSmoothJoin.SetBinding(CheckBox.IsCheckedProperty, nameof(Data.IsSmoothJoin));
 
-                //DataにブラシプロパティをBindingするのは無理そう、なのでARGBに分解した
-                //MyNumeShapeBackA.SetBinding(NumericUpDown.MyValueProperty, new Binding(nameof(Data.Stroke)) { ConverterParameter = geoThumb.Stroke, Converter = new MyConverterBrushColorA() });
-                MyNumeShapeBackA.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.StrokeA));
-                //MyNumeShapeBackR.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.StrokeR));
-                //MyNumeShapeBackG.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.StrokeG));
-                //MyNumeShapeBackB.SetBinding(NumericUpDown.MyValueProperty, nameof(Data.StrokeB));
-
+                //アプリ設定に図形Strokeの色をバインド、これは逆方向の方がいい？
                 Data geoData = geoThumb.Data;
                 BindingOperations.SetBinding(MyAppData, AppData.ShapeStrokeColorAProperty, new Binding(nameof(Data.StrokeA)) { Source = geoData, Mode = BindingMode.TwoWay });
                 BindingOperations.SetBinding(MyAppData, AppData.ShapeStrokeColorRProperty, new Binding(nameof(Data.StrokeR)) { Source = geoData, Mode = BindingMode.TwoWay });
                 BindingOperations.SetBinding(MyAppData, AppData.ShapeStrokeColorGProperty, new Binding(nameof(Data.StrokeG)) { Source = geoData, Mode = BindingMode.TwoWay });
                 BindingOperations.SetBinding(MyAppData, AppData.ShapeStrokeColorBProperty, new Binding(nameof(Data.StrokeB)) { Source = geoData, Mode = BindingMode.TwoWay });
+                
+
 
             }
         }
@@ -1847,7 +1843,7 @@ namespace Pixtack3rd
             MyComboBoxShapeType.SelectedValue = geoThumb.MyShapeType;
             //BindingOperations.ClearAllBindings(MyNumeShapeBackB);
             SolidColorBrush brush = (SolidColorBrush)geoThumb.StrokeBrush;
-            MyNumeShapeBackA.MyValue = (decimal)brush.Color.A;
+            //MyNumeShapeBackA.MyValue = (decimal)brush.Color.A;
             //MyNumeShapeBackR.MyValue = (decimal)brush.Color.R;
             //MyNumeShapeBackG.MyValue = (decimal)brush.Color.G;
             //MyNumeShapeBackB.MyValue = (decimal)brush.Color.B;
@@ -2240,7 +2236,10 @@ namespace Pixtack3rd
         //名前をつけてActiveThumbのDataを保存
         private void SaveDataForActiveThumb()
         {
-            SaveThumbData(MyRoot.ActiveThumb);
+           if(SaveThumbData(MyRoot.ActiveThumb) == false)
+            {
+                MessageBox.Show("保存できなかった");
+            }
         }
 
 
@@ -2512,7 +2511,7 @@ namespace Pixtack3rd
             Data data = new(TType.Geometric)
             {
                 HeadAngle = (double)MyNumeArrowHeadAngle.MyValue,
-                StrokeA = (byte)MyNumeShapeBackA.MyValue,
+                StrokeA = (byte)MyNumeShapeStrokeColorA.MyValue,
                 StrokeR = MyAppData.ShapeStrokeColorR,
                 StrokeG = MyAppData.ShapeStrokeColorG,
                 StrokeB = MyAppData.ShapeStrokeColorB,
@@ -2541,6 +2540,27 @@ namespace Pixtack3rd
 
 
         #endregion 図形追加
+
+        private void ButtonShapeStrokeColor_Click(object sender, RoutedEventArgs e)
+        {
+            ShowColorPickerForShape();
+        }
+
+        /// <summary>
+        /// カラーピッカー表示、図形用
+        /// </summary>
+        private void ShowColorPickerForShape()
+        {
+            Color backup = MyAppData.ShapeStrokeColor;
+            ColorPicker picker = new();
+            picker.SetBinding(ColorPicker.AProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeStrokeColorAProperty), Mode = BindingMode.TwoWay });
+            picker.SetBinding(ColorPicker.RProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeStrokeColorRProperty), Mode = BindingMode.TwoWay });
+            picker.SetBinding(ColorPicker.GProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeStrokeColorGProperty), Mode = BindingMode.TwoWay });
+            picker.SetBinding(ColorPicker.BProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeStrokeColorBProperty), Mode = BindingMode.TwoWay });
+
+            if (picker.ShowDialog() != true) MyAppData.ShapeStrokeColor = backup;
+        }
+
         #endregion 図形関連
 
 
@@ -2679,29 +2699,6 @@ namespace Pixtack3rd
                 SaveAppData(path, MyAppData);
             }
 
-        }
-
-        private void ButtonShapeStrokeColor_Click(object sender, RoutedEventArgs e)
-        {
-            ShowColorPicker();
-        }
-        private void ShowColorPicker()
-        {
-            Color backup = MyAppData.ShapeStrokeColor;
-            ColorPicker picker = new();
-            picker.SetBinding(ColorPicker.AProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeStrokeColorAProperty), Mode = BindingMode.TwoWay });
-            picker.SetBinding(ColorPicker.RProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeStrokeColorRProperty), Mode = BindingMode.TwoWay });
-            picker.SetBinding(ColorPicker.GProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeStrokeColorGProperty), Mode = BindingMode.TwoWay });
-            picker.SetBinding(ColorPicker.BProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeStrokeColorBProperty), Mode = BindingMode.TwoWay });
-
-            if (picker.ShowDialog() == true)
-            {
-
-            }
-            else
-            {
-                MyAppData.ShapeStrokeColor = backup;
-            }
         }
 
 

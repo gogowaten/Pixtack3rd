@@ -886,7 +886,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <UniformGrid Rows="1">
               <!--<TextBlock Text="色" VerticalAlignment="Center" HorizontalAlignment="Center"/>-->
               <Border x:Name="MyBorderShapeColor" Background="Crimson"/>
-              <tomato:NumericUpDown x:Name="MyNumeShapeBackA" MyMinValue="0" MyMaxValue="255" MyValue="255" MyStringFormat="A 000" BorderBrush="Transparent"/>
+              <tomato:NumericUpDown x:Name="MyNumeShapeStrokeColorA" MyMinValue="0" MyMaxValue="255" MyValue="255" MyStringFormat="A 000" BorderBrush="Transparent"/>
               <Button Content="色" Click="ButtonShapeStrokeColor_Click"/>
 
               <!--<tomato:NumericUpDown x:Name="MyNumeShapeBackR" MyMinValue="0" MyMaxValue="255" MyValue="200" MyStringFormat="R 000" BorderBrush="Transparent" Background="Crimson" Foreground="White" MyButtonMarkColor="White"/>
