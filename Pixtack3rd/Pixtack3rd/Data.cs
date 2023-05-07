@@ -27,14 +27,17 @@ namespace Pixtack3rd
     //[KnownType(typeof(FontFamily)), KnownType(typeof(KeyValuePair<string, FontFamily>)), KnownType(typeof(SolidColorBrush)), KnownType(typeof(MatrixTransform))]
     //[KnownType(typeof(FontFamily)), KnownType(typeof(KeyValuePair<string, FontFamily>)), KnownType(typeof(SolidColorBrush)), KnownType(typeof(MatrixTransform)), KnownType(typeof(Data))]
     //[DataContract]
-    [KnownType(typeof(SolidColorBrush)), KnownType(typeof(MatrixTransform)),KnownType(typeof(Data))]
-    public class Data :DependencyObject, IExtensibleDataObject, INotifyPropertyChanged
+    [KnownType(typeof(SolidColorBrush)), KnownType(typeof(MatrixTransform)), KnownType(typeof(Data))]
+    public class Data : DependencyObject, IExtensibleDataObject, INotifyPropertyChanged
     {
 
         #region コンストラクタ
+        //c# - Datacontract exception. Cannot be serialized - Stack Overflow
+        //        https://stackoverflow.com/questions/10077121/datacontract-exception-cannot-be-serialized
+
         //DependencyObjectを継承したクラスのシリアル化には、
         //引数のないコンストラクタが必要
-        public Data() { }
+        public Data() { throw new NotImplementedException("このクラスのnewにはTTypeの引数が必要"); }
         public Data(TType type)
         {
 
