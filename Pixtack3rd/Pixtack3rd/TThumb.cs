@@ -2897,13 +2897,13 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
 
-        public Brush StrokeBrush
+        public Brush TTStrokeBrush
         {
-            get { return (Brush)GetValue(StrokeBrushProperty); }
-            set { SetValue(StrokeBrushProperty, value); }
+            get { return (Brush)GetValue(TTStrokeBrushProperty); }
+            set { SetValue(TTStrokeBrushProperty, value); }
         }
-        public static readonly DependencyProperty StrokeBrushProperty =
-            DependencyProperty.Register(nameof(StrokeBrush), typeof(Brush), typeof(TTGeometricShape),
+        public static readonly DependencyProperty TTStrokeBrushProperty =
+            DependencyProperty.Register(nameof(TTStrokeBrush), typeof(Brush), typeof(TTGeometricShape),
                 new FrameworkPropertyMetadata(Brushes.Red,
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
@@ -3132,7 +3132,7 @@ namespace Pixtack3rd
 
             //Shape <- this
             MyShape.SetBinding(GeometricShape.MyIsEditingProperty, new Binding() { Source = this, Path = new PropertyPath(IsEditingProperty) });
-            MyShape.SetBinding(GeometricShape.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeBrushProperty) });
+            MyShape.SetBinding(GeometricShape.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(TTStrokeBrushProperty) });
             MyShape.SetBinding(GeometricShape.StrokeThicknessProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeThicknessProperty) });
             MyShape.SetBinding(GeometricShape.FillProperty, new Binding() { Source = this, Path = new PropertyPath(TTFillBrushProperty) });
 
@@ -3168,7 +3168,7 @@ namespace Pixtack3rd
             mb.Bindings.Add(b1);
             mb.Bindings.Add(b2);
             mb.Bindings.Add(b3);
-            SetBinding(StrokeBrushProperty, mb);
+            SetBinding(TTStrokeBrushProperty, mb);
 
             SetBinding(StrokeThicknessProperty, nameof(Data.StrokeThickness));
             SetBinding(TTFillBrushProperty, nameof(Data.Fill));

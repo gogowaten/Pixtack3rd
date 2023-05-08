@@ -265,8 +265,8 @@ namespace Pixtack3rd
         private double _headAngle = 30.0;
         [DataMember] public double HeadAngle { get => _headAngle; set => SetProperty(ref _headAngle, value); }
 
-        private bool _isBezier;
-        [DataMember] public bool IsBezier { get => _isBezier; set => SetProperty(ref _isBezier, value); }
+        //private bool _isBezier;
+        //[DataMember] public bool IsBezier { get => _isBezier; set => SetProperty(ref _isBezier, value); }
 
         private ShapeType _shapeType;
         [DataMember] public ShapeType ShapeType { get => _shapeType; set => SetProperty(ref _shapeType, value); }

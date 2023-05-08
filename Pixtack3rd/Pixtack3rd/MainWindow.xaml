@@ -879,9 +879,9 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
             <ComboBox x:Name="MyComboBoxLineHeadEndType"/>
             <ComboBox x:Name="MyComboBoxShapeType"/>
             <UniformGrid Rows="1">
-              <CheckBox x:Name="MyCheckBoxIsBezier" Content="曲線" HorizontalAlignment="Center"/>
-              <CheckBox x:Name="MyChecBoxIsLineSmoothJoin" Content="角丸" HorizontalAlignment="Center"/>
-              <CheckBox x:Name="MyChecBoxIsLineClose" Content="閉じる" HorizontalAlignment="Center"/>
+              <!--<CheckBox x:Name="MyCheckBoxIsBezier" Content="曲線" HorizontalAlignment="Center"/>-->
+              <CheckBox x:Name="MyCheckBoxIsLineSmoothJoin" Content="角丸" HorizontalAlignment="Center"/>
+              <CheckBox x:Name="MyCheckBoxIsLineClose" Content="閉じる" HorizontalAlignment="Center"/>
             </UniformGrid>
             <UniformGrid Rows="1">
               <!--<TextBlock Text="色" VerticalAlignment="Center" HorizontalAlignment="Center"/>-->

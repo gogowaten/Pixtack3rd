@@ -289,7 +289,13 @@ namespace Pixtack3rd
             //図形タブ
             MyNumeStrokeThickness.SetBinding(NumericUpDown.MyValueProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.StrokeWidthProperty), Mode = BindingMode.TwoWay });
             MyNumeShapeStrokeColorA.SetBinding(NumericUpDown.MyValueProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeStrokeColorAProperty), Mode = BindingMode.TwoWay });
-            MyBorderShapeColor.SetBinding(BackgroundProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeStrokeColorProperty), Converter = new MyConverterColorSolidBrush() });
+            MyBorderShapeColor.SetBinding(BackgroundProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeStrokeColorProperty), Converter = new MyConverterColorSolidBrush(), Mode = BindingMode.TwoWay });
+            MyNumeArrowHeadAngle.SetBinding(NumericUpDown.MyValueProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeArrowHeadAngleProperty), Mode = BindingMode.TwoWay });
+            MyComboBoxLineHeadBeginType.SetBinding(ComboBox.SelectedValueProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeArrowHeadTypeBeginProperty), Mode = BindingMode.TwoWay });
+            MyComboBoxLineHeadEndType.SetBinding(ComboBox.SelectedValueProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeArrowHeadEndTypeProperty), Mode = BindingMode.TwoWay });
+            MyComboBoxShapeType.SetBinding(ComboBox.SelectedValueProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.ShapeTypeProperty), Mode = BindingMode.TwoWay });
+            MyCheckBoxIsLineClose.SetBinding(CheckBox.IsCheckedProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.IsShapeLineCloseProperty), Mode = BindingMode.TwoWay });
+            MyCheckBoxIsLineSmoothJoin.SetBinding(CheckBox.IsCheckedProperty, new Binding() { Source = MyAppData, Path = new PropertyPath(AppData.IsShapeLineSmoothJoinProperty), Mode = BindingMode.TwoWay });
 
         }
 
@@ -1808,19 +1814,18 @@ namespace Pixtack3rd
                 MyComboBoxLineHeadBeginType.SetBinding(ComboBox.SelectedValueProperty, nameof(Data.HeadBeginType));
                 MyComboBoxLineHeadEndType.SetBinding(ComboBox.SelectedValueProperty, nameof(Data.HeadEndType));
                 MyComboBoxShapeType.SetBinding(ComboBox.SelectedValueProperty, nameof(Data.ShapeType));
-                MyChecBoxIsLineClose.SetBinding(CheckBox.IsCheckedProperty, nameof(Data.IsLineClose));
-                MyChecBoxIsLineSmoothJoin.SetBinding(CheckBox.IsCheckedProperty, nameof(Data.IsSmoothJoin));
+                MyCheckBoxIsLineClose.SetBinding(CheckBox.IsCheckedProperty, nameof(Data.IsLineClose));
+                MyCheckBoxIsLineSmoothJoin.SetBinding(CheckBox.IsCheckedProperty, nameof(Data.IsSmoothJoin));
 
-                //アプリ設定に図形Strokeの色をバインド、これは逆方向の方がいい？
+                MyBorderShapeColor.Background = geoThumb.TTStrokeBrush;
+                //アプリ設定に図形Strokeの色をバインドする、
+                //modeはoneway指定することで解消時には値を入れるだけで良くなる
                 Data geoData = geoThumb.Data;
-                //BindingOperations.SetBinding(MyAppData, AppData.ShapeStrokeColorAProperty, new Binding(nameof(Data.ShapeStrokeColorA)) { Source = geoData, Mode = BindingMode.TwoWay });
-                //BindingOperations.SetBinding(MyAppData, AppData.ShapeStrokeColorRProperty, new Binding(nameof(Data.ShapeStrokeColorR)) { Source = geoData, Mode = BindingMode.TwoWay });
-                //BindingOperations.SetBinding(MyAppData, AppData.ShapeStrokeColorGProperty, new Binding(nameof(Data.ShapeStrokeColorG)) { Source = geoData, Mode = BindingMode.TwoWay });
-                //BindingOperations.SetBinding(MyAppData, AppData.ShapeStrokeColorBProperty, new Binding(nameof(Data.ShapeStrokeColorB)) { Source = geoData, Mode = BindingMode.TwoWay });
-                BindingOperations.SetBinding(geoData, Data.ShapeStrokeColorAProperty, new Binding(nameof(AppData.ShapeStrokeColorA)) { Source = MyAppData, Mode = BindingMode.TwoWay });
-                BindingOperations.SetBinding(geoData, Data.ShapeStrokeColorRProperty, new Binding(nameof(AppData.ShapeStrokeColorR)) { Source = MyAppData, Mode = BindingMode.TwoWay });
-                BindingOperations.SetBinding(geoData, Data.ShapeStrokeColorGProperty, new Binding(nameof(AppData.ShapeStrokeColorG)) { Source = MyAppData, Mode = BindingMode.TwoWay });
-                BindingOperations.SetBinding(geoData, Data.ShapeStrokeColorBProperty, new Binding(nameof(AppData.ShapeStrokeColorB)) { Source = MyAppData, Mode = BindingMode.TwoWay });
+                //AppData <- ThumbData
+                BindingOperations.SetBinding(geoData, Data.ShapeStrokeColorAProperty, new Binding(nameof(AppData.ShapeStrokeColorA)) { Source = MyAppData, Mode = BindingMode.OneWay });
+                BindingOperations.SetBinding(geoData, Data.ShapeStrokeColorRProperty, new Binding(nameof(AppData.ShapeStrokeColorR)) { Source = MyAppData, Mode = BindingMode.OneWay });
+                BindingOperations.SetBinding(geoData, Data.ShapeStrokeColorGProperty, new Binding(nameof(AppData.ShapeStrokeColorG)) { Source = MyAppData, Mode = BindingMode.OneWay });
+                BindingOperations.SetBinding(geoData, Data.ShapeStrokeColorBProperty, new Binding(nameof(AppData.ShapeStrokeColorB)) { Source = MyAppData, Mode = BindingMode.OneWay });
 
 
 
@@ -1846,14 +1851,16 @@ namespace Pixtack3rd
             MyComboBoxLineHeadEndType.SelectedValue = geoThumb.HeadEndType;
             MyComboBoxShapeType.SelectedValue = geoThumb.MyShapeType;
 
-            //バインドをクリアすると初期値に戻ってしまうので
-            //クリア前に保持して、クリア後に再指定
-            Brush brush = geoThumb.StrokeBrush;//保持
-            BindingOperations.ClearBinding(geoThumb.Data, Data.ShapeStrokeColorAProperty);
-            BindingOperations.ClearBinding(geoThumb.Data, Data.ShapeStrokeColorRProperty);
-            BindingOperations.ClearBinding(geoThumb.Data, Data.ShapeStrokeColorGProperty);
-            BindingOperations.ClearBinding(geoThumb.Data, Data.ShapeStrokeColorBProperty);
-            geoThumb.StrokeBrush = brush;//再指定
+
+            //バインド解消(AppDataから切り離す)、Target側に値を入れることで解消、これは
+            //Binding時にmodeをonewayにしておいたから
+            Data data = geoThumb.Data;
+            geoThumb.Data.ShapeStrokeColorA = data.ShapeStrokeColorA;
+            geoThumb.Data.ShapeStrokeColorR = data.ShapeStrokeColorR;
+            geoThumb.Data.ShapeStrokeColorG = data.ShapeStrokeColorG;
+            geoThumb.Data.ShapeStrokeColorB = data.ShapeStrokeColorB;
+
+
         }
 
         #endregion 図形編集の開始と終了
@@ -2327,8 +2334,8 @@ namespace Pixtack3rd
                 HeadEndType = (HeadType)MyComboBoxLineHeadEndType.SelectedValue,
                 HeadBeginType = (HeadType)MyComboBoxLineHeadBeginType.SelectedValue,
                 MyPoints = MyTempPoints,
-                MyLineSmoothJoin = MyChecBoxIsLineSmoothJoin.IsChecked == true,
-                MyLineClose = MyChecBoxIsLineClose.IsChecked == true,
+                MyLineSmoothJoin = MyCheckBoxIsLineSmoothJoin.IsChecked == true,
+                MyLineClose = MyCheckBoxIsLineClose.IsChecked == true,
                 MyShapeType = (ShapeType)MyComboBoxShapeType.SelectedValue,
             };
 
@@ -2522,27 +2529,22 @@ namespace Pixtack3rd
                 ShapeStrokeColorR = MyAppData.ShapeStrokeColorR,
                 ShapeStrokeColorG = MyAppData.ShapeStrokeColorG,
                 ShapeStrokeColorB = MyAppData.ShapeStrokeColorB,
-                //StrokeR = (byte)MyNumeShapeBackR.MyValue,
-                //StrokeG = (byte)MyNumeShapeBackG.MyValue,
-                //StrokeB = (byte)MyNumeShapeBackB.MyValue,
 
                 StrokeThickness = (double)MyNumeStrokeThickness.MyValue,
                 Fill = MyBorderShapeColor.Background,
-                //Fill = GetBrush(),
                 PointCollection = points,
                 HeadBeginType = (HeadType)MyComboBoxLineHeadBeginType.SelectedItem,
                 HeadEndType = (HeadType)MyComboBoxLineHeadEndType.SelectedItem,
                 ShapeType = (ShapeType)MyComboBoxShapeType.SelectedItem,
-                IsBezier = MyCheckBoxIsBezier.IsChecked == true,
-                IsLineClose = MyChecBoxIsLineClose.IsChecked == true,
-                IsSmoothJoin = MyChecBoxIsLineSmoothJoin.IsChecked == true,
+                //IsBezier = MyCheckBoxIsBezier.IsChecked == true,
+                IsLineClose = MyCheckBoxIsLineClose.IsChecked == true,
+                IsSmoothJoin = MyCheckBoxIsLineSmoothJoin.IsChecked == true,
 
             };
 
 
             FixTopLeftPointCollectionData(data);
             MyRoot.AddThumbDataToActiveGroup2(data, MyAppData.IsThumbAddUnder, locateFix);
-            //MyRoot.AddThumbDataToActiveGroup(data, MyAppConfig.IsAddUpper, locateFix);
         }
 
 
@@ -2711,90 +2713,91 @@ namespace Pixtack3rd
 
 
     }
-}
 
 
+    #region 列挙型
 
-
-
-
-#region 列挙型
-
-public enum ImageType
-{
-    png,
-    bmp,
-    jpg,
-    gif,
-    tiff,
-
-}
-public enum CaptureRectType
-{
-    Screen,
-    Window,
-    WindowClient,
-    UnderCursor,
-    UnderCursorClient,
-    WindowWithMenu,
-    WindowWithRelatedWindow,
-    WindowWithRelatedWindowPlus,
-
-}
-
-public enum MySoundPlay
-{
-    None,
-    PlayDefault,
-    PlayOrder
-}
-
-public enum SaveBehaviorType
-{
-    Save,
-    Copy,
-    SaveAndCopy,
-    SaveAtClipboardChange,
-    AddPreviewWindowFromClopboard
-}
-#endregion 列挙型
-
-/// <summary>
-/// TabControlに改変したContextMenu右クリックメニュー
-/// </summary>
-public class ContextTabMenu : ContextMenu
-{
-    public TabControl TempTabControl { get; private set; }
-    public ContextTabMenu()
+    public enum ImageType
     {
-        TempTabControl = SetTemplate();
-        //マウスホイールでタブ切り替え
-        TempTabControl.MouseWheel += (s, e) =>
+        png,
+        bmp,
+        jpg,
+        gif,
+        tiff,
+
+    }
+    public enum CaptureRectType
+    {
+        Screen,
+        Window,
+        WindowClient,
+        UnderCursor,
+        UnderCursorClient,
+        WindowWithMenu,
+        WindowWithRelatedWindow,
+        WindowWithRelatedWindowPlus,
+
+    }
+
+    public enum MySoundPlay
+    {
+        None,
+        PlayDefault,
+        PlayOrder
+    }
+
+    public enum SaveBehaviorType
+    {
+        Save,
+        Copy,
+        SaveAndCopy,
+        SaveAtClipboardChange,
+        AddPreviewWindowFromClopboard
+    }
+    #endregion 列挙型
+
+    /// <summary>
+    /// TabControlに改変したContextMenu右クリックメニュー
+    /// </summary>
+    public class ContextTabMenu : ContextMenu
+    {
+        public TabControl TempTabControl { get; private set; }
+        public ContextTabMenu()
         {
-            int index = TempTabControl.SelectedIndex;
-            if (e.Delta > 0 && index < TempTabControl.Items.Count - 1)
+            TempTabControl = SetTemplate();
+            //マウスホイールでタブ切り替え
+            TempTabControl.MouseWheel += (s, e) =>
             {
-                TempTabControl.SelectedIndex++;
-            }
-            else if (index > 0) TempTabControl.SelectedIndex--;
-        };
-    }
-    private TabControl SetTemplate()
-    {
-        FrameworkElementFactory factory = new(typeof(TabControl), "nemo");
-        Template = new() { VisualTree = factory };
-        ApplyTemplate();
-        if (Template.FindName("nemo", this) is TabControl tab)
-        {
-            return tab;
+                int index = TempTabControl.SelectedIndex;
+                if (e.Delta > 0 && index < TempTabControl.Items.Count - 1)
+                {
+                    TempTabControl.SelectedIndex++;
+                }
+                else if (index > 0) TempTabControl.SelectedIndex--;
+            };
         }
-        else throw new ArgumentException();
+        private TabControl SetTemplate()
+        {
+            FrameworkElementFactory factory = new(typeof(TabControl), "nemo");
+            Template = new() { VisualTree = factory };
+            ApplyTemplate();
+            if (Template.FindName("nemo", this) is TabControl tab)
+            {
+                return tab;
+            }
+            else throw new ArgumentException();
+        }
+        public void AddMenuTab(TabItem item)
+        {
+            TempTabControl.Items.Add(item);
+        }
     }
-    public void AddMenuTab(TabItem item)
-    {
-        TempTabControl.Items.Add(item);
-    }
+
+
 }
+
+
+
 
 
 

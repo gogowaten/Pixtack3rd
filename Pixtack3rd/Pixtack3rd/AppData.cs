@@ -290,8 +290,8 @@ namespace Pixtack3rd
         #endregion 文字列描画
 
         #region 図形描画
-        [DataMember]
 
+        [DataMember]
         public double StrokeWidth
         {
             get { return (double)GetValue(StrokeWidthProperty); }
@@ -372,14 +372,83 @@ namespace Pixtack3rd
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
-        //private byte _strokeColorA = 255;
-        //[DataMember] public byte StrokeColorA { get => _strokeColorA; set => SetProperty(ref _strokeColorA, value); }
-        //private byte _strokeColorR = 255;
-        //[DataMember] public byte StrokeColorR { get => _strokeColorR; set => SetProperty(ref _strokeColorR, value); }
-        //private byte _strokeColorG = 0;
-        //[DataMember] public byte StrokeColorG { get => _strokeColorG; set => SetProperty(ref _strokeColorG, value); }
-        //private byte _strokeColorB = 255;
-        //[DataMember] public byte StrokeColorB { get => _strokeColorB; set => SetProperty(ref _strokeColorB, value); }
+        [DataMember]
+        public double ShapeArrowHeadAngle
+        {
+            get { return (double)GetValue(ShapeArrowHeadAngleProperty); }
+            set { SetValue(ShapeArrowHeadAngleProperty, value); }
+        }
+        public static readonly DependencyProperty ShapeArrowHeadAngleProperty =
+            DependencyProperty.Register(nameof(ShapeArrowHeadAngle), typeof(double), typeof(AppData),
+                new FrameworkPropertyMetadata(30.0,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        [DataMember]
+        public HeadType ShapeArrowHeadBeginType
+        {
+            get { return (HeadType)GetValue(ShapeArrowHeadTypeBeginProperty); }
+            set { SetValue(ShapeArrowHeadTypeBeginProperty, value); }
+        }
+        public static readonly DependencyProperty ShapeArrowHeadTypeBeginProperty =
+            DependencyProperty.Register(nameof(ShapeArrowHeadBeginType), typeof(HeadType), typeof(AppData),
+                new FrameworkPropertyMetadata(HeadType.None,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        [DataMember]
+        public HeadType ShapeArrowHeadEndType
+        {
+            get { return (HeadType)GetValue(ShapeArrowHeadEndTypeProperty); }
+            set { SetValue(ShapeArrowHeadEndTypeProperty, value); }
+        }
+        public static readonly DependencyProperty ShapeArrowHeadEndTypeProperty =
+            DependencyProperty.Register(nameof(ShapeArrowHeadEndType), typeof(HeadType), typeof(AppData),
+                new FrameworkPropertyMetadata(HeadType.Arrow,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        [DataMember]
+        public ShapeType ShapeType
+        {
+            get { return (ShapeType)GetValue(ShapeTypeProperty); }
+            set { SetValue(ShapeTypeProperty, value); }
+        }
+        public static readonly DependencyProperty ShapeTypeProperty =
+            DependencyProperty.Register(nameof(ShapeType), typeof(ShapeType), typeof(AppData),
+                new FrameworkPropertyMetadata(ShapeType.Line,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        [DataMember]
+        public bool IsShapeLineSmoothJoin
+        {
+            get { return (bool)GetValue(IsShapeLineSmoothJoinProperty); }
+            set { SetValue(IsShapeLineSmoothJoinProperty, value); }
+        }
+        public static readonly DependencyProperty IsShapeLineSmoothJoinProperty =
+            DependencyProperty.Register(nameof(IsShapeLineSmoothJoin), typeof(bool), typeof(AppData),
+                new FrameworkPropertyMetadata(false,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        [DataMember]
+        public bool IsShapeLineClose
+        {
+            get { return (bool)GetValue(IsShapeLineCloseProperty); }
+            set { SetValue(IsShapeLineCloseProperty, value); }
+        }
+        public static readonly DependencyProperty IsShapeLineCloseProperty =
+            DependencyProperty.Register(nameof(IsShapeLineClose), typeof(bool), typeof(AppData),
+                new FrameworkPropertyMetadata(false,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
         #endregion 図形描画
 
