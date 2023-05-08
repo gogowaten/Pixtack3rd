@@ -37,7 +37,8 @@ namespace Pixtack3rd
 
         //DependencyObjectを継承したクラスのシリアル化には、
         //引数のないコンストラクタが必要
-        public Data() { throw new NotImplementedException("このクラスのnewにはTTypeの引数が必要"); }
+        public Data() { }
+        //public Data() { throw new NotImplementedException("このクラスのnewにはTTypeの引数が必要"); }
         public Data(TType type)
         {
 
@@ -190,14 +191,66 @@ namespace Pixtack3rd
         //private Brush _stroke = Brushes.Red;
         //[DataMember] public Brush Stroke { get => _stroke; set => SetProperty(ref _stroke, value); }
 
-        private byte _strokeA;
-        [DataMember] public byte StrokeA { get => _strokeA; set => SetProperty(ref _strokeA, value); }
-        private byte _strokeR;
-        [DataMember] public byte StrokeR { get => _strokeR; set => SetProperty(ref _strokeR, value); }
-        private byte _strokeG;
-        [DataMember] public byte StrokeG { get => _strokeG; set => SetProperty(ref _strokeG, value); }
-        private byte _strokeB;
-        [DataMember] public byte StrokeB { get => _strokeB; set => SetProperty(ref _strokeB, value); }
+        //private byte _shapeStrokeColorA;
+        //[DataMember] public byte ShapeStrokeColorA { get => _shapeStrokeColorA; set => SetProperty(ref _shapeStrokeColorA, value); }
+        //private byte _shapeStrokeColorR;
+        //[DataMember] public byte ShapeStrokeColorR { get => _shapeStrokeColorR; set => SetProperty(ref _shapeStrokeColorR, value); }
+        //private byte _shapeStrokeColorG;
+        //[DataMember] public byte ShapeStrokeColorG { get => _shapeStrokeColorG; set => SetProperty(ref _shapeStrokeColorG, value); }
+        //private byte _shapeStrokeColorB;
+        //[DataMember] public byte ShapeStrokeColorB { get => _shapeStrokeColorB; set => SetProperty(ref _shapeStrokeColorB, value); }
+
+        [DataMember]
+        public byte ShapeStrokeColorA
+        {
+            get { return (byte)GetValue(ShapeStrokeColorAProperty); }
+            set { SetValue(ShapeStrokeColorAProperty, value); }
+        }
+        public static readonly DependencyProperty ShapeStrokeColorAProperty =
+            DependencyProperty.Register(nameof(ShapeStrokeColorA), typeof(byte), typeof(Data),
+                new FrameworkPropertyMetadata((byte)255,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        [DataMember]
+        public byte ShapeStrokeColorR
+        {
+            get { return (byte)GetValue(ShapeStrokeColorRProperty); }
+            set { SetValue(ShapeStrokeColorRProperty, value); }
+        }
+        public static readonly DependencyProperty ShapeStrokeColorRProperty =
+            DependencyProperty.Register(nameof(ShapeStrokeColorR), typeof(byte), typeof(Data),
+                new FrameworkPropertyMetadata((byte)255,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        [DataMember]
+        public byte ShapeStrokeColorG
+        {
+            get { return (byte)GetValue(ShapeStrokeColorGProperty); }
+            set { SetValue(ShapeStrokeColorGProperty, value); }
+        }
+        public static readonly DependencyProperty ShapeStrokeColorGProperty =
+            DependencyProperty.Register(nameof(ShapeStrokeColorG), typeof(byte), typeof(Data),
+                new FrameworkPropertyMetadata((byte)0,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        [DataMember]
+        public byte ShapeStrokeColorB
+        {
+            get { return (byte)GetValue(ShapeStrokeColorBProperty); }
+            set { SetValue(ShapeStrokeColorBProperty, value); }
+        }
+        public static readonly DependencyProperty ShapeStrokeColorBProperty =
+            DependencyProperty.Register(nameof(ShapeStrokeColorB), typeof(byte), typeof(Data),
+                new FrameworkPropertyMetadata((byte)255,
+                    FrameworkPropertyMetadataOptions.AffectsRender |
+                    FrameworkPropertyMetadataOptions.AffectsMeasure |
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
 
         private Brush _fill = Brushes.DarkOrange;

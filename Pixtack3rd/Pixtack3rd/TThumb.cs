@@ -3130,7 +3130,7 @@ namespace Pixtack3rd
 
             //この関係じゃないとできない、特にDataは依存プロパティが使えないのでsourceにしか使えないのがめんどくさかった
 
-            //Shape <- this            
+            //Shape <- this
             MyShape.SetBinding(GeometricShape.MyIsEditingProperty, new Binding() { Source = this, Path = new PropertyPath(IsEditingProperty) });
             MyShape.SetBinding(GeometricShape.StrokeProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeBrushProperty) });
             MyShape.SetBinding(GeometricShape.StrokeThicknessProperty, new Binding() { Source = this, Path = new PropertyPath(StrokeThicknessProperty) });
@@ -3155,12 +3155,15 @@ namespace Pixtack3rd
             //this <- data
             DataContext = this.Data;
             //SetBinding(StrokeProperty, nameof(Data.Stroke));
-            MultiBinding mb = new();
-            mb.Converter = new MyConverterARGB2SolidBrush();
-            Binding b0 = new(nameof(Data.StrokeA));
-            Binding b1 = new(nameof(Data.StrokeR));
-            Binding b2 = new(nameof(Data.StrokeG));
-            Binding b3 = new(nameof(Data.StrokeB));
+            MultiBinding mb = new()
+            {
+                Converter = new MyConverterARGB2SolidBrush(),
+                Mode=BindingMode.TwoWay
+            };
+            Binding b0 = new(nameof(Data.ShapeStrokeColorA)) { Mode = BindingMode.TwoWay };
+            Binding b1 = new(nameof(Data.ShapeStrokeColorR)) { Mode = BindingMode.TwoWay };
+            Binding b2 = new(nameof(Data.ShapeStrokeColorG)) { Mode = BindingMode.TwoWay };
+            Binding b3 = new(nameof(Data.ShapeStrokeColorB)) { Mode = BindingMode.TwoWay };
             mb.Bindings.Add(b0);
             mb.Bindings.Add(b1);
             mb.Bindings.Add(b2);
@@ -3178,10 +3181,6 @@ namespace Pixtack3rd
 
             SetBinding(WidthProperty, new Binding() { Source = MyShape, Path = new PropertyPath(GeometricShape.MyExternalBoundsProperty), Converter = new MyConverterRectWidth() });
             SetBinding(HeightProperty, new Binding() { Source = MyShape, Path = new PropertyPath(GeometricShape.MyExternalBoundsProperty), Converter = new MyConverterRectHeight() });
-
-
-
-
 
         }
 

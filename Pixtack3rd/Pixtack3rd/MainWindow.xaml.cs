@@ -1813,11 +1813,15 @@ namespace Pixtack3rd
 
                 //アプリ設定に図形Strokeの色をバインド、これは逆方向の方がいい？
                 Data geoData = geoThumb.Data;
-                BindingOperations.SetBinding(MyAppData, AppData.ShapeStrokeColorAProperty, new Binding(nameof(Data.StrokeA)) { Source = geoData, Mode = BindingMode.TwoWay });
-                BindingOperations.SetBinding(MyAppData, AppData.ShapeStrokeColorRProperty, new Binding(nameof(Data.StrokeR)) { Source = geoData, Mode = BindingMode.TwoWay });
-                BindingOperations.SetBinding(MyAppData, AppData.ShapeStrokeColorGProperty, new Binding(nameof(Data.StrokeG)) { Source = geoData, Mode = BindingMode.TwoWay });
-                BindingOperations.SetBinding(MyAppData, AppData.ShapeStrokeColorBProperty, new Binding(nameof(Data.StrokeB)) { Source = geoData, Mode = BindingMode.TwoWay });
-                
+                //BindingOperations.SetBinding(MyAppData, AppData.ShapeStrokeColorAProperty, new Binding(nameof(Data.ShapeStrokeColorA)) { Source = geoData, Mode = BindingMode.TwoWay });
+                //BindingOperations.SetBinding(MyAppData, AppData.ShapeStrokeColorRProperty, new Binding(nameof(Data.ShapeStrokeColorR)) { Source = geoData, Mode = BindingMode.TwoWay });
+                //BindingOperations.SetBinding(MyAppData, AppData.ShapeStrokeColorGProperty, new Binding(nameof(Data.ShapeStrokeColorG)) { Source = geoData, Mode = BindingMode.TwoWay });
+                //BindingOperations.SetBinding(MyAppData, AppData.ShapeStrokeColorBProperty, new Binding(nameof(Data.ShapeStrokeColorB)) { Source = geoData, Mode = BindingMode.TwoWay });
+                BindingOperations.SetBinding(geoData, Data.ShapeStrokeColorAProperty, new Binding(nameof(AppData.ShapeStrokeColorA)) { Source = MyAppData, Mode = BindingMode.TwoWay });
+                BindingOperations.SetBinding(geoData, Data.ShapeStrokeColorRProperty, new Binding(nameof(AppData.ShapeStrokeColorR)) { Source = MyAppData, Mode = BindingMode.TwoWay });
+                BindingOperations.SetBinding(geoData, Data.ShapeStrokeColorGProperty, new Binding(nameof(AppData.ShapeStrokeColorG)) { Source = MyAppData, Mode = BindingMode.TwoWay });
+                BindingOperations.SetBinding(geoData, Data.ShapeStrokeColorBProperty, new Binding(nameof(AppData.ShapeStrokeColorB)) { Source = MyAppData, Mode = BindingMode.TwoWay });
+
 
 
             }
@@ -1841,12 +1845,15 @@ namespace Pixtack3rd
             MyComboBoxLineHeadBeginType.SelectedValue = geoThumb.HeadBeginType;
             MyComboBoxLineHeadEndType.SelectedValue = geoThumb.HeadEndType;
             MyComboBoxShapeType.SelectedValue = geoThumb.MyShapeType;
-            //BindingOperations.ClearAllBindings(MyNumeShapeBackB);
-            SolidColorBrush brush = (SolidColorBrush)geoThumb.StrokeBrush;
-            //MyNumeShapeBackA.MyValue = (decimal)brush.Color.A;
-            //MyNumeShapeBackR.MyValue = (decimal)brush.Color.R;
-            //MyNumeShapeBackG.MyValue = (decimal)brush.Color.G;
-            //MyNumeShapeBackB.MyValue = (decimal)brush.Color.B;
+
+            //バインドをクリアすると初期値に戻ってしまうので
+            //クリア前に保持して、クリア後に再指定
+            Brush brush = geoThumb.StrokeBrush;//保持
+            BindingOperations.ClearBinding(geoThumb.Data, Data.ShapeStrokeColorAProperty);
+            BindingOperations.ClearBinding(geoThumb.Data, Data.ShapeStrokeColorRProperty);
+            BindingOperations.ClearBinding(geoThumb.Data, Data.ShapeStrokeColorGProperty);
+            BindingOperations.ClearBinding(geoThumb.Data, Data.ShapeStrokeColorBProperty);
+            geoThumb.StrokeBrush = brush;//再指定
         }
 
         #endregion 図形編集の開始と終了
@@ -2236,7 +2243,7 @@ namespace Pixtack3rd
         //名前をつけてActiveThumbのDataを保存
         private void SaveDataForActiveThumb()
         {
-           if(SaveThumbData(MyRoot.ActiveThumb) == false)
+            if (SaveThumbData(MyRoot.ActiveThumb) == false)
             {
                 MessageBox.Show("保存できなかった");
             }
@@ -2259,7 +2266,7 @@ namespace Pixtack3rd
             var key = fname.Key;
             if (MyRoot.ClickedThumb == null) return;
             var clickdaa = MyRoot.ClickedThumb.Data;
-            MyRoot.ClickedThumb.Data.StrokeR = 0;
+            MyRoot.ClickedThumb.Data.ShapeStrokeColorR = 0;
         }
 
         private void ButtonTest2_Click(object sender, RoutedEventArgs e)
@@ -2511,10 +2518,10 @@ namespace Pixtack3rd
             Data data = new(TType.Geometric)
             {
                 HeadAngle = (double)MyNumeArrowHeadAngle.MyValue,
-                StrokeA = (byte)MyNumeShapeStrokeColorA.MyValue,
-                StrokeR = MyAppData.ShapeStrokeColorR,
-                StrokeG = MyAppData.ShapeStrokeColorG,
-                StrokeB = MyAppData.ShapeStrokeColorB,
+                ShapeStrokeColorA = (byte)MyNumeShapeStrokeColorA.MyValue,
+                ShapeStrokeColorR = MyAppData.ShapeStrokeColorR,
+                ShapeStrokeColorG = MyAppData.ShapeStrokeColorG,
+                ShapeStrokeColorB = MyAppData.ShapeStrokeColorB,
                 //StrokeR = (byte)MyNumeShapeBackR.MyValue,
                 //StrokeG = (byte)MyNumeShapeBackG.MyValue,
                 //StrokeB = (byte)MyNumeShapeBackB.MyValue,
