@@ -2575,14 +2575,8 @@ namespace Pixtack3rd
 
         private void GroupBox_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (e.Delta > 0)
-            {
-                MyRoot.ZUp();
-            }
-            else
-            {
-                MyRoot.ZDown();
-            }
+            if (e.Delta > 0) { MyRoot.ZUp(); }
+            else { MyRoot.ZDown(); }
         }
 
         private void Grid_MouseWheel(object sender, MouseWheelEventArgs e)
