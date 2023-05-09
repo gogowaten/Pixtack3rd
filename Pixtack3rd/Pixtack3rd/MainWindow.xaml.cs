@@ -1832,10 +1832,26 @@ namespace Pixtack3rd
                 BindingOperations.SetBinding(geoData, Data.ShapeStrokeColorGProperty, new Binding(nameof(AppData.ShapeStrokeColorG)) { Source = MyAppData, Mode = BindingMode.OneWay });
                 BindingOperations.SetBinding(geoData, Data.ShapeStrokeColorBProperty, new Binding(nameof(AppData.ShapeStrokeColorB)) { Source = MyAppData, Mode = BindingMode.OneWay });
 
-
-
             }
         }
+        //private void ShapeEditBegin()
+        //{
+        //    if(MyRoot.ActiveThumb is TTGeometricShape geo)
+        //    {
+        //        MyTabControl.IsEnabled = false;
+        //        //geo.IsEditing = true;
+        //        geo.Visibility = Visibility.Hidden;
+
+        //        MyEditCanvas.Visibility = Visibility.Visible;
+        //        Data data = geo.Data;
+        //        TTGeometricShape tempTT = new(data);
+        //        MyEditCanvas.Children.Add(tempTT);
+        //        //tempTT.Visibility= Visibility.Visible;
+        //        tempTT.IsEditing = true;
+        //        var neko = data.PointCollection;
+        //        var inu = tempTT.TTPoints;
+        //    }
+        //}
 
         //編集中の図形のBinding解除
         private void ShapeEditEndForClickedThumb()
@@ -2293,7 +2309,7 @@ namespace Pixtack3rd
         //TestDrawPolyline
         private void ButtonTestDrawPolyline_Click(object sender, RoutedEventArgs e)
         {
-            DrawShapeFromMouseClick();
+            BeginDrawShapeFromMouseClick();
             //DrawPolylineFromClick();
         }
 
@@ -2304,11 +2320,11 @@ namespace Pixtack3rd
                 switch (type)
                 {
                     case ShapeType.Line:
-                        AddShapePolyline2(new PointCollection()
+                        AddGeometricShape(new PointCollection()
                     { new Point(0, 0), new Point(100, 100) });
                         break;
                     case ShapeType.Bezier:
-                        AddShapePolyline2(new PointCollection()
+                        AddGeometricShape(new PointCollection()
                     { new Point(0, 0), new Point(100, 0) ,new Point(100, 100), new Point(0, 100) });
                         break;
                 }
@@ -2322,7 +2338,7 @@ namespace Pixtack3rd
         /// <summary>
         /// マウスクリックでShape描画開始
         /// </summary>
-        private void DrawShapeFromMouseClick()
+        private void BeginDrawShapeFromMouseClick()
         {
             MyTabControl.IsEnabled = false;
             MyDrawCanvas.Visibility = Visibility.Visible;
@@ -2348,19 +2364,13 @@ namespace Pixtack3rd
             MyDrawCanvas.Children.Add(MyTempShape);
         }
 
-        //private SolidColorBrush GetBrush()
-        //{
-        //    return new SolidColorBrush(Color.FromArgb((byte)MyNumeShapeBackA.MyValue,
-        //        (byte)MyNumeShapeBackR.MyValue, (byte)MyNumeShapeBackG.MyValue, (byte)MyNumeShapeBackB.MyValue));
-        //}
-
-        //右クリックで終了
+        //Shape描画を右クリックで終了
         //MyTempPointsからData作成してRootに追加
-        private void MyDrawCanvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        private void EndDrawShapeFromMouse()
         {
             if (MyTempPoints.Count >= 2)
             {
-                AddShapePolyline2(new(MyTempPoints), false);
+                AddGeometricShape(new(MyTempPoints), false);
             }
 
             //後片付け
@@ -2369,6 +2379,13 @@ namespace Pixtack3rd
             MyDrawCanvas.Visibility = Visibility.Collapsed;
             MyTabControl.IsEnabled = true;
 
+        }
+
+        //Shape描画を右クリックで終了
+        //MyTempPointsからData作成してRootに追加
+        private void MyDrawCanvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            EndDrawShapeFromMouse();
         }
 
         /// <summary>
@@ -2513,6 +2530,7 @@ namespace Pixtack3rd
         private void ButtonStartEditAnchor_Click(object sender, RoutedEventArgs e)
         {
             ShapeEditStart();
+            //ShapeEditBegin();
         }
 
         private void ButtonEndEditAnchor_Click(object sender, RoutedEventArgs e)
@@ -2525,7 +2543,7 @@ namespace Pixtack3rd
 
 
         #region 図形追加
-        private void AddShapePolyline2(PointCollection points, bool locateFix = true)
+        private void AddGeometricShape(PointCollection points, bool locateFix = true)
         {
             Data data = new(TType.Geometric)
             {

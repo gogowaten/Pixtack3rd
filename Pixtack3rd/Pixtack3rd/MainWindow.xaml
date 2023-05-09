@@ -282,8 +282,13 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
       <!--図形をマウスで描画するときに使うCanvas-->
       <Canvas Grid.Row="1" Grid.Column="1"
               x:Name="MyDrawCanvas" Visibility="Collapsed"
-              Cursor="Cross" Background="Transparent">
+              Cursor="Cross">
+        <Canvas.Background>
+          <SolidColorBrush Color="Black" Opacity="0.1"/>
+        </Canvas.Background>
       </Canvas>
+
+      <Canvas x:Name="MyEditCanvas" Grid.Row="1" Grid.Column="1" Visibility="Collapsed"/>
 
       <Canvas x:Name="MyAreaCanvas">
         <local:AreaThumb x:Name="MyAreaThumb" Width="100" Height="70" Canvas.Left="180" Canvas.Top="30" Background="Blue" AreaOpacity="0.2"/>

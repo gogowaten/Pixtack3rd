@@ -112,34 +112,34 @@ namespace Pixtack3rd
         }
 
 
-        private void SetMyContextMenu()
-        {
-            this.ContextMenu = MyContextMenu;
-            MenuItem item = new() { Header = "コピー" };
-            MyContextMenu.Items.Add(item);
-            item.Click += Item_Click;
-            item = new() { Header = "複製" };
-            MyContextMenu.Items.Add(item);
-            item.Click += Item_Click1;
-            item = new() { Header = "名前をつけて保存" };
-            MyContextMenu.Items.Add(item);
-            item.Click += Item_Click2;
-        }
+        //private void SetMyContextMenu()
+        //{
+        //    this.ContextMenu = MyContextMenu;
+        //    MenuItem item = new() { Header = "コピー" };
+        //    MyContextMenu.Items.Add(item);
+        //    item.Click += Item_Click;
+        //    item = new() { Header = "複製" };
+        //    MyContextMenu.Items.Add(item);
+        //    item.Click += Item_Click1;
+        //    item = new() { Header = "名前をつけて保存" };
+        //    MyContextMenu.Items.Add(item);
+        //    item.Click += Item_Click2;
+        //}
 
-        private void Item_Click2(object sender, RoutedEventArgs e)
-        {
+        //private void Item_Click2(object sender, RoutedEventArgs e)
+        //{
 
-        }
+        //}
 
-        private void Item_Click1(object sender, RoutedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
+        //private void Item_Click1(object sender, RoutedEventArgs e)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
-        private void Item_Click(object sender, RoutedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
+        //private void Item_Click(object sender, RoutedEventArgs e)
+        //{
+        //    throw new NotImplementedException();
+        //}
     }
 
 }

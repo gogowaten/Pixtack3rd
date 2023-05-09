@@ -454,7 +454,7 @@ namespace Pixtack3rd
 
         //public ItemsControl MyTemplateElement;
         public ObservableCollection<TThumb> Thumbs { get; private set; } = new();
-
+        //public ItemsControl MyTemplateItemsControl { get; private set; }
 
 
         public TTGroup() : this(new Data(TType.Group))
@@ -466,6 +466,8 @@ namespace Pixtack3rd
             //初期設定
             Thumbs.CollectionChanged += Thumbs_CollectionChanged;
             Data = data;
+            //MyTemplateItemsControl = MyInitializeBinding();
+            //MyTemplateElement = MyTemplateItemsControl;
             MyTemplateElement = MyInitializeBinding();
             MyTemplateElement.SetBinding(ItemsControl.ItemsSourceProperty,
                 new Binding(nameof(Thumbs)) { Source = this });
@@ -504,6 +506,9 @@ namespace Pixtack3rd
         }
         private ItemsControl MakeTemplate()
         {
+            //Grid
+            //  :..Waku
+            //  :..itemsControl
             FrameworkElementFactory fGrid = new(typeof(Grid));
             FrameworkElementFactory fWaku = new(typeof(Rectangle));
             Binding b1 = new Binding(nameof(IsActiveThumb)) { Source = this };
@@ -521,13 +526,7 @@ namespace Pixtack3rd
             mb.Converter = new MyConverterWakuBrushForTTGroup();
             fWaku.SetBinding(Rectangle.StrokeProperty, mb);
 
-            //fWaku.SetValue(Panel.ZIndexProperty, 1);
-
-
-
-            //fWaku.SetValue(VisibilityProperty, new Binding(nameof(TTVisibleBorder)) { Source = this });
-
-
+            
             FrameworkElementFactory factory = new(typeof(ItemsControl), TEMPLATE_NAME);
             factory.SetValue(ItemsControl.ItemsPanelProperty,
                 new ItemsPanelTemplate(new FrameworkElementFactory(typeof(Canvas))));
@@ -763,6 +762,8 @@ namespace Pixtack3rd
             _activeGroup ??= this;
             IsActiveGroup = true;
             //ContextMenu = MyContextMenu;//右クリックメニュー
+
+            
 
             //SetBinding(TTWakuVisibleTypeProperty, new Binding(nameof(WakuVisibleType)) { Source = this });
             //起動直後に位置とサイズ更新
@@ -2747,13 +2748,13 @@ namespace Pixtack3rd
 
         #region 依存プロパティ
 
-        public PointCollection MyPoints
+        public PointCollection TTPoints
         {
-            get { return (PointCollection)GetValue(MyPointsProperty); }
-            set { SetValue(MyPointsProperty, value); }
+            get { return (PointCollection)GetValue(TTPointsProperty); }
+            set { SetValue(TTPointsProperty, value); }
         }
-        public static readonly DependencyProperty MyPointsProperty =
-            DependencyProperty.Register(nameof(MyPoints), typeof(PointCollection), typeof(TTGeometricShape),
+        public static readonly DependencyProperty TTPointsProperty =
+            DependencyProperty.Register(nameof(TTPoints), typeof(PointCollection), typeof(TTGeometricShape),
                 new FrameworkPropertyMetadata(new PointCollection(),
                     FrameworkPropertyMetadataOptions.AffectsRender |
                     FrameworkPropertyMetadataOptions.AffectsMeasure |
@@ -2981,13 +2982,13 @@ namespace Pixtack3rd
             if (Data.PointCollection.Count == 0)
             {
                 //XAMLと関連付け
-                Data.PointCollection = MyPoints;
+                Data.PointCollection = TTPoints;
             }
             else
             {
                 //Dataと関連付け
                 MyShape.MyPoints = Data.PointCollection;
-                MyPoints = Data.PointCollection;
+                TTPoints = Data.PointCollection;
             }
             //MyTemplateShape.InvalidateVisual();//表示更新
 
@@ -3012,7 +3013,7 @@ namespace Pixtack3rd
         public void FixCanvasLocate04()
         {
             var ex = MyShape.MyExternalBounds;
-            var pts = GetPointsRect(MyPoints);
+            var pts = GetPointsRect(TTPoints);
             var bLeft = Canvas.GetLeft(MyShape);
             var bTop = Canvas.GetTop(MyShape);
 
@@ -3065,11 +3066,11 @@ namespace Pixtack3rd
         //Pointsの左上を0,0にするだけ
         public void Fix0Point()
         {
-            Rect r = GetPointsRect(MyPoints);
-            for (int i = 0; i < MyPoints.Count; i++)
+            Rect r = GetPointsRect(TTPoints);
+            for (int i = 0; i < TTPoints.Count; i++)
             {
-                Point pp = MyPoints[i];
-                MyPoints[i] = new Point(pp.X - r.Left, pp.Y - r.Top);
+                Point pp = TTPoints[i];
+                TTPoints[i] = new Point(pp.X - r.Left, pp.Y - r.Top);
             }
         }
 
@@ -3101,7 +3102,7 @@ namespace Pixtack3rd
             MyShape.SetBinding(GeometricShape.ArrowHeadAngleProperty, new Binding() { Source = this, Path = new PropertyPath(ArrowHeadAngleProperty) });
             MyShape.SetBinding(GeometricShape.HeadBeginTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadBeginTypeProperty) });
             MyShape.SetBinding(GeometricShape.HeadEndTypeProperty, new Binding() { Source = this, Path = new PropertyPath(HeadEndTypeProperty) });
-            MyShape.SetBinding(GeometricShape.MyPointsProperty, new Binding() { Source = this, Path = new PropertyPath(MyPointsProperty) });//XAML更新で必須
+            MyShape.SetBinding(GeometricShape.MyPointsProperty, new Binding() { Source = this, Path = new PropertyPath(TTPointsProperty) });//XAML更新で必須
             MyShape.SetBinding(GeometricShape.MyAnchorVisibleProperty, new Binding() { Source = this, Path = new PropertyPath(MyAnchorVisibleProperty) });
             MyShape.SetBinding(GeometricShape.MyLineCloseProperty, new Binding() { Source = this, Path = new PropertyPath(MyLineCloseProperty) });
             MyShape.SetBinding(GeometricShape.MyLineSmoothJoinProperty, new Binding() { Source = this, Path = new PropertyPath(MyLineSmoothJoinProperty) });
@@ -3154,17 +3155,17 @@ namespace Pixtack3rd
         public bool FixLocate()
         {
             double minX = double.MaxValue, minY = double.MaxValue;
-            foreach (var item in MyPoints)
+            foreach (var item in TTPoints)
             {
                 if (item.X < minX) minX = item.X;
                 if (item.Y < minY) minY = item.Y;
             }
             if (minX != 0 || minY != 0)
             {
-                for (int i = 0; i < MyPoints.Count; i++)
+                for (int i = 0; i < TTPoints.Count; i++)
                 {
-                    Point pp = MyPoints[i];
-                    MyPoints[i] = new Point(pp.X - minX, pp.Y - minY);
+                    Point pp = TTPoints[i];
+                    TTPoints[i] = new Point(pp.X - minX, pp.Y - minY);
                 }
 
                 TTLeft += minX;
@@ -3189,6 +3190,7 @@ namespace Pixtack3rd
 
                 var all = MyShape.MyAllBounds;
                 var ex = MyShape.MyExternalBounds;
+                if (all.IsEmpty || ex.IsEmpty) return;
                 TTLeft += all.X - ex.X;
                 TTTop += all.Y - ex.Y;
                 Canvas.SetLeft(MyShape, -all.X);

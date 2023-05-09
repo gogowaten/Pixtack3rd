@@ -287,8 +287,6 @@ namespace Pixtack3rd
 
         private readonly TwoColorWakuEllipseThumb thumbTopL, thumbBotR, thumbTopR, thumbBotL, thumbTop, thumbBot, thumbL, thumbR;
         private readonly FrameworkElement MyTarget;
-        //public double ThumbSize { get; private set; } = 30.0;
-
 
 
         public ResizeAdorner(UIElement adornedElement) : base(adornedElement)
@@ -312,15 +310,6 @@ namespace Pixtack3rd
             thumbBotL.DragDelta += ThumbBotL_DragDelta;
             thumbL.DragDelta += ThumbL_DragDelta;
             thumbR.DragDelta += ThumbR_DragDelta;
-
-            //thumbTop.DragCompleted += Thumb_DragCompleted;
-            //thumbTopL.DragCompleted += Thumb_DragCompleted;
-            //thumbTopR.DragCompleted += Thumb_DragCompleted;
-            //thumbBot.DragCompleted += Thumb_DragCompleted;
-            //thumbBotL.DragCompleted += Thumb_DragCompleted;
-            //thumbBotR.DragCompleted += Thumb_DragCompleted;
-            //thumbL.DragCompleted += Thumb_DragCompleted;
-            //thumbR.DragCompleted += Thumb_DragCompleted;
 
             MyVisuals.Add(thumbTop);
             MyVisuals.Add(thumbTopL);
@@ -355,7 +344,6 @@ namespace Pixtack3rd
         }
 
         #region ドラッグ移動時の動作
-
 
         private void MySetLeft(double horizontalChange)
         {
