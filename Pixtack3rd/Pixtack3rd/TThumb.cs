@@ -93,7 +93,7 @@ namespace Pixtack3rd
         #endregion 通知プロパティ
 
 
-        protected readonly string TEMPLATE_NAME = "NEMO";
+        protected const string TEMPLATE_NAME = "NEMO";
 
         public TTGroup? TTParent { get; set; } = null;//親Group
         public TType Type { get; private set; }
@@ -272,6 +272,15 @@ namespace Pixtack3rd
             }
         }
 
+
+        /// <summary>
+        /// Template作成
+        /// Grid
+        ///  :..Content
+        ///  :..Waku
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         protected T? MakeTemplate<T>()
         {
             FrameworkElementFactory fGrid = new(typeof(Grid));
@@ -736,7 +745,7 @@ namespace Pixtack3rd
         private bool IsSelectedPreviewMouseDown { get; set; }
 
         //自身が所属するMainWindowを登録、画像保存系メソッドを使うため
-        public MainWindow? MyMainWindow { get; private set; }
+        //public MainWindow? MyMainWindow { get; private set; }
 
         ////選択範囲用の特殊Thumb
         //public TTRange MyTTRange { get; private set; } = new(new Data(TType.Range) { BackColor = Color.FromArgb(255, 0, 0, 0) });
@@ -744,6 +753,7 @@ namespace Pixtack3rd
         ////右クリックメニュー
         //public ContextMenu MyContextMenu { get; private set; } = new();
 
+        //
 
         #region コンストラクタ、初期化
 
@@ -761,7 +771,7 @@ namespace Pixtack3rd
             {
                 TTGroupUpdateLayout();
                 FixDataDatas();
-                MyMainWindow = GetMainWindow(this);
+                //MyMainWindow = GetMainWindow(this);
                 //SetMyContextMenu();
                 //this.ContextMenuOpening += ContextMenu_ContextMenuOpening;
                 //if (SetMyTTRange() is TTRange range) { MyTTRange = range; }
@@ -789,17 +799,17 @@ namespace Pixtack3rd
         //    return null;
         //}
 
-        /// <summary>
-        /// MainWindowの取得、Loadedに実行
-        /// </summary>
-        /// <param name="element"></param>
-        /// <returns></returns>
-        private MainWindow? GetMainWindow(FrameworkElement? element)
-        {
-            if (element == null) return null;
-            if (element.Parent is MainWindow main) return main;
-            else return GetMainWindow(element.Parent as FrameworkElement);
-        }
+        ///// <summary>
+        ///// MainWindowの取得、Loadedに実行
+        ///// </summary>
+        ///// <param name="element"></param>
+        ///// <returns></returns>
+        //private MainWindow? GetMainWindow(FrameworkElement? element)
+        //{
+        //    if (element == null) return null;
+        //    if (element.Parent is MainWindow main) return main;
+        //    else return GetMainWindow(element.Parent as FrameworkElement);
+        //}
 
 
         /// <summary>
@@ -2432,57 +2442,6 @@ namespace Pixtack3rd
 
         #endregion ショートカットキー
 
-        #region 範囲選択系
-        ////非表示(リストから削除)
-        //public void TTRangeInvisible()
-        //{
-        //    _ = RemoveThumb(MyTTRange, this);
-        //}
-        ////表示(リストに追加)
-        //public void TTRangeVisible()
-        //{
-        //    var range = GetTTRange();
-        //    if (range == null)
-        //    {
-        //        AddThumb(MyTTRange, this);
-        //        ClickedThumb = MyTTRange;
-        //        ActiveThumb = MyTTRange;
-        //        SelectedThumbs.Clear();
-        //        SelectedThumbs.Add(MyTTRange);
-        //        TTGroupUpdateLayout();
-        //    }
-        //}
-        ////範囲選択がThumbsリストに存在するかのチェック
-        //public TTRange? GetTTRange()
-        //{
-        //    foreach (var item in Thumbs)
-        //    {
-        //        if (item is TTRange range)
-        //        {
-        //            return range;
-        //        }
-        //    }
-        //    return null;
-        //}
-
-        //public void RangeThumbWidthUp1Pix()
-        //{
-        //    if (MyTTRange == ActiveThumb) MyTTRange.Width++;
-        //}
-        //public void RangeThumbWidthDown1Pix()
-        //{
-        //    if (MyTTRange.Width > 1 && MyTTRange == ActiveThumb) MyTTRange.Width--;
-        //}
-        //public void RangeThumbHeightUp1Pix()
-        //{
-        //    if (MyTTRange == ActiveThumb) MyTTRange.Height++;
-        //}
-        //public void RangeThumbHeightDown1Pix()
-        //{
-        //    if (MyTTRange.Height > 1 && MyTTRange == ActiveThumb) MyTTRange.Height--;
-        //}
-
-        #endregion 範囲選択系
 
     }
     #endregion TTRoot
@@ -2970,6 +2929,7 @@ namespace Pixtack3rd
         public GeometricShape MyShape { get; protected set; }
         public Canvas MyCanvas { get; protected set; }
 
+        
 
         #region コンストラクタ
 
@@ -2997,6 +2957,7 @@ namespace Pixtack3rd
         }
         #endregion コンストラクタ
 
+        
         //表示更新と座標修正、頂点削除処理後に実行
         private void MyAdorner_PointRemoved(object obj)
         {
@@ -3247,18 +3208,7 @@ namespace Pixtack3rd
                 Canvas.SetTop(MyShape, -ex.Y);
             }
         }
-        //public void FixShapeLocate()
-        //{
-        //    var all = MyShape.MyAllBounds;
-        //    Canvas.SetLeft(MyShape, -all.X);
-        //    Canvas.SetTop(MyShape, -all.Y);
-        //}
-        //public void FixShapeLocate2()
-        //{
-        //    var ex = MyShape.MyExternalBounds;
-        //    Canvas.SetLeft(MyShape, -ex.X);
-        //    Canvas.SetTop(MyShape, -ex.Y);
-        //}
+    
 
     }
 

@@ -17,7 +17,7 @@
     <local:MyConverterARGB2SolidBrush x:Key="ConvARGB2SolidBrush"/>
   </Window.Resources>
 
-  <Grid Name="MyGrid">
+  <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="280"/>
       <ColumnDefinition/>
@@ -217,7 +217,7 @@ https://tan.hatenadiary.jp/entry/20151115/1447574474-->
     </StatusBar>
 
     <Grid Grid.Row="1" Grid.Column="1">
-      <ScrollViewer Grid.Row="1" Grid.Column="1"
+      <ScrollViewer
                   x:Name="MyScrollViewer"
                   HorizontalScrollBarVisibility="Auto"
                   VerticalScrollBarVisibility="Auto"

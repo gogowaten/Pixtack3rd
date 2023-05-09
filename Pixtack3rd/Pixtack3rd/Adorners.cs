@@ -591,15 +591,13 @@ namespace Pixtack3rd
         {
             MyTargetGeoShape = adornedElement;
             MyVisuals = new VisualCollection(this) { MyCanvas, };
-            //if (MyTargetGeoShape.MyShapeType == ShapeType.Bezier)
-            //{
-            //}
+            
             MyDirectionLine = new TwoColorDashLine();
             MyCanvas.Children.Add(MyDirectionLine);
             MyAnchorContextMenu = new ContextMenu();
             MyAnchorContextMenu.Opened += MyAnchorContextMenu_Opened;
             MyMenuItemRemoveThumb = new() { Header = "頂点削除" };
-            MyMenuItemRemoveThumb.Click += Item_Click;
+            MyMenuItemRemoveThumb.Click += RemoveAnchor_Click;
             MyAnchorContextMenu.Items.Add(MyMenuItemRemoveThumb);
 
             Loaded += GeometryAdorner_Loaded;
@@ -638,7 +636,9 @@ namespace Pixtack3rd
 
         //右クリックメニュー、頂点Thumb削除
         public event Action<object>? PointRemoved;
-        private void Item_Click(object sender, RoutedEventArgs e)
+
+        //頂点削除クリック
+        private void RemoveAnchor_Click(object sender, RoutedEventArgs e)
         {
             //削除
             if (RemovePointAndAnchor())
@@ -646,18 +646,21 @@ namespace Pixtack3rd
                 MyCurrentAnchorThumb = null;
                 PointRemoved?.Invoke(this);//通知で描画更新
             };
-
         }
+
+        //頂点削除、ベジェ曲線の場合は対応制御点も削除
         private bool RemovePointAndAnchor()
         {
             if (MyCurrentAnchorThumb is AnchorThumb anchor)
             {
                 int ii = MyThumbs.IndexOf(anchor);
+                //図形TypeがLine
                 if (MyTargetGeoShape.MyShapeType == ShapeType.Line && MyPoints.Count > 2)
                 {
                     RemovePointAndAnchor(anchor);
                     return true;
                 }
+                //図形TypeがBezier
                 else if (MyTargetGeoShape.MyShapeType == ShapeType.Bezier
                     && MyPoints.Count >= 7)
                 {
@@ -687,6 +690,7 @@ namespace Pixtack3rd
             }
             return false;
         }
+
         /// <summary>
         /// 頂点Thumbと対応Pointを削除する
         /// </summary>
@@ -701,6 +705,7 @@ namespace Pixtack3rd
             MyThumbs.Remove(anchor);
             MyCanvas.Children.Remove(anchor);
         }
+        
         private void RemovePointAndAnchor(int ii)
         {
             MyPoints.RemoveAt(ii);

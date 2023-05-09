@@ -79,14 +79,10 @@ namespace Pixtack3rd
         //右クリックメニュー、複数選択Thumb用
         private ContextMenu MyContextMenuForSelected = new();
         //右クリックメニュー、単体Thumb用
-        private ContextTabMenu MyContextTabMenuForSingle = new();
+        private readonly ContextTabMenu MyContextTabMenuForSingle = new();
 
-        //範囲選択
-        //private TTRange MyTTRange = new();
-
-        //カラーピッカー
-        //private readonly ColorPicker MyColorPicker = new();
-
+        //右クリックメニュー、図形編集時
+        private ContextMenu MyContextMenuForEditGeoShape = new();
         public MainWindow()
         {
             InitializeComponent();
@@ -184,45 +180,14 @@ namespace Pixtack3rd
             MyContextMenuForSelected = MakeContextMenuForSelected();
             MyContextTabMenuForSingle.AddMenuTab(MakeTabItemForActiveThumbMenu());
             MyContextTabMenuForSingle.AddMenuTab(MakeTabItemForClickedThumbMenu());
-            //右クリックメニュー展開時、複数Thumb選択用と単数Thumb用の切り替え
-            this.ContextMenuOpening += (s, e) =>
-            {
-                if (e.Source == MyRoot)
-                {
-                    bool flag = false;
-                    if (ContextMenu == null) flag = true;
-                    if (MyRoot.SelectedThumbs.Count >= 2)
-                    {
-                        ContextMenu = MyContextMenuForSelected;
-                    }
-                    else
-                    {
-                        ContextMenu = MyContextTabMenuForSingle;
-                    }
-                    if (flag) { ContextMenu.IsOpen = true; }
-                }
-                else
-                {
-                    ContextMenu = null;
-                }
-            };
+            MyContextMenuForEditGeoShape.Items.Add(new MenuItem() { Header = "geoshape" });
+
 
             MyAreaCanvas.ContextMenu = MakeContextMenuForAreaThumb();
 
-            //MyColorPicker.Closing += MyColorPicker_Closing;
-            //MyColorPicker.Closed += MyColorPicker_Closed;
+
         }
 
-        //private void MyColorPicker_Closed(object? sender, EventArgs e)
-        //{
-
-        //}
-
-        //private void MyColorPicker_Closing(object? sender, CancelEventArgs e)
-        //{
-        //    MyColorPicker.Visibility = Visibility.Collapsed;
-        //    e.Cancel = true;
-        //}
 
         private void SetMyBindings()
         {
@@ -365,6 +330,46 @@ namespace Pixtack3rd
         #endregion 初期設定
 
         #region 右クリックメニュー
+        //WPF、右クリックメニューの表示、非表示切り替えはnullとIsOpen = trueでできた - 午後わてんのブログ
+        //https://gogowaten.hatenablog.com/entry/2023/04/08/154552
+
+
+        //右クリックメニュー展開時、複数Thumb選択用と単数Thumb用の切り替え
+        protected override void OnContextMenuOpening(ContextMenuEventArgs e)
+        {
+            base.OnContextMenuOpening(e);
+
+            if (e.Source == MyScrollViewer && MyRoot.ActiveThumb is TTGeometricShape geo && geo.IsEditing)
+            {
+                    ContextMenu = MyContextMenuForEditGeoShape;
+                
+
+            }
+
+            else if (e.Source == MyRoot)
+            {
+                bool flag = false;
+                if (ContextMenu == null) flag = true;
+                if (MyRoot.SelectedThumbs.Count >= 2)
+                {
+                    ContextMenu = MyContextMenuForSelected;
+                }
+                else
+                {
+                    ContextMenu = MyContextTabMenuForSingle;
+                }
+                if (flag) { ContextMenu.IsOpen = true; }
+            }
+            //else if (e.OriginalSource is GeometricShape geo && geo.MyIsEditing)
+            //{
+            //    var neko = 0;
+            //    ContextMenu = MyContextMenuForEditGeoShape;
+            //}
+            else
+            {
+                ContextMenu = null;
+            }
+        }
 
         //AreaThumb(範囲選択)用右クリックメニュー
         private ContextMenu MakeContextMenuForAreaThumb()
@@ -429,7 +434,7 @@ namespace Pixtack3rd
             //item = new() { Header = "Z移動" };
             menu.Items.Add(MakeMenuItemZMove());
 
-            item = new() { Header = "複数選択解除" }; menu.Items.Add(item);
+            item = new() { Header = "複数選択解除" }; menu.Items.Add(item); item.IsEnabled = false;
             item.Click += (s, e) => { throw new ArgumentException(); };
 
             return menu;
