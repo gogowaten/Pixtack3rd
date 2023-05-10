@@ -341,8 +341,8 @@ namespace Pixtack3rd
 
             if (e.Source == MyScrollViewer && MyRoot.ActiveThumb is TTGeometricShape geo && geo.IsEditing)
             {
-                    ContextMenu = MyContextMenuForEditGeoShape;
-                
+                ContextMenu = MyContextMenuForEditGeoShape;
+
 
             }
 
@@ -350,21 +350,23 @@ namespace Pixtack3rd
             {
                 bool flag = false;
                 if (ContextMenu == null) flag = true;
+
                 if (MyRoot.SelectedThumbs.Count >= 2)
                 {
                     ContextMenu = MyContextMenuForSelected;
                 }
                 else
                 {
-                    ContextMenu = MyContextTabMenuForSingle;
+                    if (MyRoot.ActiveThumb is TTGeometricShape a && a.IsEditing)
+                    {
+                        ContextMenu = MyContextMenuForEditGeoShape;
+                    }
+                    else { ContextMenu = MyContextTabMenuForSingle; }
                 }
+
                 if (flag) { ContextMenu.IsOpen = true; }
             }
-            //else if (e.OriginalSource is GeometricShape geo && geo.MyIsEditing)
-            //{
-            //    var neko = 0;
-            //    ContextMenu = MyContextMenuForEditGeoShape;
-            //}
+
             else
             {
                 ContextMenu = null;
